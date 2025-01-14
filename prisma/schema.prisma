@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model user_problems {
+  id              String     @id
+  userId          String
+  leetcodeId      String
+  problemName     String
+  difficulty      Difficulty
+  solution        String?
+  notes           String?
+  solvedAt        DateTime   @default(now())
+  attempts        Int        @default(1)
+  timeComplexity  String?
+  spaceComplexity String?
+  url             String?
+  nextReview      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt  // Changed to @updatedAt
+  users           users      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, leetcodeId])
+}
+
+model user_settings {
+  id         String   @id
+  userId     String   @unique
+  smsEnabled Boolean  @default(false)
+  timezone   String   @default("UTC")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt  // Changed to @updatedAt
+  users      users    @relation(fields: [userId], references: [id])
+}
+
+model users {
+  id            String          @id
+  firebaseUid   String          @unique
+  email         String          @unique
+  phoneNumber   String?
+  displayName   String?
+  photoURL      String?
+  emailVerified Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  user_problems user_problems[]
+  user_settings user_settings?
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}

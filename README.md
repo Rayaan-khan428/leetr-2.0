@@ -1,7 +1,5 @@
 # Interview Prep Platform
 
-A Next.js-based platform to help developers prepare for technical interviews.
-
 ## Prerequisites
 
 - Node.js (v18 or higher recommended)
@@ -12,8 +10,8 @@ A Next.js-based platform to help developers prepare for technical interviews.
 
 1. **Clone the repository**
    ```bash
-   git clone [your-repository-url]
-   cd [repository-name]
+   git clone git@github.com:Rayaan-khan428/leetr-2.0.git
+   cd leetr-2.0.git
    ```
 
 2. **Install dependencies**
@@ -39,7 +37,8 @@ A Next.js-based platform to help developers prepare for technical interviews.
 
 ## Project Structure
 
-- `/app` - Next.js 13+ app directory containing page components
+- `/app` - Next.js directory containing page components
+-  every file is called page.tsx. you specify its path by naming the folder it is in. for instance the folder login contains page.tsx which has the code for the login page
 - `/components` - Reusable UI components
 - `/public` - Static assets including images
 - `/styles` - Global styles and CSS modules
@@ -78,7 +77,3 @@ A Next.js-based platform to help developers prepare for technical interviews.
 1. Create a new branch for your feature
 2. Make your changes
 3. Submit a pull request
-
-## Need Help?
-
-Contact the project maintainer for access to any additional resources or documentation.

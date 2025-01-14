@@ -2,7 +2,6 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Book, Timer, Brain, Users } from 'lucide-react';
-import Link from 'next/link'
 import Image from 'next/image'
 
 const LandingPage = () => {
@@ -36,7 +35,7 @@ const LandingPage = () => {
             Ace Your Technical Interviews with Confidence
           </h1>
           <p className="text-lg text-muted-foreground">
-            Built by engineers who've shared the struggle of preparing for interviews.
+            Built by engineers who&apos;ve shared the struggle of preparing for interviews.
           </p>
           <div className="flex gap-4">
             <Button size="lg">
@@ -121,7 +120,7 @@ const LandingPage = () => {
               ].map((testimonial, index) => (
                 <Card key={index} className="text-left">
                   <CardContent className="pt-6">
-                    <p className="text-muted-foreground mb-4">"{testimonial.text}"</p>
+                    <p className="text-muted-foreground mb-4">&quot;{testimonial.text}&quot;</p>
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                         {testimonial.name[0]}

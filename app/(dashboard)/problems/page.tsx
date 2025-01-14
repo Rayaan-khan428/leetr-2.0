@@ -14,14 +14,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ChevronDown, ChevronRight, Code, FileText } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import ComplexityBadge from './ComplexityBadge'
 
 // Interface matching our Prisma schema for user_problems
 interface Problem {
@@ -173,8 +171,8 @@ export default function ProblemsPage() {
 
   // Fetch problems on component mount
   useEffect(() => {
-    fetchProblems()
-  }, [])
+    fetchProblems();
+  }, [fetchProblems]);
 
   const handleSuccess = () => {
     setShowForm(false)

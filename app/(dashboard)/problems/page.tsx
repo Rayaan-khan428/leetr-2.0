@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import ProblemForm from '@/components/problems/ProblemForm'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Code, FileText } from 'lucide-react'
 
 // Interface matching our Prisma schema for user_problems
 interface Problem {
@@ -137,8 +138,8 @@ export default function ProblemsPage() {
   const { getToken, user } = useAuth()
   const [streak, setStreak] = useState(0)
 
-  // Fetch problems from the API
-  const fetchProblems = async () => {
+  // Wrap fetchProblems in useCallback
+  const fetchProblems = useCallback(async () => {
     try {
       const token = await getToken()
       
@@ -167,7 +168,7 @@ export default function ProblemsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [getToken]) // Add getToken as a dependency
 
   // Fetch problems on component mount
   useEffect(() => {

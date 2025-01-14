@@ -1,119 +1,78 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, CheckCircle2, Activity, Zap, Shield } from 'lucide-react';
+import { ArrowRight, Book, Timer, Brain, Users } from 'lucide-react';
 import Link from 'next/link'
+import Image from 'next/image'
 
 const LandingPage = () => {
-  // Features data for the features section
   const features = [
     {
-      title: "Real-time Analytics",
-      description: "Get instant insights with our powerful analytics dashboard",
-      icon: <Activity className="w-6 h-6 text-primary" />,
+      title: "Practice Smart",
+      description: "proprietary algorithm determines which questions to practice based on your skill level and learning pace",
+      icon: <Brain className="w-6 h-6 text-primary" />,
     },
     {
-      title: "Lightning Fast",
-      description: "Optimized performance for the smoothest user experience",
-      icon: <Zap className="w-6 h-6 text-primary" />,
+      title: "Friends Leaderboard",
+      description: "Compete with your friends to see who's the best at solving problems",
+      icon: <Users className="w-6 h-6 text-primary" />,
     },
     {
-      title: "Enterprise Security",
-      description: "Bank-grade security to keep your data safe and protected",
-      icon: <Shield className="w-6 h-6 text-primary" />,
+      title: "Expert Solutions",
+      description: "Neetcode solutions to all Leetcode problems at the click of a button",
+      icon: <Book className="w-6 h-6 text-primary" />,
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navbar */}
-      <nav className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="text-2xl font-bold text-primary">YourApp</div>
-          
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Products</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="grid gap-3 p-4 w-64">
-                    <NavigationMenuLink className="cursor-pointer hover:bg-muted p-2 rounded">
-                      Enterprise
-                    </NavigationMenuLink>
-                    <NavigationMenuLink className="cursor-pointer hover:bg-muted p-2 rounded">
-                      Teams
-                    </NavigationMenuLink>
-                    <NavigationMenuLink className="cursor-pointer hover:bg-muted p-2 rounded">
-                      Personal
-                    </NavigationMenuLink>
-                  </div>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink className="px-4 py-2">About</NavigationMenuLink>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuLink className="px-4 py-2">Contact</NavigationMenuLink>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-
-          <div className="flex gap-4">
-            <Link href="/login">
-              <Button variant="outline">Log in</Button>
-            </Link>
-            <Link href="/register">
-              <Button>Sign up</Button>
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
       <section className="container mx-auto px-4 py-24 flex flex-col md:flex-row items-center gap-12">
         <div className="flex-1 space-y-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-5 h-5 text-primary" />
+            <span className="text-sm font-medium">Just Launched</span>
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-            Transform the way you prep for your next interview
+            Ace Your Technical Interviews with Confidence
           </h1>
           <p className="text-lg text-muted-foreground">
-            Streamline your interview prep with our platform and get the internship you deserve.
+            Built by engineers who've shared the struggle of preparing for interviews.
           </p>
           <div className="flex gap-4">
             <Button size="lg">
-              Get Started
+              Start Documenting
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline">
-              Learn More
-            </Button>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Timer className="w-4 h-4" />
+              <span>Completely Free</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              <span>Compete with your friends (coming soon)</span>
+            </div>
           </div>
         </div>
         <div className="flex-1">
-          <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
-            <img 
-              src="https://assets.leetcode.com/users/images/e20369fa-bc1c-437c-b431-64a05c12c3f4_1683047706.313295.jpeg" 
-              alt="Platform preview" 
-              className="rounded-lg"
-            />
-          </div>
+          <Image
+            src="/images/interview-prep.png"
+            alt="Interview preparation illustration"
+            width={500}
+            height={400}
+            className="w-full h-auto rounded-lg shadow-lg"
+            priority
+          />
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="bg-muted/50 py-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Features</h2>
+            <h2 className="text-3xl font-bold mb-4">What we offer?</h2>
             <p className="text-lg text-muted-foreground">
-              Experience the difference with our cutting-edge features
+              Everything you need to succeed in your technical interviews
             </p>
           </div>
 
@@ -132,12 +91,48 @@ const LandingPage = () => {
           </div>
 
           <div className="mt-16 text-center">
-            <h3 className="text-2xl font-bold mb-8">Trusted by Industry Leaders</h3>
-            <div className="flex flex-wrap justify-center gap-8">
-              {[1, 2, 3, 4].map((_, index) => (
-                <div key={index} className="w-32 h-12 bg-muted rounded flex items-center justify-center">
-                  Logo {index + 1}
-                </div>
+            <h3 className="text-2xl font-bold mb-8">What our users say</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {[
+                {
+                  name: "Uncle Kash Son",
+                  role: "Amazon assembly line",
+                  text: "This platform helped me structure my interview preparation effectively, and I got a job at Amazon (albeit at a lower level than I wanted)",
+                  company: "Amazon"
+                },
+                {
+                  name: "Mr. Shah",
+                  role: "Equity Research Analyst",
+                  text: "The expert solutions helped me understand complex problems better. I successfully landed my dream job!",
+                  company: "Blackrock"
+                },
+                {
+                  name: "Ayan Khan",
+                  role: "Software Engineer",
+                  text: "I don’t have dreams. I have goals. And while you’re busy making excuses, I’m busy getting better.",
+                  company: "Hitachi"    
+                },
+                {
+                  name: "Rayaan Khan",
+                  role: "Senior Software Engineer at Amazon",
+                  text: "I built this platform to help my friends and I get jobs at FAANG companies. I'm glad to see it's helping others too!",
+                  company: "Scotiabank"
+                }
+              ].map((testimonial, index) => (
+                <Card key={index} className="text-left">
+                  <CardContent className="pt-6">
+                    <p className="text-muted-foreground mb-4">"{testimonial.text}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        {testimonial.name[0]}
+                      </div>
+                      <div>
+                        <p className="font-medium">{testimonial.name}</p>
+                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </div>

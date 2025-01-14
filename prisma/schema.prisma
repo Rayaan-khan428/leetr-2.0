@@ -23,7 +23,7 @@ model user_problems {
   url             String?
   nextReview      DateTime?
   createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt  // Changed to @updatedAt
+  updatedAt       DateTime   @default(now())
   users           users      @relation(fields: [userId], references: [id])
 
   @@unique([userId, leetcodeId])

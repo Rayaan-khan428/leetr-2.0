@@ -38,6 +38,8 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.16",
     "postcss": "^8",
@@ -45,8 +47,6 @@
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.3",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0"
+    "typescript": "^5.7.3"
   }
 }

@@ -9,6 +9,36 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model friend_requests {
+  id          String   @id
+  senderId    String
+  receiverId  String
+  status      FriendRequestStatus
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  sender      users    @relation("SentRequests", fields: [senderId], references: [id])
+  receiver    users    @relation("ReceivedRequests", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
+}
+
+model friendships {
+  id        String   @id
+  user1Id   String
+  user2Id   String
+  createdAt DateTime @default(now())
+  user1     users    @relation("UserFriends", fields: [user1Id], references: [id])
+  user2     users    @relation("UserFriendsWith", fields: [user2Id], references: [id])
+
+  @@unique([user1Id, user2Id])
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model user_problems {
   id              String     @id
   userId          String
@@ -52,6 +82,10 @@ model users {
   updatedAt     DateTime       @updatedAt
   user_problems user_problems[]
   user_settings user_settings?
+  sentRequests     friend_requests[] @relation("SentRequests")
+  receivedRequests friend_requests[] @relation("ReceivedRequests")
+  friends          friendships[]     @relation("UserFriends")
+  friendsWith      friendships[]     @relation("UserFriendsWith")
 }
 
 enum Difficulty {

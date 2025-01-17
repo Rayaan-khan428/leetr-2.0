@@ -34,6 +34,7 @@ export default function Navbar() {
     { href: '/reviews', label: 'Reviews' },
     { href: '/settings', label: 'Settings' },
     { href: '/test', label: 'Test' },
+    { href: '/friends', label: 'Friends' },
   ]
 
   return (

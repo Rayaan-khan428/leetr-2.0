@@ -2,14 +2,13 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { 
   getAuth, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signOut,
-  updateProfile,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  signInWithPopup,
   User as FirebaseUser
 } from 'firebase/auth'
-import { app } from '@/lib/firebase'
 import { auth } from '@/lib/firebase'
 import Cookies from 'js-cookie'
 
@@ -20,8 +19,8 @@ interface User extends FirebaseUser {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signup: (email: string, password: string, displayName: string) => Promise<FirebaseUser>
-  signin: (email: string, password: string) => Promise<FirebaseUser>
+  signInWithGithub: () => Promise<FirebaseUser>
+  signInWithGoogle: () => Promise<FirebaseUser>
   signout: () => Promise<void>
   getToken: () => Promise<string | undefined>
 }
@@ -29,8 +28,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  signup: async () => { throw new Error('Not implemented') },
-  signin: async () => { throw new Error('Not implemented') },
+  signInWithGithub: async () => { throw new Error('Not implemented') },
+  signInWithGoogle: async () => { throw new Error('Not implemented') },
   signout: async () => { throw new Error('Not implemented') },
   getToken: async () => { throw new Error('Not implemented') }
 })
@@ -74,19 +73,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return await response.json();
   };
 
-  const signup = async (email: string, password: string, displayName: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-    await updateProfile(userCredential.user, { displayName })
-    await setAuthCookie(userCredential.user)
-    await createUserInDatabase(userCredential.user)
-    return userCredential.user
-  }
+  const signInWithGithub = async () => {
+    const provider = new GithubAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    await setAuthCookie(userCredential.user);
+    await createUserInDatabase(userCredential.user);
+    return userCredential.user;
+  };
 
-  const signin = async (email: string, password: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password)
-    await setAuthCookie(userCredential.user)
-    return userCredential.user
-  }
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    await setAuthCookie(userCredential.user);
+    await createUserInDatabase(userCredential.user);
+    return userCredential.user;
+  };
 
   const signout = async () => {
     await signOut(auth)
@@ -116,8 +117,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     loading,
-    signup,
-    signin,
+    signInWithGithub,
+    signInWithGoogle,
     signout,
     getToken
   }

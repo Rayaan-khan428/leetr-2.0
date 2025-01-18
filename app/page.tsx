@@ -11,15 +11,15 @@ import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
 
 export default function Home() {
   return (
-    <main className="flex flex-col min-h-screen bg-black">
+    <main className="flex flex-col min-h-screen bg-black pt-16">
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden">
-        <LampContainer className="h-[90vh]">
+        <LampContainer className="h-[80vh]">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            className="flex flex-col items-center justify-center -mt-32"
+            transition={{ duration: 2 }}
+            className="flex flex-col items-center justify-center -mt-16"
           >
             <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-center">
               Ace Your Technical <br></br>Interviews with Confidence

@@ -4,14 +4,8 @@ import { useAuth } from '@/context/AuthContext'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { ShimmerButton } from '@/components/ui/shimmer-button'
 
 export default function Navbar() {
   const { user, signout } = useAuth()
@@ -28,82 +22,73 @@ export default function Navbar() {
     }
   }
 
-  // Navigation items that appear when logged in
-  const authenticatedItems = [
-    { href: '/problems', label: 'Problems' },
-    { href: '/reviews', label: 'Reviews' },
-    { href: '/settings', label: 'Settings' },
-    { href: '/test', label: 'Test' },
-    { href: '/friends', label: 'Friends' },
-  ]
-
   return (
-    <header className="border-b">
+    <header className="fixed top-0 w-full z-50 border-b border-gray-800 bg-black/50 backdrop-blur-xl">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo/Home link - always visible */}
+        {/* Logo/Home link */}
         <Link 
-          href={user ? '/' : '/'} 
-          className="text-xl font-bold"
+          href="/" 
+          className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400"
         >
           Leetr
         </Link>
 
-        
+        <div className="flex items-center gap-6">
+          {/* Main Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Link 
+              href="/problems" 
+              className="text-sm text-gray-300 hover:text-white transition-colors"
+            >
+              Problems
+            </Link>
+            <Link 
+              href="/pricing" 
+              className="text-sm text-gray-300 hover:text-white transition-colors"
+            >
+              Pricing
+            </Link>
+            <Link 
+              href="/about" 
+              className="text-sm text-gray-300 hover:text-white transition-colors"
+            >
+              About
+            </Link>
+          </nav>
 
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <NavigationMenu>
-            <NavigationMenuList>
-              {user ? (
-                // Authenticated navigation items
-                <>
-                  {authenticatedItems.map((item) => (
-                    <NavigationMenuItem key={item.href}>
-                      <Link 
-                        href={item.href} 
-                        legacyBehavior 
-                        passHref
-                      >
-                        <NavigationMenuLink 
-                          className={navigationMenuTriggerStyle()}
-                          active={pathname === item.href}
-                        >
-                          {item.label}
-                        </NavigationMenuLink>
-                      </Link>
-                    </NavigationMenuItem>
-                  ))}
-                  <NavigationMenuItem>
-                    <Button 
-                      variant="ghost" 
-                      onClick={handleLogout}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      Logout
-                    </Button>
-                  </NavigationMenuItem>
-                </>
-              ) : (
-                // Non-authenticated navigation items
-                <>
-                  <NavigationMenuItem>
-                    <Link href="/login" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Login
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <Link href="/register" legacyBehavior passHref>
-                      <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Register
-                      </NavigationMenuLink>
-                    </Link>
-                  </NavigationMenuItem>
-                </>
-              )}
-            </NavigationMenuList>
-          </NavigationMenu>
+          {/* Auth Buttons */}
+          <div className="flex items-center gap-4">
+            {user ? (
+              <>
+                <Button
+                  variant="ghost"
+                  className="text-sm text-gray-300 hover:text-white"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
+                <ShimmerButton>
+                  <Link href="/dashboard" className="px-4 py-2 text-sm">
+                    Dashboard
+                  </Link>
+                </ShimmerButton>
+              </>
+            ) : (
+              <>
+                <Link 
+                  href="/login"
+                  className="text-sm text-gray-300 hover:text-white transition-colors"
+                >
+                  Login
+                </Link>
+                <ShimmerButton>
+                  <Link href="/register" className="px-4 py-2 text-sm">
+                    Get Started
+                  </Link>
+                </ShimmerButton>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>

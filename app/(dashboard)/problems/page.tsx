@@ -146,11 +146,11 @@ const StatsCard = ({
     <div className="flex items-start justify-between">
       {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
       <div className="space-y-2">
-        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <div className="text-sm font-medium text-muted-foreground">{title}</div>
         <div className="flex items-baseline">
-          <p className="text-2xl font-bold text-foreground">{value}</p>
+          <div className="text-2xl font-bold text-foreground">{value}</div>
           {subtitle && (
-            <span className="ml-2 text-sm text-muted-foreground">{subtitle}</span>
+            <div className="ml-2 text-sm text-muted-foreground">{subtitle}</div>
           )}
         </div>
       </div>

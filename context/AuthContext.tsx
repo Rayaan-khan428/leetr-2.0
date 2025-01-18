@@ -52,25 +52,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const createUserInDatabase = async (firebaseUser: FirebaseUser) => {
-    const token = await firebaseUser.getIdToken();
-    const response = await fetch('/api/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL
-      })
-    });
+    try {
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL
+        })
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Failed to create user in database: ${errorData.error}`);
+      if (response.status === 409) {
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to create user in database: ${errorData.error}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error in createUserInDatabase:', error);
     }
-    return await response.json();
   };
 
   const signInWithGithub = async () => {

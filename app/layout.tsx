@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import localFont from "next/font/local";
 import "./globals.css";
 import Footer from "@/components/shared/navigation/Footer";
+import { Toaster } from "sonner";
 // Load Geist font families with their full weight ranges
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -46,6 +47,7 @@ export default function RootLayout({
               <Footer />
             </div>
           </AuthProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

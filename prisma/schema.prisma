@@ -78,6 +78,7 @@ model users {
   displayName   String?
   photoURL      String?
   emailVerified Boolean        @default(false)
+  phoneVerified Boolean        @default(false)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   user_problems user_problems[]
@@ -105,3 +106,4 @@ model User {
   /// Timestamp of when the user was created
   createdAt DateTime @default(now())
 }
+

@@ -568,13 +568,3 @@ export default function FriendsPage() {
     </div>
   )
 }
-
-/**
- * FriendsList Component
- * @param {Object} props - Component props
- * @param {Friend[]} props.friends - Array of friend objects
- * @returns {JSX.Element} Rendered list of friends
- */
-function FriendsList({ friends }) {
-  // ... existing code ...
-}

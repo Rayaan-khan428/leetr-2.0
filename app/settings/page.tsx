@@ -12,97 +12,79 @@ import { CheckCircle } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { getAuth } from "firebase/auth"
 import { app } from "@/lib/firebase/firebase"
+import { useDebouncedCallback } from 'use-debounce'
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const auth = getAuth(app);
-  const [theme, setTheme] = useState("system")
   const [notifications, setNotifications] = useState(true)
-  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || "")
-  const [verificationCode, setVerificationCode] = useState("")
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isVerified, setIsVerified] = useState(!!user?.phoneVerified)
-  const [showCodeInput, setShowCodeInput] = useState(false)
+  const [smsEnabled, setSmsEnabled] = useState(false)
 
   useEffect(() => {
-    if (user) {
-      setPhoneNumber(user.phoneNumber || "")
-      setIsVerified(!!user.phoneVerified)
-    }
-  }, [user])
-
-  const formatPhoneNumber = (number: string) => {
-    // Remove any non-digit characters
-    const cleaned = number.replace(/\D/g, '');
-    // Add the + prefix if not present
-    return cleaned.startsWith('1') ? `+${cleaned}` : `+1${cleaned}`;
-  };
-
-  const sendVerificationCode = async () => {
-    try {
-      const formattedNumber = formatPhoneNumber(phoneNumber);
+    const loadSettings = async () => {
+      if (!user) return;
       
-      const response = await fetch("/api/twilio/send-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: formattedNumber }),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success("Verification code sent!");
-        setShowCodeInput(true);
-      } else {
-        toast.error(data.error || "Failed to send verification code");
+      try {
+        const token = await auth.currentUser?.getIdToken();
+        const response = await fetch('/api/user-settings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (response.ok) {
+          const settings = await response.json();
+          setNotifications(settings.emailNotifications);
+          setSmsEnabled(settings.smsEnabled);
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
       }
-    } catch (error) {
-      toast.error("Error sending verification code");
-      console.error(error);
-    }
-  };
+    };
 
-  const verifyCode = async () => {
+    loadSettings();
+  }, [user]);
+
+  // Update saveSettings to handle both email and SMS notifications
+  const saveSettings = useDebouncedCallback(async (newSettings: { 
+    emailNotifications?: boolean;
+    smsEnabled?: boolean;
+  }) => {
     try {
-      setIsVerifying(true);
-      const formattedNumber = formatPhoneNumber(phoneNumber);
+      const token = await auth.currentUser?.getIdToken();
       
-      // Get the current Firebase user's token
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        throw new Error("Not authenticated");
-      }
-      
-      const token = await currentUser.getIdToken();
-      
-      const response = await fetch("/api/twilio/verify-code", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
+      const response = await fetch('/api/user-settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ 
-          phoneNumber: formattedNumber, 
-          code: verificationCode 
-        }),
+        body: JSON.stringify(newSettings)
       });
 
-      const data = await response.json();
-      
-      if (data.success && data.valid) {
-        toast.success("Phone number verified successfully!");
-        setIsVerified(true);
-        setShowCodeInput(false);
-      } else {
-        toast.error(data.error || "Invalid verification code");
-        console.error('Verification failed:', data);
+      if (!response.ok) {
+        toast.error('Failed to save settings');
       }
     } catch (error) {
-      toast.error("Error verifying code");
-      console.error('Verification error:', error);
-    } finally {
-      setIsVerifying(false);
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
     }
+  }, 500);
+
+  const handleNotificationsChange = (checked: boolean) => {
+    setNotifications(checked);
+    saveSettings({ emailNotifications: checked });
+    toast.success('Notification preference saved');
+  };
+
+  const handleSMSChange = (checked: boolean) => {
+    if (!user?.phoneVerified) {
+      toast.error('Please verify your phone number first');
+      return;
+    }
+    setSmsEnabled(checked);
+    saveSettings({ smsEnabled: checked });
+    toast.success('SMS notification preference saved');
   };
 
   return (
@@ -131,20 +113,6 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Appearance Section */}
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                <div className="space-y-1">
-                  <label className="text-sm font-medium">Dark Mode</label>
-                  <p className="text-sm text-muted-foreground">
-                    Toggle between light and dark mode
-                  </p>
-                </div>
-                <Switch
-                  checked={theme === "dark"}
-                  onCheckedChange={(checked: boolean) => setTheme(checked ? "dark" : "light")}
-                />
-              </div>
-
               {/* Email Notifications Section */}
               <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
                 <div className="space-y-1">
@@ -155,7 +123,7 @@ export default function SettingsPage() {
                 </div>
                 <Switch
                   checked={notifications}
-                  onCheckedChange={setNotifications}
+                  onCheckedChange={handleNotificationsChange}
                 />
               </div>
             </CardContent>
@@ -172,69 +140,56 @@ export default function SettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 rounded-lg bg-muted/50 p-6">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Phone Number Verification</p>
-                  <p className="text-sm text-muted-foreground">
-                    Add your phone number to receive SMS notifications about your account.
-                  </p>
-                </div>
-                
-                {isVerified ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-green-600">
-                      <CheckCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium">Phone number verified</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">Current number:</span>
-                      <span className="text-sm text-muted-foreground">{phoneNumber}</span>
-                    </div>
+              <div className="space-y-6">
+                {/* SMS Enable/Disable Toggle */}
+                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium">SMS Notifications</label>
                     <p className="text-sm text-muted-foreground">
-                      Contact support if you need to change your verified phone number.
+                      Receive notifications via SMS
                     </p>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="+1 (234) 567-8900"
-                        value={phoneNumber}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^\d\s()+\-]/g, '');
-                          setPhoneNumber(value);
-                        }}
-                        className="max-w-[200px]"
-                        type="tel"
-                        pattern="[\d\s()+\-]+"
-                      />
+                  <Switch
+                    checked={smsEnabled}
+                    onCheckedChange={handleSMSChange}
+                    disabled={!user?.phoneVerified}
+                  />
+                </div>
+
+                {/* Phone Verification Section */}
+                <div className="space-y-4 rounded-lg bg-muted/50 p-6">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Phone Number Verification</p>
+                    <p className="text-sm text-muted-foreground">
+                      Add your phone number to receive SMS notifications about your account.
+                    </p>
+                  </div>
+                  
+                  {user?.phoneVerified ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-green-600">
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="text-sm font-medium">Phone number verified</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Current number:</span>
+                        <span className="text-sm text-muted-foreground">{user.phoneNumber}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Contact support if you need to change your verified phone number.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
                       <Button 
-                        variant="outline" 
-                        onClick={sendVerificationCode}
-                        disabled={!phoneNumber || showCodeInput}
+                        variant="outline"
+                        onClick={() => toast.info('SMS verification coming soon!')}
                       >
-                        Send Code
+                        Verify Phone Number
                       </Button>
                     </div>
-
-                    {showCodeInput && (
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter verification code"
-                          value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value)}
-                          className="max-w-[200px]"
-                        />
-                        <Button 
-                          onClick={verifyCode}
-                          disabled={!verificationCode || isVerifying}
-                        >
-                          {isVerifying ? "Verifying..." : "Verify"}
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -265,12 +220,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      <div className="flex justify-end mt-8">
-        <Button size="lg">
-          Save Changes
-        </Button>
-      </div>
     </div>
   )
 } 

@@ -20,7 +20,7 @@ export default function TestAuth() {
 
   const handleTestLogin = async () => {
     try {
-      await signin('rayaan1516@gmail.com', 'password123')
+      await signin('rayaan@example.com', 'password123')
       setLastAction('Login attempted')
     } catch (error) {
       setLastAction(`Login error: ${error instanceof Error ? error.message : 'Unknown error'}`)

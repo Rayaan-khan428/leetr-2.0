@@ -56,7 +56,7 @@ const ExpandableText = ({
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800"
+        className="flex items-center gap-2 text-sm text-primary hover:text-primary/80"
       >
         <Icon size={16} />
         {label}
@@ -68,7 +68,7 @@ const ExpandableText = ({
             <DialogTitle>{label}</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            <pre className="whitespace-pre-wrap text-sm bg-gray-50 p-4 rounded-lg overflow-x-auto">
+            <pre className="whitespace-pre-wrap text-sm bg-muted p-4 rounded-lg overflow-x-auto">
               {text}
             </pre>
           </div>
@@ -130,6 +130,34 @@ const getStreakEmoji = (streak: number) => {
   return '🔥🔥🔥👑';
 };
 
+// Move the stats card into a separate component for better organization
+const StatsCard = ({ 
+  title, 
+  value, 
+  subtitle = null,
+  icon: Icon = null 
+}: { 
+  title: string
+  value: React.ReactNode
+  subtitle?: React.ReactNode | null
+  icon?: React.ElementType | null
+}) => (
+  <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+    <div className="flex items-start justify-between">
+      {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-muted-foreground">{title}</p>
+        <div className="flex items-baseline">
+          <p className="text-2xl font-bold text-foreground">{value}</p>
+          {subtitle && (
+            <span className="ml-2 text-sm text-muted-foreground">{subtitle}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<Problem[]>([])
   const [error, setError] = useState('')
@@ -189,97 +217,111 @@ export default function ProblemsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      {/* Dashboard Welcome Section */}
-      <div className="mb-8">
-        <Card className="bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200">
-          <CardContent className="pt-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Welcome to Your LeetCode Tracker
-              {user?.displayName && `, ${user.displayName}`}
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Track your progress, analyze patterns, and improve your problem-solving skills.
-            </p>
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-gray-700">Current Streak</h3>
-                <div className="flex items-center gap-2">
-                  <p className="text-2xl font-bold text-gray-900">{streak}</p>
-                  <span className="text-xl" title={`${streak} day streak`}>
-                    {getStreakEmoji(streak)}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {streak === 0 
-                    ? "Solve a problem today to start a streak!" 
-                    : `${streak} day${streak === 1 ? '' : 's'} and counting!`}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-gray-700">Total Problems</h3>
-                <p className="text-2xl font-bold text-gray-900">{problems.length}</p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-gray-700">Last Solved</h3>
-                <p className="text-lg text-gray-600">
-                  {problems[0]?.solvedAt ? 
-                    formatDate(problems[0].solvedAt) : 
-                    'No problems solved yet'}
-                </p>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-semibold text-gray-700">Difficulty Split</h3>
-                <div className="flex gap-2 mt-1">
-                  <span className="text-green-600 text-sm">
-                    Easy: {problems.filter(p => p.difficulty === 'EASY').length}
-                  </span>
-                  <span className="text-yellow-600 text-sm">
-                    Medium: {problems.filter(p => p.difficulty === 'MEDIUM').length}
-                  </span>
-                  <span className="text-red-600 text-sm">
-                    Hard: {problems.filter(p => p.difficulty === 'HARD').length}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Problems Management Section */}
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold">Problem History</h2>
+    <div className="container mx-auto py-8 space-y-8">
+      {/* Header Section */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">
+            LeetCode Progress Tracker
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            {user?.displayName ? `Welcome back, ${user.displayName}` : 'Track your coding journey'}
+          </p>
+        </div>
         <Button onClick={() => setShowForm(!showForm)}>
-          {showForm ? 'Close Form' : 'Add Problem'}
+          {showForm ? 'Close Form' : '+ Add New Problem'}
         </Button>
       </div>
 
+      {/* Stats Overview */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <StatsCard
+          title="Current Streak"
+          value={streak}
+          subtitle={
+            <div className="flex items-center gap-2">
+              <span>{getStreakEmoji(streak)}</span>
+              <span className="text-xs">
+                {streak === 0 
+                  ? "Start solving!" 
+                  : `${streak} day${streak === 1 ? '' : 's'}`}
+              </span>
+            </div>
+          }
+        />
+        <StatsCard
+          title="Total Problems"
+          value={problems.length}
+          subtitle="solved problems"
+        />
+        <StatsCard
+          title="Last Solved"
+          value={
+            problems[0]?.solvedAt 
+              ? formatDate(problems[0].solvedAt)
+              : 'No problems yet'
+          }
+        />
+        <StatsCard
+          title="Difficulty Distribution"
+          value={
+            <div className="flex gap-3 text-sm">
+              <span className="text-green-500 dark:text-green-400">
+                {problems.filter(p => p.difficulty === 'EASY').length} Easy
+              </span>
+              <span className="text-yellow-500 dark:text-yellow-400">
+                {problems.filter(p => p.difficulty === 'MEDIUM').length} Med
+              </span>
+              <span className="text-red-500 dark:text-red-400">
+                {problems.filter(p => p.difficulty === 'HARD').length} Hard
+              </span>
+            </div>
+          }
+        />
+      </div>
+
+      {/* Form Section */}
       {error && (
-        <Alert variant="destructive" className="mb-6">
+        <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
       {showForm && (
-        <div className="mb-8">
-          <ProblemForm onSuccess={handleSuccess} />
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New Problem</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProblemForm onSuccess={handleSuccess} />
+          </CardContent>
+        </Card>
       )}
 
-      {/* Problems Table */}
+      {/* Problems Table Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Solved Problems</CardTitle>
+          <CardTitle>Problem History</CardTitle>
         </CardHeader>
         <CardContent>
           {problems.length === 0 ? (
-            <p className="text-center text-gray-500">No problems solved yet</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-lg font-medium text-foreground">No problems solved yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Start tracking your LeetCode progress by adding your first solved problem
+              </p>
+              <Button 
+                onClick={() => setShowForm(true)} 
+                className="mt-4"
+              >
+                Add Your First Problem
+              </Button>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-gray-50">
+                  <TableRow>
                     <TableHead className="font-semibold">Problem Name</TableHead>
                     <TableHead className="font-semibold">Difficulty</TableHead>
                     <TableHead className="font-semibold">Solved At</TableHead>
@@ -292,23 +334,23 @@ export default function ProblemsPage() {
                   {problems.map((problem) => (
                     <TableRow 
                       key={problem.id}
-                      className="hover:bg-gray-50 transition-colors"
+                      className="hover:bg-muted/50 transition-colors"
                     >
                       <TableCell className="font-medium">
                         <a 
                           href={problem.url || `https://leetcode.com/problems/${problem.leetcodeId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
+                          className="text-primary hover:underline"
                         >
                           {problem.problemName}
                         </a>
                       </TableCell>
                       <TableCell>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          problem.difficulty === 'EASY' ? 'bg-green-100 text-green-800' :
-                          problem.difficulty === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
+                          problem.difficulty === 'EASY' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                          problem.difficulty === 'MEDIUM' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                          'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                         }`}>
                           {problem.difficulty}
                           {problem.attempts && problem.attempts > 1 && ` (${problem.attempts} attempts)`}
@@ -319,31 +361,31 @@ export default function ProblemsPage() {
                         {problem.timeComplexity || problem.spaceComplexity ? (
                           <div className="flex items-center gap-2">
                             {problem.timeComplexity && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs">
+                              <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs">
                                 T: {problem.timeComplexity}
                               </span>
                             )}
                             {problem.spaceComplexity && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md bg-purple-50 text-purple-700 text-xs">
+                              <span className="inline-flex items-center px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs">
                                 S: {problem.spaceComplexity}
                               </span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {problem.nextReview ? (
                           <span className={`text-sm ${
                             new Date(problem.nextReview) <= new Date() 
-                              ? 'text-red-600 font-medium' 
-                              : 'text-gray-600'
+                              ? 'text-red-500 dark:text-red-400 font-medium' 
+                              : 'text-muted-foreground'
                           }`}>
                             {formatDate(problem.nextReview)}
                           </span>
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       <TableCell>

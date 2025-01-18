@@ -1,144 +1,172 @@
-import React from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Book, Timer, Brain, Users } from 'lucide-react';
-import Image from 'next/image'
+"use client";
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import Link from "next/link";
+import { IconBrain, IconCode, IconGraph, IconLayoutGrid, IconRobot, IconTarget, IconTrophy } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { LampContainer } from "@/components/ui/lamp";
+import { motion } from "framer-motion";
+import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
 
-const LandingPage = () => {
-  const features = [
-    {
-      title: "Practice Smart",
-      description: "proprietary algorithm determines which questions to practice based on your skill level and learning pace",
-      icon: <Brain className="w-6 h-6 text-primary" />,
-    },
-    {
-      title: "Friends Leaderboard",
-      description: "Compete with your friends to see who's the best at solving problems",
-      icon: <Users className="w-6 h-6 text-primary" />,
-    },
-    {
-      title: "Expert Solutions",
-      description: "Neetcode solutions to all Leetcode problems at the click of a button",
-      icon: <Book className="w-6 h-6 text-primary" />,
-    },
-  ];
-
+export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
-      <section className="container mx-auto px-4 py-24 flex flex-col md:flex-row items-center gap-12">
-        <div className="flex-1 space-y-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Users className="w-5 h-5 text-primary" />
-            <span className="text-sm font-medium">Just Launched</span>
+    <main className="flex flex-col min-h-screen bg-black pt-16">
+      {/* Hero Section */}
+      <section className="relative w-full overflow-hidden">
+        <LampContainer className="h-[80vh]">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 2 }}
+            className="flex flex-col items-center justify-center -mt-16"
+          >
+            <h1 className="text-6xl md:text-7xl font-bold tracking-tight text-center">
+              Ace Your Technical <br></br>Interviews with Confidence
+            </h1>
+            <p className="text-xl text-gray-200 max-w-xl mt-8 mb-12 text-center leading-relaxed">
+              Master data structures, algorithms, and problem-solving with 
+              AI-powered practice and real-time feedback.
+            </p>
+            <ShimmerButton>
+              <Link href="/dashboard" className="px-12 py-4">
+                Start Practicing Free
+              </Link>
+            </ShimmerButton>
+          </motion.div>
+        </LampContainer>
+      </section>
+
+      {/* How it Works Section */}
+      <section className="relative py-20 bg-black">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-blue-400 mb-6">
+              How It Works
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Your journey to interview success, simplified and personalized
+            </p>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-            Ace Your Technical Interviews with Confidence
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            Built by engineers who&apos;ve shared the struggle of preparing for interviews.
-          </p>
-          <div className="flex gap-4">
-            <Button size="lg">
-              Start Documenting
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <Timer className="w-4 h-4" />
-              <span>Completely Free</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              <span>Compete with your friends (coming soon)</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex-1">
-          <Image
-            src="/images/interview-prep.png"
-            alt="Interview preparation illustration"
-            width={500}
-            height={400}
-            className="w-full h-auto rounded-lg shadow-lg"
-            priority
+          
+          <StickyScroll 
+            contentClassName="bg-gradient-to-br from-indigo-500/20 to-blue-500/20 border border-blue-500/20 backdrop-blur-sm"
+            content={[
+              {
+                title: "AI-Powered Problem Analysis",
+                description: "Our advanced AI analyzes your coding patterns, identifies knowledge gaps, and creates a personalized learning path tailored to your needs.",
+                content: (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <IconBrain className="w-24 h-24 text-blue-400" />
+                  </div>
+                ),
+              },
+              {
+                title: "Interactive Learning Experience",
+                description: "Practice with real interview questions while receiving real-time feedback and hints to guide you toward optimal solutions.",
+                content: (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <IconCode className="w-24 h-24 text-indigo-400" />
+                  </div>
+                ),
+              },
+              {
+                title: "Progress Tracking & Analytics",
+                description: "Track your improvement over time with detailed performance metrics and identify areas that need more focus.",
+                content: (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <IconGraph className="w-24 h-24 text-cyan-400" />
+                  </div>
+                ),
+              },
+            ]}
           />
         </div>
       </section>
 
-      <section className="bg-muted/50 py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">What we offer?</h2>
-            <p className="text-lg text-muted-foreground">
-              Everything you need to succeed in your technical interviews
+      {/* Features Grid Section */}
+      <section className="relative py-32 bg-gradient-to-b from-black via-gray-900 to-black">
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black opacity-40" />
+        
+        <div className="container relative z-10 mx-auto px-4">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-blue-400 mb-6">
+              Everything you need to succeed
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              A comprehensive platform designed to transform you into a confident problem solver
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index}>
-                <CardHeader>
-                  <div className="mb-4">{feature.icon}</div>
-                  <CardTitle>{feature.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription>{feature.description}</CardDescription>
-                </CardContent>
-              </Card>
+          
+          <BentoGrid className="max-w-5xl mx-auto">
+            {items.map((item, i) => (
+              <BentoGridItem
+                key={i}
+                title={item.title}
+                description={item.description}
+                header={item.header}
+                icon={item.icon}
+                className={cn(
+                  "transition-all duration-500 hover:scale-[1.02] hover:shadow-xl",
+                  i === 3 || i === 6 ? "md:col-span-2" : "",
+                  "bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-800 backdrop-blur-sm"
+                )}
+              />
             ))}
-          </div>
-
-          <div className="mt-16 text-center">
-            <h3 className="text-2xl font-bold mb-8">What our users say</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {[
-                {
-                  name: "Uncle Kash Son",
-                  role: "Amazon assembly line",
-                  text: "This platform helped me structure my interview preparation effectively, and I got a job at Amazon (albeit at a lower level than I wanted)",
-                  company: "Amazon"
-                },
-                {
-                  name: "Mr. Shah",
-                  role: "Equity Research Analyst",
-                  text: "The expert solutions helped me understand complex problems better. I successfully landed my dream job!",
-                  company: "Blackrock"
-                },
-                {
-                  name: "Ayan Khan",
-                  role: "Software Engineer",
-                  text: "I don’t have dreams. I have goals. And while you’re busy making excuses, I’m busy getting better.",
-                  company: "Hitachi"    
-                },
-                {
-                  name: "Rayaan Khan",
-                  role: "Senior Software Engineer at Amazon",
-                  text: "I built this platform to help my friends and I get jobs at FAANG companies. I'm glad to see it's helping others too!",
-                  company: "Scotiabank"
-                }
-              ].map((testimonial, index) => (
-                <Card key={index} className="text-left">
-                  <CardContent className="pt-6">
-                    <p className="text-muted-foreground mb-4">&quot;{testimonial.text}&quot;</p>
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        {testimonial.name[0]}
-                      </div>
-                      <div>
-                        <p className="font-medium">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+          </BentoGrid>
         </div>
       </section>
-    </div>
+    </main>
   );
-};
+}
 
-export default LandingPage;
+const Skeleton = () => (
+  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl 
+                  bg-gradient-to-br from-gray-800 to-gray-900 
+                  transition-all duration-300"></div>
+);
+
+const items = [
+  {
+    title: "AI-Powered Learning",
+    description: "Smart problem recommendations tailored to your skill level and goals.",
+    header: <Skeleton />,
+    icon: <IconRobot className="h-5 w-5 text-blue-500" />,
+  },
+  {
+    title: "Progress Analytics",
+    description: "Deep insights into your problem-solving patterns and growth areas.",
+    header: <Skeleton />,
+    icon: <IconGraph className="h-5 w-5 text-indigo-500" />,
+  },
+  {
+    title: "Pattern Recognition",
+    description: "Master common patterns across different problem types.",
+    header: <Skeleton />,
+    icon: <IconBrain className="h-5 w-5 text-purple-500" />,
+  },
+  {
+    title: "Structured Learning Path",
+    description: "Follow a carefully designed roadmap from fundamentals to advanced concepts.",
+    header: <Skeleton />,
+    icon: <IconLayoutGrid className="h-5 w-5 text-blue-500" />,
+  },
+  {
+    title: "Achievement System",
+    description: "Stay motivated with badges and milestone tracking.",
+    header: <Skeleton />,
+    icon: <IconTrophy className="h-5 w-5 text-yellow-500" />,
+  },
+  {
+    title: "Targeted Practice",
+    description: "Focus on company-specific questions and topics.",
+    header: <Skeleton />,
+    icon: <IconTarget className="h-5 w-5 text-red-500" />,
+  },
+  {
+    title: "Code Templates",
+    description: "Ready-to-use templates for common algorithms and patterns.",
+    header: <Skeleton />,
+    icon: <IconCode className="h-5 w-5 text-green-500" />,
+  },
+];

@@ -1,79 +1,31 @@
-# Interview Prep Platform
+# Project Name
 
-## Prerequisites
-
-- Node.js (v18 or higher recommended)
-- npm or yarn
-- Git
+## Overview
+Brief description of your project
 
 ## Getting Started
-
-1. **Clone the repository**
-   ```bash
-   git clone git@github.com:Rayaan-khan428/leetr-2.0.git
-   cd leetr-2.0.git
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Environment Setup**
-   Create a `.env.local` file in the root directory:
-   ```bash
-   touch .env.local
-   ```
-
-4. **Start the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-   The application will be available at `http://localhost:3000`
+1. Installation steps
+2. Environment setup
+3. Running the project
 
 ## Project Structure
+- `/app` - Next.js application routes
+- `/prisma` - Database schema and configurations
+- `/context` - React context providers
+- `/__tests__` - Test files
 
-- `/app` - Next.js directory containing page components
--  every file is called page.tsx. you specify its path by naming the folder it is in. for instance the folder login contains page.tsx which has the code for the login page
-- `/components` - Reusable UI components
-- `/public` - Static assets including images
-- `/styles` - Global styles and CSS modules
+## API Documentation
 
-## Key Dependencies
+The API documentation is available at `/api-docs` when running the development server. It provides detailed information about:
 
-- Next.js - React framework
-- Shadcn UI - UI component library
-- Lucide React - Icon library
-- TypeScript - Type safety
+- Available endpoints
+- Request/response formats
+- Authentication requirements
+- Expected responses and error codes
 
-## Development Notes
+To view the documentation:
+1. Start the development server
+2. Navigate to `http://localhost:3000/api-docs`
 
-- The project uses the new Next.js App Router
-- Components are built using TypeScript
-- Styling is handled through Tailwind CSS
-- Make sure to have the `/public/images/interview-prep.png` image file
-
-## Common Issues & Solutions
-
-1. If you see module not found errors, try:
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-2. If the styles aren't loading properly, ensure Tailwind CSS is properly configured:
-   ```bash
-   npm install -D tailwindcss postcss autoprefixer
-   npx tailwindcss init -p
-   ```
-
-## Contributing
-
-1. Create a new branch for your feature
-2. Make your changes
-3. Submit a pull request
+## Environment Variables
+List of required environment variables...

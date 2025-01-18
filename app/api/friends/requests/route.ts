@@ -3,6 +3,56 @@ import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
 
+/**
+ * @swagger
+ * /api/friends/requests:
+ *   get:
+ *     summary: Get friend requests
+ *     description: Retrieves all pending friend requests for the authenticated user
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Friend requests retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                   sender:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       displayName:
+ *                         type: string
+ *                         nullable: true
+ *                       email:
+ *                         type: string
+ *                       photoURL:
+ *                         type: string
+ *                         nullable: true
+ *   post:
+ *     summary: Send friend request
+ *     description: Sends a friend request to another user
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               receiverId:
+ *                 type: string
+ */
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get('authorization')

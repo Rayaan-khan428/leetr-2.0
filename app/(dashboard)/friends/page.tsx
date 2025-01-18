@@ -65,6 +65,11 @@ interface FriendRequest {
   }
 }
 
+/**
+ * Friends Page Component
+ * @description Displays the user's friends list and friend requests
+ * @returns {JSX.Element} The rendered friends page
+ */
 export default function FriendsPage() {
     const [friends, setFriends] = useState<Friend[]>([])
     const [isLoadingFriends, setIsLoadingFriends] = useState(false)
@@ -562,4 +567,14 @@ export default function FriendsPage() {
       </Card>
     </div>
   )
+}
+
+/**
+ * FriendsList Component
+ * @param {Object} props - Component props
+ * @param {Friend[]} props.friends - Array of friend objects
+ * @returns {JSX.Element} Rendered list of friends
+ */
+function FriendsList({ friends }) {
+  // ... existing code ...
 }

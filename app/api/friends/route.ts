@@ -2,6 +2,80 @@ import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
 
+/**
+ * @swagger
+ * /api/friends:
+ *   get:
+ *     summary: Retrieve friends list
+ *     description: Retrieves the logged in user's friends list
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of friends retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   friendshipId:
+ *                     type: string
+ *                   id:
+ *                     type: string
+ *                   displayName:
+ *                     type: string
+ *                     nullable: true
+ *                   email:
+ *                     type: string
+ *                   photoURL:
+ *                     type: string
+ *                     nullable: true
+ *                   problemStats:
+ *                     type: object
+ *                     properties:
+ *                       totalProblems:
+ *                         type: number
+ *                       easy:
+ *                         type: number
+ *                       medium:
+ *                         type: number
+ *                       hard:
+ *                         type: number
+ *                       recentlySolved:
+ *                         type: number
+ *       401:
+ *         description: No token provided or invalid token
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ * 
+ *   delete:
+ *     summary: Remove a friend
+ *     description: Removes a friend connection between users
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               friendshipId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Friend removed successfully
+ *       401:
+ *         description: No token provided or invalid token
+ *       404:
+ *         description: Friendship not found
+ *       500:
+ *         description: Server error
+ */
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get('authorization')

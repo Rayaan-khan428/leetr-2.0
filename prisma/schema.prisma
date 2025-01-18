@@ -93,3 +93,15 @@ enum Difficulty {
   MEDIUM
   HARD
 }
+
+/// Represents a user in the system
+model User {
+  /// Unique identifier for the user
+  id        String   @id @default(cuid())
+  /// User's email address
+  email     String   @unique
+  /// User's display name
+  name      String?
+  /// Timestamp of when the user was created
+  createdAt DateTime @default(now())
+}

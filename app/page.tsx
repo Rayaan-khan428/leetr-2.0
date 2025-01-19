@@ -94,13 +94,13 @@ const HeroButton: FC = () => {
 
 const Hero: FC = () => {
   return (
-    <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900">
+    <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900 pt-16 sm:pt-20">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(24,118,255,0.1),transparent_50%)]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
-        className="container px-4 mx-auto relative z-10 pt-20 sm:pt-0"
+        className="container px-4 mx-auto relative z-10 pt-10 sm:pt-12"
       >
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-8 text-gray-900 dark:text-white">
@@ -143,7 +143,7 @@ const Hero: FC = () => {
   while (developer.status !== "interview_ready") {
     await developer.practice({
       platform: "Leetr",
-      mode: "AI_ASSISTED",
+      mode: "PRACTICE",
       difficulty: "adaptive"
     });
     

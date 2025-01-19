@@ -17,6 +17,8 @@ interface User {
   email: string | null;
   phoneNumber: string | null;
   phoneVerified: boolean;
+  displayName?: string | null;
+  photoURL?: string | null;
   token?: string;
 }
 

@@ -84,19 +84,73 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGithub = async () => {
-    const provider = new GithubAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    await setAuthCookie(userCredential.user);
-    await fetchUserData(userCredential.user);
-    return userCredential.user;
+    try {
+      const provider = new GithubAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await setAuthCookie(userCredential.user);
+      
+      // Create or fetch user data
+      const token = await userCredential.user.getIdToken();
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL
+        })
+      });
+
+      if (!response.ok && response.status !== 409) { // 409 means user already exists
+        throw new Error('Failed to create user');
+      }
+
+      const userData = await fetchUserData(userCredential.user);
+      setUser(userData);
+      
+      return userCredential.user;
+    } catch (error) {
+      console.error('GitHub sign in error:', error);
+      throw error;
+    }
   };
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    await setAuthCookie(userCredential.user);
-    await fetchUserData(userCredential.user);
-    return userCredential.user;
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await setAuthCookie(userCredential.user);
+      
+      // Create or fetch user data
+      const token = await userCredential.user.getIdToken();
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL
+        })
+      });
+
+      if (!response.ok && response.status !== 409) { // 409 means user already exists
+        throw new Error('Failed to create user');
+      }
+
+      const userData = await fetchUserData(userCredential.user);
+      setUser(userData);
+      
+      return userCredential.user;
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      throw error;
+    }
   };
 
   const signout = async () => {

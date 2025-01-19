@@ -75,8 +75,10 @@ model users {
   id            String          @id
   firebaseUid   String          @unique
   email         String          @unique
-  displayName   String?         // Keep this as optional since it comes from OAuth
-  photoURL      String?         // Keep this for profile picture from OAuth
+  displayName   String?         // From OAuth providers
+  photoURL      String?         // From OAuth providers
+  phoneNumber   String?         // Keep for SMS verification
+  phoneVerified Boolean         @default(false)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   user_problems user_problems[]

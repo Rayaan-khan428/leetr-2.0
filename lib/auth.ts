@@ -1,7 +1,9 @@
-import { auth as firebaseAuth } from "@/lib/firebase/auth";
+import { getAuth } from "firebase/auth";
+import { app } from "@/lib/firebase/config";
 
 export async function auth() {
-  const currentUser = firebaseAuth.currentUser;
+  const auth = getAuth(app);
+  const currentUser = auth.currentUser;
   
   if (!currentUser) {
     return null;
@@ -11,7 +13,8 @@ export async function auth() {
     user: {
       id: currentUser.uid,
       email: currentUser.email,
-      // Add other user properties you need
+      displayName: currentUser.displayName,
+      photoURL: currentUser.photoURL,
     }
   };
 } 

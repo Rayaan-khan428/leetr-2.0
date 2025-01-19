@@ -171,8 +171,15 @@ const Hero: FC = () => {
 
 const Features: FC = () => {
   return (
-    <section className="py-20 bg-white dark:bg-black">
-      <div className="container mx-auto px-4">
+    <section className="relative py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black bg-grid-black/[0.1] dark:bg-grid-white/[0.1]">
+      {/* Radial gradient overlay - using blue tint instead of pure white/black */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(24,118,255,0.05),transparent_50%)]" />
+      
+      {/* Mask gradient */}
+      <div className="absolute pointer-events-none inset-0 flex items-center justify-center bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]" />
+      
+      {/* Content */}
+      <div className="container mx-auto px-4 relative">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
             Everything you need to succeed
@@ -189,7 +196,7 @@ const Features: FC = () => {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg"
+              className="bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg"
             >
               <div className="w-12 h-12 bg-blue-100 dark:bg-blue-500/10 rounded-lg flex items-center justify-center mb-4">
                 {feature.icon}

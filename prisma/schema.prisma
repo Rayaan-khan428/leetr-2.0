@@ -75,13 +75,10 @@ model users {
   id            String          @id
   firebaseUid   String          @unique
   email         String          @unique
-  phoneNumber   String?
-  displayName   String?
-  photoURL      String?
-  emailVerified Boolean        @default(false)
-  phoneVerified Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  displayName   String?         // Keep this as optional since it comes from OAuth
+  photoURL      String?         // Keep this for profile picture from OAuth
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
   user_problems user_problems[]
   user_settings user_settings?
   sentRequests     friend_requests[] @relation("SentRequests")
@@ -94,17 +91,5 @@ enum Difficulty {
   EASY
   MEDIUM
   HARD
-}
-
-/// Represents a user in the system
-model User {
-  /// Unique identifier for the user
-  id        String   @id @default(cuid())
-  /// User's email address
-  email     String   @unique
-  /// User's display name
-  name      String?
-  /// Timestamp of when the user was created
-  createdAt DateTime @default(now())
 }
 

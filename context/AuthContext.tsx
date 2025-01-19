@@ -71,7 +71,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const userData = await response.json();
-      return { ...userData, token };
+      return { 
+        ...userData,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
+        token 
+      };
     } catch (error) {
       console.error('Error fetching user data:', error);
       return null;

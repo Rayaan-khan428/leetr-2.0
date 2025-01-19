@@ -1,0 +1,56 @@
+.fancyOverlay,
+.fancyGlass {
+  --primary-light: theme('colors.blue.400');
+  --primary-main: theme('colors.blue.500');
+  --primary-darker: theme('colors.blue.900');
+  --secondary-light: theme('colors.slate.400');
+  --secondary-main: theme('colors.slate.500');
+  --secondary-darker: theme('colors.slate.900');
+  --glass-color: 59, 130, 246;
+}
+
+.fancyOverlay {
+  background: radial-gradient(
+    circle at top center,
+    rgba(var(--glass-color), 0.1) 0%,
+    rgba(var(--glass-color), 0) 50%
+  );
+}
+
+.fancyGlassContrast {
+  background: linear-gradient(
+    to bottom right,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Add a subtle animation to the highlighted card */
+.fancyGlassContrast::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    220deg,
+    var(--primary-light),
+    transparent 40%,
+    transparent 60%,
+    var(--secondary-light)
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  padding: 1px;
+  border-radius: inherit;
+  animation: borderRotate 4s linear infinite;
+}
+
+@keyframes borderRotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 

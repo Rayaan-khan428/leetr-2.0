@@ -1,24 +1,24 @@
 "use client"
 
-import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { CheckCircle } from "lucide-react"
 import { useAuth } from "@/context/AuthContext"
 import { getAuth } from "firebase/auth"
-import { app } from "@/lib/firebase/firebase"
+import { app } from "@/lib/firebase"
 import { useDebouncedCallback } from 'use-debounce'
+import { useRouter } from "next/navigation"
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const auth = getAuth(app);
   const [notifications, setNotifications] = useState(true)
   const [smsEnabled, setSmsEnabled] = useState(false)
+  const router = useRouter();
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -43,7 +43,7 @@ export default function SettingsPage() {
     };
 
     loadSettings();
-  }, [user]);
+  }, [user, auth.currentUser]);
 
   // Update saveSettings to handle both email and SMS notifications
   const saveSettings = useDebouncedCallback(async (newSettings: { 
@@ -212,7 +212,10 @@ export default function SettingsPage() {
                     No active subscription
                   </p>
                 </div>
-                <Button className="mt-4 w-full sm:w-auto">
+                <Button 
+                  className="mt-4 w-full sm:w-auto"
+                  onClick={() => router.push('/pricing')}
+                >
                   Upgrade Plan
                 </Button>
               </div>

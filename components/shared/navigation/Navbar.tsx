@@ -108,6 +108,12 @@ export default function Navbar() {
             ) : (
               <>
                 <ThemeToggle />
+                <Link 
+                  href="/pricing"
+                  className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Pricing
+                </Link>
                 <ShimmerButton>
                   <Link href="/login" className="px-4 py-2 text-sm">
                     Get Started

@@ -12,25 +12,83 @@ import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
 export default function Home() {
   return (
     <main className="flex flex-col min-h-screen bg-black">
-      {/* Hero Section */}
-      <section className="relative w-full">
-        <LampContainer className="min-h-[60vh] sm:h-[80vh] px-4">
+      {/* Mobile Hero Section */}
+      <section className="sm:hidden relative w-full min-h-[60vh] flex items-center">
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/20 to-transparent opacity-50" />
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className="relative flex flex-col items-center justify-center px-4 pt-20 pb-16 mx-auto"
+        >
+          <h1 className="text-3xl font-bold tracking-tight text-center leading-[1.15] max-w-xs">
+            Level Up Your{' '}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500">
+              Coding Interview
+            </span>{' '}
+            Game
+          </h1>
+          <p className="text-base text-gray-300 max-w-md mt-6 mb-8 text-center leading-relaxed px-4">
+            AI-powered practice platform to help you master coding interviews with confidence.
+          </p>
+          <ShimmerButton className="scale-90">
+            <Link href="/dashboard" className="px-8 py-3 text-sm inline-flex items-center gap-2">
+              Start Free Practice
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </Link>
+          </ShimmerButton>
+        </motion.div>
+      </section>
+
+      {/* Desktop Hero Section with Lamp */}
+      <section className="hidden sm:block relative w-full">
+        <LampContainer className="h-[80vh]">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 2 }}
             className="flex flex-col items-center justify-center -mt-16 max-w-3xl mx-auto"
           >
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-tight">
-              Ace Your Technical <br className="hidden sm:block" />Interviews with Confidence
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-center leading-[1.15]">
+              Level Up Your{' '}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-indigo-500">
+                Coding Interview
+              </span>{' '}
+              Game
             </h1>
-            <p className="text-base sm:text-lg md:text-xl text-gray-200 max-w-xl mt-6 sm:mt-8 mb-8 sm:mb-12 text-center leading-relaxed px-4">
-              Master data structures, algorithms, and problem-solving with 
-              AI-powered practice and real-time feedback.
+            <p className="text-lg md:text-xl text-gray-300 max-w-md mt-8 mb-12 text-center leading-relaxed">
+              AI-powered practice platform to help you master coding interviews with confidence.
             </p>
             <ShimmerButton>
-              <Link href="/dashboard" className="px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base">
-                Start Practicing Free
+              <Link href="/dashboard" className="px-12 py-4 text-base inline-flex items-center gap-2">
+                Start Free Practice
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
               </Link>
             </ShimmerButton>
           </motion.div>

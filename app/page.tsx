@@ -39,16 +39,16 @@ const features: Feature[] = [
 
 const steps: Step[] = [
   {
-    title: "Create Your Profile",
-    description: "Sign up and tell us about your experience level and target companies.",
+    title: "Download the Leetr Chrome Extension",
+    description: "This is your way to easily document your solution, no more spreadsheets!",
   },
   {
-    title: "Practice Problems",
-    description: "Solve curated problems that match your skill level and learning goals.",
+    title: "Use the Leetr Dashboard",
+    description: "You can view the information in the Leetr Dashboard, quickly see your progress and notes you took.",
   },
   {
-    title: "Track Progress",
-    description: "Monitor your improvement and identify areas that need more focus.",
+    title: "Compete with your friends",
+    description: "Add friends and compete with them to see who the most cracked one amongst you is.",
   },
 ];
 

@@ -85,7 +85,7 @@ const Hero: FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
-        className="container px-4 mx-auto relative z-10"
+        className="container px-4 mx-auto relative z-10 pt-20 sm:pt-0"
       >
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-8 text-gray-900 dark:text-white">

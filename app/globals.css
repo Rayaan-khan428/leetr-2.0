@@ -76,3 +76,52 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Add these styles to your globals.css */
+.react-tel-input .form-control {
+  @apply w-full h-10 px-3 py-2 bg-background text-foreground border-input;
+}
+
+.react-tel-input .selected-flag:hover,
+.react-tel-input .selected-flag:focus,
+.react-tel-input .selected-flag.open {
+  @apply bg-accent;
+}
+
+.react-tel-input .country-list {
+  @apply bg-background border-input text-foreground;
+}
+
+.react-tel-input .country-list .country:hover {
+  @apply bg-accent;
+}
+
+.react-tel-input .country-list .country.highlight {
+  @apply bg-accent;
+}
+
+/* Add these styles for react-international-phone */
+.react-international-phone-input {
+  @apply !h-10;
+}
+
+.react-international-phone-input-container .react-international-phone-country-selector-button {
+  @apply !h-10 !border-input hover:!bg-accent;
+}
+
+.react-international-phone-input-container .react-international-phone-input {
+  @apply !bg-background !text-foreground;
+}
+
+.react-international-phone-country-selector-dropdown {
+  @apply !bg-background !border-input;
+}
+
+/* Dark mode specific styles */
+.dark .react-international-phone-country-selector-dropdown {
+  @apply !border-input;
+}
+
+.dark .react-international-phone-input {
+  @apply !bg-background !text-foreground;
+}

@@ -39,9 +39,9 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md border-2">
         <CardHeader className="space-y-3">
-          <CardTitle className="text-center text-3xl font-bold tracking-tight">Welcome Back</CardTitle>
+          <CardTitle className="text-center text-3xl font-bold tracking-tight">Welcome</CardTitle>
           <CardDescription className="text-center text-base">
-            Choose your preferred sign-in method
+            Sign in or create an account to get started
           </CardDescription>
         </CardHeader>
         <CardContent>

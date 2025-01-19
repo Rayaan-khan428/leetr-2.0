@@ -11,7 +11,7 @@ import { StickyScroll } from "@/components/ui/sticky-scroll-reveal";
 
 export default function Home() {
   return (
-    <main className="flex flex-col min-h-screen bg-black pt-16">
+    <main className="flex flex-col min-h-screen bg-black">
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden">
         <LampContainer className="h-[80vh]">

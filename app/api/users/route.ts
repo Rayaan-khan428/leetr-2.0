@@ -18,20 +18,29 @@ export async function POST(request: Request) {
     const decodedToken = await verifyAuthToken(token);
     const firebaseUid = decodedToken.uid;
 
+    // Check if user already exists
+    const existingUser = await prisma.users.findUnique({
+      where: { firebaseUid },
+      include: { user_settings: true }
+    });
+
+    if (existingUser) {
+      return NextResponse.json(existingUser, { status: 409 }); // Return existing user with 409 Conflict
+    }
+
     // Parse the request body
     const { email, displayName, photoURL } = await request.json();
 
-    // Create the user - note how we're using the exact field names from the schema
+    // Create the user with only the fields that exist in our schema
     const user = await prisma.users.create({
       data: {
         id: uuidv4(),
         firebaseUid,
         email,
-        // Fields that match our schema exactly
         displayName: displayName || null,
         photoURL: photoURL || null,
-        emailVerified: false,
-        updatedAt: new Date(), // Add this since it's not @updatedAt
+        phoneVerified: false,    // Initialize phone verification status
+        updatedAt: new Date(),
         user_settings: {
           create: {
             id: uuidv4(),

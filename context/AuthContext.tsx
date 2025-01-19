@@ -12,8 +12,14 @@ import {
 import { auth } from '@/lib/firebase'
 import Cookies from 'js-cookie'
 
-interface User extends FirebaseUser {
-  token?: string
+interface User {
+  id: string;
+  email: string | null;
+  phoneNumber: string | null;
+  phoneVerified: boolean;
+  displayName?: string | null;
+  photoURL?: string | null;
+  token?: string;
 }
 
 interface AuthContextType {
@@ -51,51 +57,100 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const createUserInDatabase = async (firebaseUser: FirebaseUser) => {
+  const fetchUserData = async (firebaseUser: FirebaseUser) => {
     try {
       const token = await firebaseUser.getIdToken();
-      const response = await fetch('/api/users', {
-        method: 'POST',
+      const response = await fetch('/api/users/me', {
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
-          photoURL: firebaseUser.photoURL
-        })
+        }
       });
 
-      if (response.status === 409) {
-        return;
+      if (!response.ok) {
+        throw new Error('Failed to fetch user data');
       }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to create user in database: ${errorData.error}`);
-      }
-      
-      return await response.json();
+      const userData = await response.json();
+      return { 
+        ...userData,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
+        token 
+      };
     } catch (error) {
-      console.error('Error in createUserInDatabase:', error);
+      console.error('Error fetching user data:', error);
+      return null;
     }
   };
 
   const signInWithGithub = async () => {
-    const provider = new GithubAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    await setAuthCookie(userCredential.user);
-    await createUserInDatabase(userCredential.user);
-    return userCredential.user;
+    try {
+      const provider = new GithubAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await setAuthCookie(userCredential.user);
+      
+      // Create or fetch user data
+      const token = await userCredential.user.getIdToken();
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL
+        })
+      });
+
+      if (!response.ok && response.status !== 409) { // 409 means user already exists
+        throw new Error('Failed to create user');
+      }
+
+      const userData = await fetchUserData(userCredential.user);
+      setUser(userData);
+      
+      return userCredential.user;
+    } catch (error) {
+      console.error('GitHub sign in error:', error);
+      throw error;
+    }
   };
 
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    await setAuthCookie(userCredential.user);
-    await createUserInDatabase(userCredential.user);
-    return userCredential.user;
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      await setAuthCookie(userCredential.user);
+      
+      // Create or fetch user data
+      const token = await userCredential.user.getIdToken();
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL
+        })
+      });
+
+      if (!response.ok && response.status !== 409) { // 409 means user already exists
+        throw new Error('Failed to create user');
+      }
+
+      const userData = await fetchUserData(userCredential.user);
+      setUser(userData);
+      
+      return userCredential.user;
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      throw error;
+    }
   };
 
   const signout = async () => {
@@ -110,18 +165,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const token = await firebaseUser.getIdToken()
-        setUser({ ...firebaseUser, token })
-        await setAuthCookie(firebaseUser)
+        const userData = await fetchUserData(firebaseUser);
+        setUser(userData);
       } else {
-        setUser(null)
-        await setAuthCookie(null)
+        setUser(null);
       }
-      setLoading(false)
-    })
+      setLoading(false);
+    });
 
-    return unsubscribe
-  }, [])
+    return unsubscribe;
+  }, []);
 
   const value = {
     user,

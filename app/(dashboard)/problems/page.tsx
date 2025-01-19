@@ -130,7 +130,7 @@ const getStreakEmoji = (streak: number) => {
   return '🔥🔥🔥👑';
 };
 
-// Move the stats card into a separate component for better organization
+// Update the StatsCard component to be more mobile-friendly
 const StatsCard = ({ 
   title, 
   value, 
@@ -142,15 +142,15 @@ const StatsCard = ({
   subtitle?: React.ReactNode | null
   icon?: React.ElementType | null
 }) => (
-  <div className="bg-card p-6 rounded-lg shadow-sm border border-border">
+  <div className="bg-card p-4 sm:p-6 rounded-lg shadow-sm border border-border">
     <div className="flex items-start justify-between">
-      {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
-      <div className="space-y-2">
-        <div className="text-sm font-medium text-muted-foreground">{title}</div>
+      {Icon && <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-muted-foreground" />}
+      <div className="space-y-1 sm:space-y-2">
+        <div className="text-xs sm:text-sm font-medium text-muted-foreground">{title}</div>
         <div className="flex items-baseline">
-          <div className="text-2xl font-bold text-foreground">{value}</div>
+          <div className="text-xl sm:text-2xl font-bold text-foreground">{value}</div>
           {subtitle && (
-            <div className="ml-2 text-sm text-muted-foreground">{subtitle}</div>
+            <div className="ml-2 text-xs sm:text-sm text-muted-foreground">{subtitle}</div>
           )}
         </div>
       </div>
@@ -217,24 +217,27 @@ export default function ProblemsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto px-4 py-4 sm:py-8 space-y-4 sm:space-y-8">
       {/* Header Section */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">
-            LeetCode Progress Tracker
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            LeetCode Progress
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm text-muted-foreground mt-1">
             {user?.displayName ? `Welcome back, ${user.displayName}` : 'Track your coding journey'}
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button 
+          onClick={() => setShowForm(!showForm)}
+          className="w-full sm:w-auto"
+        >
           {showForm ? 'Close Form' : '+ Add New Problem'}
         </Button>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Overview - Update grid layout */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Current Streak"
           value={streak}
@@ -298,36 +301,36 @@ export default function ProblemsPage() {
         </Card>
       )}
 
-      {/* Problems Table Section */}
+      {/* Update the Problems Table Section for better mobile view */}
       <Card>
         <CardHeader>
           <CardTitle>Problem History</CardTitle>
         </CardHeader>
         <CardContent>
           {problems.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <p className="text-lg font-medium text-foreground">No problems solved yet</p>
-              <p className="text-sm text-muted-foreground mt-1">
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
+              <p className="text-base sm:text-lg font-medium text-foreground">No problems solved yet</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 Start tracking your LeetCode progress by adding your first solved problem
               </p>
               <Button 
                 onClick={() => setShowForm(true)} 
-                className="mt-4"
+                className="mt-4 w-full sm:w-auto"
               >
                 Add Your First Problem
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-semibold">Problem Name</TableHead>
-                    <TableHead className="font-semibold">Difficulty</TableHead>
-                    <TableHead className="font-semibold">Solved At</TableHead>
-                    <TableHead className="font-semibold">Complexity</TableHead>
-                    <TableHead className="font-semibold">Next Review</TableHead>
-                    <TableHead className="font-semibold">Details</TableHead>
+                    <TableHead className="font-semibold text-xs sm:text-sm">Problem Name</TableHead>
+                    <TableHead className="font-semibold text-xs sm:text-sm">Difficulty</TableHead>
+                    <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Solved At</TableHead>
+                    <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Complexity</TableHead>
+                    <TableHead className="font-semibold text-xs sm:text-sm hidden lg:table-cell">Next Review</TableHead>
+                    <TableHead className="font-semibold text-xs sm:text-sm">Details</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -336,7 +339,7 @@ export default function ProblemsPage() {
                       key={problem.id}
                       className="hover:bg-muted/50 transition-colors"
                     >
-                      <TableCell className="font-medium">
+                      <TableCell className="font-medium text-xs sm:text-sm">
                         <a 
                           href={problem.url || `https://leetcode.com/problems/${problem.leetcodeId}`}
                           target="_blank"
@@ -347,17 +350,18 @@ export default function ProblemsPage() {
                         </a>
                       </TableCell>
                       <TableCell>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                           problem.difficulty === 'EASY' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
                           problem.difficulty === 'MEDIUM' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
                           'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                         }`}>
                           {problem.difficulty}
-                          {problem.attempts && problem.attempts > 1 && ` (${problem.attempts} attempts)`}
                         </span>
                       </TableCell>
-                      <TableCell>{formatDate(problem.solvedAt)}</TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell text-xs sm:text-sm">
+                        {formatDate(problem.solvedAt)}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
                         {problem.timeComplexity || problem.spaceComplexity ? (
                           <div className="flex items-center gap-2">
                             {problem.timeComplexity && (
@@ -375,7 +379,7 @@ export default function ProblemsPage() {
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden lg:table-cell text-xs sm:text-sm">
                         {problem.nextReview ? (
                           <span className={`text-sm ${
                             new Date(problem.nextReview) <= new Date() 
@@ -389,7 +393,7 @@ export default function ProblemsPage() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="space-y-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <ExpandableText 
                             text={problem.solution} 
                             icon={Code}

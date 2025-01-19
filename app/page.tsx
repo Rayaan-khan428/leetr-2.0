@@ -21,18 +21,33 @@ interface Step {
 
 const features: Feature[] = [
   {
-    title: "AI-Powered Learning",
-    description: "Smart problem recommendations tailored to your skill level and learning pace.",
+    title: "Spaced Repetition",
+    description: "This is the best way to learn, and Leetr determines the best time to review each problem, reminding you when to review through sms.",
     icon: <IconRobot className="w-6 h-6 text-blue-500" />,
   },
   {
-    title: "Real-time Feedback",
-    description: "Get instant feedback on your solutions with detailed explanations and optimization tips.",
+    title: "Associated neetcode solutions",
+    description: "The extension will automatically associate the problem you are solving with the neetcode solution, so you can easily see the solution and compare your solution.",
     icon: <IconCode className="w-6 h-6 text-blue-500" />,
   },
   {
     title: "Progress Tracking",
-    description: "Monitor your improvement with detailed analytics and performance metrics.",
+    description: "Monitor your improvement with detailed analytics to see your strengths and weaknesses, and get personalized recommendations.",
+    icon: <IconGraph className="w-6 h-6 text-blue-500" />,
+  },
+  {
+    title: "Customizable SMS Notifications",
+    description: '"Whos gonna carry the boats?" select from a multitude of tones that make you look forward to your review sessions.',
+    icon: <IconGraph className="w-6 h-6 text-blue-500" />,
+  },
+  {
+    title: "Import your current spreadsheet",
+    description: "Import your current spreadsheet of problems and solutions, and we will update everything on our end for you.",
+    icon: <IconGraph className="w-6 h-6 text-blue-500" />,
+  },
+  {
+    title: "Friends and goal setting",
+    description: "Add friends and compete with them to see who the most cracked one amongst you is.",
     icon: <IconGraph className="w-6 h-6 text-blue-500" />,
   },
 ];

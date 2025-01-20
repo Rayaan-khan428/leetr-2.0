@@ -104,7 +104,7 @@ const Hero: FC = () => {
       >
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-8 text-gray-900 dark:text-white">
-            Master Your{' '}
+            Master Your Next{' '}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500">
               Coding Interview
             </span>

@@ -7,6 +7,8 @@ import {
   GithubAuthProvider,
   GoogleAuthProvider,
   signInWithPopup,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   User as FirebaseUser
 } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
@@ -27,6 +29,8 @@ interface AuthContextType {
   loading: boolean
   signInWithGithub: () => Promise<FirebaseUser>
   signInWithGoogle: () => Promise<FirebaseUser>
+  signInWithEmail: (email: string, password: string) => Promise<FirebaseUser>
+  signUpWithEmail: (email: string, password: string) => Promise<FirebaseUser>
   signout: () => Promise<void>
   getToken: () => Promise<string | undefined>
 }
@@ -36,6 +40,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signInWithGithub: async () => { throw new Error('Not implemented') },
   signInWithGoogle: async () => { throw new Error('Not implemented') },
+  signInWithEmail: async () => { throw new Error('Not implemented') },
+  signUpWithEmail: async () => { throw new Error('Not implemented') },
   signout: async () => { throw new Error('Not implemented') },
   getToken: async () => { throw new Error('Not implemented') }
 })
@@ -153,6 +159,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await setAuthCookie(userCredential.user);
+      
+      const userData = await fetchUserData(userCredential.user);
+      setUser(userData);
+      
+      return userCredential.user;
+    } catch (error) {
+      console.error('Email sign in error:', error);
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await setAuthCookie(userCredential.user);
+      
+      // Create user data
+      const token = await userCredential.user.getIdToken();
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: userCredential.user.email,
+          displayName: userCredential.user.displayName,
+          photoURL: userCredential.user.photoURL
+        })
+      });
+
+      if (!response.ok && response.status !== 409) {
+        throw new Error('Failed to create user');
+      }
+
+      const userData = await fetchUserData(userCredential.user);
+      setUser(userData);
+      
+      return userCredential.user;
+    } catch (error) {
+      console.error('Email sign up error:', error);
+      throw error;
+    }
+  };
+
   const signout = async () => {
     await signOut(auth)
     await setAuthCookie(null)
@@ -181,6 +236,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signInWithGithub,
     signInWithGoogle,
+    signInWithEmail,
+    signUpWithEmail,
     signout,
     getToken
   }

@@ -57,15 +57,19 @@ export const Sidebar = ({
   open,
   setOpen,
   animate,
+  className,
 }: {
   children: React.ReactNode;
   open?: boolean;
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   animate?: boolean;
+  className?: string;
 }) => {
   return (
     <SidebarProvider open={open} setOpen={setOpen} animate={animate}>
-      {children}
+      <div className={className}>
+        {children}
+      </div>
     </SidebarProvider>
   );
 };

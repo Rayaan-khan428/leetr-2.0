@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function AuthPage() {
-  const { signInWithGoogle, signInWithGithub, signInWithEmail, signUpWithEmail } = useAuth();
+  const { signInWithGoogle, signInWithGithub} = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

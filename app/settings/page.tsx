@@ -12,6 +12,9 @@ import { getAuth } from "firebase/auth"
 import { app } from "@/lib/firebase"
 import { useDebouncedCallback } from 'use-debounce'
 import { useRouter } from "next/navigation"
+import { Input } from "@/components/ui/input"
+import { PhoneInput } from 'react-international-phone'
+import 'react-international-phone/style.css'
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -19,6 +22,10 @@ export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true)
   const [smsEnabled, setSmsEnabled] = useState(false)
   const router = useRouter();
+  const [phoneNumber, setPhoneNumber] = useState("")
+  const [verificationCode, setVerificationCode] = useState("")
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [isSendingCode, setIsSendingCode] = useState(false)
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -86,6 +93,148 @@ export default function SettingsPage() {
     saveSettings({ smsEnabled: checked });
     toast.success('SMS notification preference saved');
   };
+
+  const sendVerificationCode = async () => {
+    try {
+      setIsSendingCode(true);
+      const token = await auth.currentUser?.getIdToken();
+      
+      const response = await fetch('/api/twilio/send-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ phoneNumber })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send verification code');
+      }
+
+      setIsVerifying(true);
+      toast.success('Verification code sent!');
+    } catch (error) {
+      console.error('Error sending code:', error);
+      toast.error('Failed to send verification code');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    try {
+      const token = await auth.currentUser?.getIdToken();
+      
+      const response = await fetch('/api/twilio/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          phoneNumber,
+          code: verificationCode
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.valid) {
+        toast.success('Phone number verified successfully!');
+        setIsVerifying(false);
+        // Refresh the page or update the UI
+        window.location.reload();
+      } else {
+        toast.error('Invalid verification code');
+      }
+    } catch (error) {
+      console.error('Error verifying code:', error);
+      toast.error('Failed to verify code');
+    }
+  };
+
+  const renderPhoneVerificationSection = () => (
+    <div className="space-y-4 rounded-lg bg-muted/50 p-4 sm:p-6">
+      <div className="space-y-2">
+        <p className="text-sm font-medium">Phone Number Verification</p>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Add your phone number to receive SMS notifications about your account.
+        </p>
+      </div>
+      
+      {user?.phoneVerified ? (
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-2 text-green-600">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="text-xs sm:text-sm font-medium">Phone number verified</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs sm:text-sm font-medium">Current number:</span>
+            <span className="text-xs sm:text-sm text-muted-foreground">{user.phoneNumber}</span>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Contact support if you need to change your verified phone number.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {!isVerifying ? (
+            <div className="space-y-4">
+              <PhoneInput
+                defaultCountry="us"
+                value={phoneNumber}
+                onChange={(phone) => setPhoneNumber(phone)}
+                className="!w-full"
+                style={{
+                  '--react-international-phone-border-radius': '0.5rem',
+                  '--react-international-phone-border-color': 'hsl(var(--input))',
+                  '--react-international-phone-background-color': 'hsl(var(--background))',
+                  '--react-international-phone-text-color': 'hsl(var(--foreground))',
+                  '--react-international-phone-selected-dropdown-item-background-color': 'hsl(var(--accent))',
+                  '--react-international-phone-dropdown-item-hover-background-color': 'hsl(var(--accent))',
+                  '--react-international-phone-country-selector-background-color': 'hsl(var(--background))',
+                  '--react-international-phone-country-selector-border-color': 'hsl(var(--input))',
+                } as React.CSSProperties}
+              />
+              <Button 
+                onClick={sendVerificationCode}
+                disabled={!phoneNumber || isSendingCode}
+                className="w-full sm:w-auto"
+              >
+                {isSendingCode ? "Sending..." : "Send Verification Code"}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Input
+                type="text"
+                placeholder="Enter verification code"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <Button 
+                  onClick={verifyCode}
+                  disabled={!verificationCode}
+                  className="w-full sm:w-auto"
+                >
+                  Verify Code
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsVerifying(false)}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="container max-w-4xl mx-auto p-4 sm:py-10">
@@ -157,40 +306,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Phone Verification Section */}
-                <div className="space-y-4 rounded-lg bg-muted/50 p-4 sm:p-6">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Phone Number Verification</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground">
-                      Add your phone number to receive SMS notifications about your account.
-                    </p>
-                  </div>
-                  
-                  {user?.phoneVerified ? (
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="flex items-center gap-2 text-green-600">
-                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                        <span className="text-xs sm:text-sm font-medium">Phone number verified</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-medium">Current number:</span>
-                        <span className="text-xs sm:text-sm text-muted-foreground">{user.phoneNumber}</span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-muted-foreground">
-                        Contact support if you need to change your verified phone number.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="outline"
-                        onClick={() => toast.info('SMS verification coming soon!')}
-                        className="w-full sm:w-auto text-sm"
-                      >
-                        Verify Phone Number
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                {renderPhoneVerificationSection()}
               </div>
             </CardContent>
           </Card>

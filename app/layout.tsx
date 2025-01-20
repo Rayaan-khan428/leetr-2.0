@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { AuthProvider } from '@/context/AuthContext'
-import Navbar from "@/components/shared/navigation/Navbar";
 import { ThemeProvider } from "@/components/theme-provider"
+import { LayoutProvider } from "@/components/providers/LayoutProvider"
 import localFont from "next/font/local";
 import "./globals.css";
-import Footer from "@/components/shared/navigation/Footer";
 import { Toaster } from "sonner";
+
 // Load Geist font families with their full weight ranges
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -39,15 +39,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <Navbar />
-              <main className="flex-grow pt-16">
-                {children}
-              </main>
-              <Footer />
-            </div>
+            <LayoutProvider>
+              {children}
+            </LayoutProvider>
+            <Toaster />
           </AuthProvider>
-          <Toaster />
         </ThemeProvider>
       </body>
     </html>

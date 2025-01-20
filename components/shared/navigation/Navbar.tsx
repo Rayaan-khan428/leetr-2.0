@@ -36,7 +36,7 @@ export default function Navbar() {
             >
               Pricing
             </Link>
-            <ShimmerButton className="rounded-lg py-1 px-4 text-sm">
+            <ShimmerButton className="rounded-lg py-0.5 px-4 text-sm h-10">
               <Link href="/login" className="inline-flex items-center gap-2">
                 Get Started
               </Link>

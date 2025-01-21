@@ -21,12 +21,12 @@ export function Navbar() {
         <div className="flex items-center gap-8">
           <ThemeToggle />
           <nav className="flex items-center gap-6">
-            <Link 
+            {/* <Link 
               href="/pricing"
               className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               Pricing
-            </Link>
+            </Link> */}
             <Link 
               href="/about"
               className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"

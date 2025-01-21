@@ -94,7 +94,7 @@ const HeroButton: FC = () => {
 
 const Hero: FC = () => {
   return (
-    <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900 pt-16 sm:pt-20">
+    <section className="relative w-full min-h-[85vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-white to-gray-50 dark:from-black dark:to-gray-900 pt-16 sm:pt-20 pb-32">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(24,118,255,0.1),transparent_50%)]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -171,7 +171,7 @@ const Hero: FC = () => {
 
 const Features: FC = () => {
   return (
-    <section className="relative py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black bg-grid-black/[0.1] dark:bg-grid-white/[0.1]">
+    <section className="relative py-32 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-black bg-grid-black/[0.1] dark:bg-grid-white/[0.1]">
       {/* Radial gradient overlay - using blue tint instead of pure white/black */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(24,118,255,0.05),transparent_50%)]" />
       

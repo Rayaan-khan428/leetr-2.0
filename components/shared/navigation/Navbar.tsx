@@ -18,21 +18,27 @@ export function Navbar() {
           Leetr
         </Link>
 
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
+        <div className="flex items-center gap-8">
+          <ThemeToggle />
+          <nav className="flex items-center gap-6">
             <Link 
               href="/pricing"
               className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               Pricing
             </Link>
+            <Link 
+              href="/about"
+              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              About
+            </Link>
             <ShimmerButton className="rounded-lg py-0.5 px-4 text-sm h-10">
-              <Link href={user ? "/dashboard" : "/login"} className="inline-flex items-center gap-2">
+              <Link href="/login" className="inline-flex items-center gap-2">
                 {user ? 'Dashboard' : 'Get Started'}
               </Link>
             </ShimmerButton>
-          </div>
+          </nav>
         </div>
       </div>
     </header>

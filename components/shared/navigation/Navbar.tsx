@@ -33,11 +33,11 @@ export function Navbar() {
             >
               About
             </Link>
-            <ShimmerButton className="rounded-lg py-0.5 px-4 text-sm h-10">
-              <Link href="/login" className="inline-flex items-center gap-2">
+            <Link href="/login">
+              <ShimmerButton className="rounded-lg py-0.5 px-4 text-sm h-10">
                 {user ? 'Dashboard' : 'Get Started'}
-              </Link>
-            </ShimmerButton>
+              </ShimmerButton>
+            </Link>
           </nav>
         </div>
       </div>

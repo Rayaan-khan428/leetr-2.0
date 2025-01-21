@@ -7,22 +7,24 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, UserPlus, UserMinus, Check, X, UserRound, Clock } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from "@/components/ui/skeleton"
 import { 
   ResponsiveContainer, 
   RadarChart, 
   PolarGrid, 
-  PolarAngleAxis, 
+  PolarAngleAxis,
+  PolarRadiusAxis,
   Radar,
-  BarChart,
+  BarChart as RechartsBarChart,
   Bar,
   XAxis,
   YAxis,
+  CartesianGrid,
+  PieChart as RechartsPieChart,
+  Pie as RechartsPie,
   Tooltip,
-  Legend,
-  PolarRadiusAxis
+  Legend
 } from 'recharts'
 import { 
   Collapsible,
@@ -30,7 +32,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trophy, Medal, Flame, Target, Sparkles } from 'lucide-react'
 import { motion } from "framer-motion"
 
 interface User {
@@ -329,21 +330,21 @@ export default function FriendsPage() {
             onClick={() => sendFriendRequest(user.id)}
             className="ml-2"
           >
-            <UserPlus className="h-4 w-4 mr-1" />
+            <span className="mr-2">��</span>
             Add Friend
           </Button>
         )
       case 'PENDING':
         return (
           <Button size="sm" variant="outline" disabled className="ml-2">
-            <Clock className="h-4 w-4 mr-1" />
+            <span className="mr-2">⏳</span>
             Pending
           </Button>
         )
       case 'ACCEPTED':
         return (
           <Button size="sm" variant="outline" className="ml-2">
-            <UserMinus className="h-4 w-4 mr-1" />
+            <span className="mr-2">❌</span>
             Remove Friend
           </Button>
         )
@@ -394,7 +395,7 @@ export default function FriendsPage() {
                   variant="outline"
                   onClick={() => removeFriend(friend.friendshipId)}
                 >
-                  <UserMinus className="h-4 w-4 mr-1" />
+                  <span className="mr-2">❌</span>
                   Remove Friend
                 </Button>
               </div>
@@ -443,7 +444,7 @@ export default function FriendsPage() {
                 {/* Bar Chart */}
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
+                    <RechartsBarChart data={[
                       { name: 'Easy', value: friend.problemStats.easy },
                       { name: 'Medium', value: friend.problemStats.medium },
                       { name: 'Hard', value: friend.problemStats.hard },
@@ -457,7 +458,7 @@ export default function FriendsPage() {
                         fill="#3b82f6" 
                         name="Problems Solved" 
                       />
-                    </BarChart>
+                    </RechartsBarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
@@ -491,16 +492,16 @@ export default function FriendsPage() {
   )
 
   const renderSearchTab = () => (
-    <div className="space-y-4">
-      <div className="flex gap-2">
+    <div>
+      <div className="flex gap-2 mb-4">
         <Input
-          placeholder="Search by username or email"
+          placeholder="Search users by email or name"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
         />
         <Button onClick={handleSearch} disabled={isLoading}>
-          <Search className="h-4 w-4 mr-1" />
+          <span className="mr-2">🔍</span>
           Search
         </Button>
       </div>
@@ -554,7 +555,7 @@ export default function FriendsPage() {
       <div className="flex justify-end px-4">
         <CollapsibleTrigger asChild>
           <Button variant="outline" size="sm" className="gap-2">
-            <UserPlus className="h-4 w-4" />
+            <span className="mr-2">��</span>
             Add Friends
             {friendRequests.length > 0 && (
               <span className="ml-1 rounded-full bg-primary w-5 h-5 text-xs flex items-center justify-center text-primary-foreground">
@@ -568,11 +569,11 @@ export default function FriendsPage() {
         <Tabs defaultValue="search" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="search">
-              <Search className="h-4 w-4 mr-2" />
+              <span className="mr-2">🔍</span>
               Search
             </TabsTrigger>
             <TabsTrigger value="requests">
-              <Clock className="h-4 w-4 mr-2" />
+              <span className="mr-2">⏳</span>
               Requests {friendRequests.length > 0 && (
                 <span className="ml-2 rounded-full bg-primary w-5 h-5 text-xs flex items-center justify-center text-primary-foreground">
                   {friendRequests.length}
@@ -618,7 +619,7 @@ export default function FriendsPage() {
                           variant="outline"
                           onClick={() => handleFriendRequest(request.id, 'ACCEPTED')}
                         >
-                          <Check className="h-4 w-4 mr-1" />
+                          <span className="mr-2">✅</span>
                           Accept
                         </Button>
                         <Button
@@ -626,7 +627,7 @@ export default function FriendsPage() {
                           variant="outline"
                           onClick={() => handleFriendRequest(request.id, 'REJECTED')}
                         >
-                          <X className="h-4 w-4 mr-1" />
+                          <span className="mr-2">❌</span>
                           Reject
                         </Button>
                       </div>
@@ -645,7 +646,7 @@ export default function FriendsPage() {
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trophy className="h-5 w-5 text-yellow-500" />
+          <span className="text-xl">🏆</span>
           Leaderboard
         </CardTitle>
       </CardHeader>
@@ -657,13 +658,13 @@ export default function FriendsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="flex items-center justify-between p-4 rounded-lg border mb-2 hover:bg-accent/50 transition-colors"
+              className="flex items-center justify-between p-4 rounded-lg border mb-2"
             >
               <div className="flex items-center gap-4">
                 <div className="flex items-center justify-center w-8 h-8">
-                  {index === 0 && <Trophy className="h-6 w-6 text-yellow-500" />}
-                  {index === 1 && <Medal className="h-6 w-6 text-gray-400" />}
-                  {index === 2 && <Medal className="h-6 w-6 text-amber-600" />}
+                  {index === 0 && <span className="text-3xl block mb-2">🏆</span>}
+                  {index === 1 && <span className="text-3xl block mb-2">🥈</span>}
+                  {index === 2 && <span className="text-3xl block mb-2">🥉</span>}
                   {index > 2 && <span className="text-lg font-bold">{index + 1}</span>}
                 </div>
                 <Avatar>
@@ -679,12 +680,12 @@ export default function FriendsPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-center">
-                  <Flame className="h-4 w-4 text-orange-500 mx-auto" />
+                  <span className="text-3xl block mb-2">🔥</span>
                   <p className="text-sm font-medium">{entry.stats.streak}d</p>
                   <p className="text-xs text-muted-foreground">Streak</p>
                 </div>
                 <div className="text-center">
-                  <Target className="h-4 w-4 text-green-500 mx-auto" />
+                  <span className="text-3xl block mb-2">🎯</span>
                   <p className="text-sm font-medium">{entry.stats.consistency.toFixed(0)}%</p>
                   <p className="text-xs text-muted-foreground">Consistency</p>
                 </div>
@@ -696,11 +697,143 @@ export default function FriendsPage() {
     </Card>
   )
 
+  const renderProgressComparison = () => (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-xl">📈</span>
+          Weekly Progress Comparison
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <RechartsBarChart
+            data={leaderboard.slice(0, 5)} // Top 5 friends
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis 
+              dataKey="displayName" 
+              tick={{ fontSize: 12 }}
+              interval={0}
+              tickFormatter={(value) => value?.split(' ')[0] || 'Anonymous'}
+              stroke="#6b7280"
+              axisLine={{ stroke: '#e5e7eb' }}
+            />
+            <YAxis 
+              stroke="#6b7280"
+              axisLine={{ stroke: '#e5e7eb' }}
+              tickLine={{ stroke: '#e5e7eb' }}
+            />
+            <Legend 
+              wrapperStyle={{
+                paddingTop: '1rem',
+              }}
+            />
+            <Bar 
+              name="Problems Solved" 
+              dataKey="stats.totalSolved" 
+              fill="hsl(var(--primary))"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={50}
+              isAnimationActive={false}
+            />
+            <Bar 
+              name="Current Streak" 
+              dataKey="stats.streak" 
+              fill="hsl(var(--secondary))"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={50}
+              isAnimationActive={false}
+            />
+          </RechartsBarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+
+  const renderDetailedStats = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-xl">📊</span>
+          Detailed Statistics
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              icon: "⏱️",
+              value: `${leaderboard[0]?.stats.consistency.toFixed(0)}%`,
+              label: "Daily Activity Rate"
+            },
+            {
+              icon: "🏆",
+              value: Math.max(...leaderboard.map(e => e.stats.streak)),
+              label: "Best Streak"
+            },
+            {
+              icon: "👥",
+              value: leaderboard.length,
+              label: "Active Friends"
+            },
+            {
+              icon: "🎯",
+              value: (leaderboard.reduce((acc, curr) => acc + curr.stats.totalSolved, 0) / leaderboard.length).toFixed(0),
+              label: "Avg. Problems/Friend"
+            }
+          ].map((stat, i) => (
+            <Card key={i} className="p-4 transition-all hover:shadow-md">
+              <div className="text-center space-y-2">
+                <span className="text-2xl">{stat.icon}</span>
+                <h3 className="text-xl font-bold">{stat.value}</h3>
+                <p className="text-sm text-muted-foreground">{stat.label}</p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const renderDifficultyDistribution = () => (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-xl">📈</span>
+          Problem Difficulty Distribution
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <RechartsPieChart>
+            <RechartsPie
+              dataKey="value"
+              data={[
+                { name: 'Easy', value: 30, fill: '#10b981' },
+                { name: 'Medium', value: 45, fill: '#f59e0b' },
+                { name: 'Hard', value: 25, fill: '#ef4444' },
+              ]}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              outerRadius={80}
+            />
+            <Tooltip />
+            <Legend />
+          </RechartsPieChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+
   const renderAchievements = () => (
     <Card className="mt-6">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-purple-500" />
+          <span className="text-xl">✨</span>
           Global Statistics
         </CardTitle>
       </CardHeader>
@@ -708,7 +841,7 @@ export default function FriendsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="p-4">
             <div className="text-center">
-              <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+              <span className="text-3xl block mb-2">👑</span>
               <h3 className="text-xl font-bold">
                 {leaderboard[0]?.displayName || 'No one yet'}
               </h3>
@@ -717,7 +850,7 @@ export default function FriendsPage() {
           </Card>
           <Card className="p-4">
             <div className="text-center">
-              <Flame className="h-8 w-8 text-orange-500 mx-auto mb-2" />
+              <span className="text-3xl block mb-2">🔥</span>
               <h3 className="text-xl font-bold">
                 {leaderboard.reduce((max, entry) => 
                   entry.stats.streak > max ? entry.stats.streak : max, 0
@@ -728,7 +861,7 @@ export default function FriendsPage() {
           </Card>
           <Card className="p-4">
             <div className="text-center">
-              <Target className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <span className="text-3xl block mb-2">🎯</span>
               <h3 className="text-xl font-bold">
                 {leaderboard.reduce((max, entry) => 
                   entry.stats.consistency > max ? entry.stats.consistency : max, 0
@@ -743,16 +876,39 @@ export default function FriendsPage() {
   )
 
   return (
-    <div className="container mx-auto py-6">
-      {renderSearchCollapsible()}
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {renderLeaderboard()}
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Search and Friend Requests Section */}
+      <div className="space-y-4">
+        {renderSearchCollapsible()}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </div>
+
+      {/* Main Statistics Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {renderLeaderboard()}
+        <div className="space-y-6">
+          {renderDetailedStats()}
+          {renderDifficultyDistribution()}
+        </div>
+      </div>
+
+      {/* Activity and Progress Section */}
+      {renderProgressComparison()}
+
+      {/* Achievements and Global Stats */}
       {renderAchievements()}
-      {friends.length > 0 && renderFriendsTab()}
+
+      {/* Friends List */}
+      {friends.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-2xl font-bold mb-4">Your Friends</h2>
+          {renderFriendsTab()}
+        </div>
+      )}
     </div>
   )
 }

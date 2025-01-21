@@ -119,7 +119,8 @@ export async function GET(request: Request) {
                 difficulty: true,
                 solvedAt: true,
               }
-            }
+            },
+            user_statistics: true
           }
         },
         user2: {
@@ -133,7 +134,8 @@ export async function GET(request: Request) {
                 difficulty: true,
                 solvedAt: true,
               }
-            }
+            },
+            user_statistics: true
           }
         }
       }
@@ -165,7 +167,8 @@ export async function GET(request: Request) {
         displayName: friend.displayName,
         email: friend.email,
         photoURL: friend.photoURL,
-        problemStats
+        problemStats,
+        user_statistics: friend.user_statistics
       }
     })
 

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Search, UserPlus, UserMinus, Check, X, UserRound, Clock } from 'lucide-react'
+import { Search, UserPlus, UserMinus, Check, X, UserRound, Clock, LineChart, BarChart, CartesianGrid, PieChart, Legend, Tooltip, Calendar, Award, Users, Target, BarChart3 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from "@/components/ui/skeleton"
 import { 
@@ -16,13 +16,12 @@ import {
   PolarGrid, 
   PolarAngleAxis, 
   Radar,
-  BarChart,
+  BarChart as RechartsBarChart,
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
-  Legend,
-  PolarRadiusAxis
+  PieChart as RechartsPieChart,
+  Pie as RechartsPie
 } from 'recharts'
 import { 
   Collapsible,
@@ -30,8 +29,9 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Trophy, Medal, Flame, Target, Sparkles } from 'lucide-react'
+import { Trophy, Medal, Flame, Sparkles } from 'lucide-react'
 import { motion } from "framer-motion"
+import { ActivityHeatmap } from './components/ActivityHeatmap'
 
 interface User {
   id: string
@@ -103,6 +103,7 @@ export default function FriendsPage() {
     const { getToken } = useAuth()
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
     const [isSearchOpen, setIsSearchOpen] = useState(false)
+    const [activityData, setActivityData] = useState<Array<{ date: Date, count: number }>>([])
 
   // Fetch friend requests when the component mounts or tab changes
   useEffect(() => {
@@ -157,6 +158,35 @@ export default function FriendsPage() {
       fetchFriendRequests()
     }
   }, [isSearchOpen])
+
+  useEffect(() => {
+    const fetchActivityData = async () => {
+      try {
+        const token = await getToken()
+        const response = await fetch('/api/statistics/activity', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch activity data')
+        }
+
+        const data = await response.json()
+        // Convert string dates back to Date objects
+        setActivityData(data.map((item: any) => ({
+          date: new Date(item.date),
+          count: item.count
+        })))
+      } catch (err) {
+        console.error('Error fetching activity data:', err)
+        setError('Error fetching activity data')
+      }
+    }
+
+    fetchActivityData()
+  }, []) // Fetch once when component mounts
 
   const fetchFriends = async () => {
     setIsLoadingFriends(true)
@@ -443,7 +473,7 @@ export default function FriendsPage() {
                 {/* Bar Chart */}
                 <div className="h-[300px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={[
+                    <RechartsBarChart data={[
                       { name: 'Easy', value: friend.problemStats.easy },
                       { name: 'Medium', value: friend.problemStats.medium },
                       { name: 'Hard', value: friend.problemStats.hard },
@@ -457,7 +487,7 @@ export default function FriendsPage() {
                         fill="#3b82f6" 
                         name="Problems Solved" 
                       />
-                    </BarChart>
+                    </RechartsBarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
@@ -696,6 +726,142 @@ export default function FriendsPage() {
     </Card>
   )
 
+  const renderProgressComparison = () => (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <LineChart className="h-5 w-5 text-blue-500" />
+          Weekly Progress Comparison
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <RechartsBarChart
+            data={leaderboard.slice(0, 5)} // Top 5 friends
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="displayName" 
+              tick={{ fontSize: 12 }}
+              interval={0}
+              tickFormatter={(value) => value?.split(' ')[0] || 'Anonymous'}
+            />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar 
+              name="Problems Solved" 
+              dataKey="stats.totalSolved" 
+              fill="#3b82f6" 
+            />
+            <Bar 
+              name="Current Streak" 
+              dataKey="stats.streak" 
+              fill="#10b981" 
+            />
+          </RechartsBarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+
+  const renderActivityHeatmap = () => (
+    <Card className="mt-6 w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-indigo-500" />
+          Activity Overview
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="w-full">
+        <ActivityHeatmap data={activityData} />
+      </CardContent>
+    </Card>
+  )
+
+  const renderDetailedStats = () => (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <BarChart3 className="h-5 w-5 text-purple-500" />
+          Detailed Statistics
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="p-4">
+            <div className="text-center">
+              <Clock className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+              <h3 className="text-xl font-bold">
+                {leaderboard[0]?.stats.consistency.toFixed(0)}%
+              </h3>
+              <p className="text-sm text-muted-foreground">Daily Activity Rate</p>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="text-center">
+              <Award className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+              <h3 className="text-xl font-bold">
+                {Math.max(...leaderboard.map(e => e.stats.streak))}
+              </h3>
+              <p className="text-sm text-muted-foreground">Best Streak</p>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="text-center">
+              <Users className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <h3 className="text-xl font-bold">
+                {leaderboard.length}
+              </h3>
+              <p className="text-sm text-muted-foreground">Active Friends</p>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="text-center">
+              <Target className="h-8 w-8 text-red-500 mx-auto mb-2" />
+              <h3 className="text-xl font-bold">
+                {(leaderboard.reduce((acc, curr) => acc + curr.stats.totalSolved, 0) / leaderboard.length).toFixed(0)}
+              </h3>
+              <p className="text-sm text-muted-foreground">Avg. Problems/Friend</p>
+            </div>
+          </Card>
+        </div>
+      </CardContent>
+    </Card>
+  )
+
+  const renderDifficultyDistribution = () => (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <PieChart className="h-5 w-5 text-orange-500" />
+          Problem Difficulty Distribution
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <RechartsPieChart>
+            <RechartsPie
+              data={[
+                { name: 'Easy', value: 30, fill: '#10b981' },
+                { name: 'Medium', value: 45, fill: '#f59e0b' },
+                { name: 'Hard', value: 25, fill: '#ef4444' },
+              ]}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              outerRadius={80}
+            />
+            <Tooltip />
+            <Legend />
+          </RechartsPieChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  )
+
   const renderAchievements = () => (
     <Card className="mt-6">
       <CardHeader>
@@ -750,7 +916,19 @@ export default function FriendsPage() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      {renderLeaderboard()}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {renderLeaderboard()}
+        {renderProgressComparison()}
+      </div>
+      
+      {renderActivityHeatmap()}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        {renderDetailedStats()}
+        {renderDifficultyDistribution()}
+      </div>
+      
       {renderAchievements()}
       {friends.length > 0 && renderFriendsTab()}
     </div>

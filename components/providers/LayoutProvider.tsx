@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/context/AuthContext'
 import { SideNavigation } from '@/components/shared/navigation/Sidebar'
-import Navbar from '@/components/shared/navigation/Navbar'
+import { Navbar } from '@/components/shared/navigation/Navbar'
 
 export function LayoutProvider({
   children

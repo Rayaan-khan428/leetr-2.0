@@ -51,11 +51,11 @@ export default function PricingPage() {
   });
 
   return (
-    <div className={cn('min-h-screen flex flex-col w-full items-center py-20', styles.fancyOverlay)}>
+    <div className={cn('min-h-screen flex flex-col w-full items-center py-32', styles.fancyOverlay)}>
       <div className="w-full flex flex-col items-center">
         {/* Hero Section with Enhanced Typography */}
         <div className="text-center space-y-4 mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-slate-500 dark:from-blue-400 dark:to-slate-300">
+          <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-slate-500 dark:from-blue-400 dark:to-slate-300 [background-clip:text]">
             Simple, transparent pricing
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">

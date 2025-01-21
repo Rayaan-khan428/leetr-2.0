@@ -13,6 +13,7 @@ import {
   IconLayoutDashboard,
   IconSettings,
   IconUserBolt,
+  IconMenu2,
 } from "@tabler/icons-react"
 import { ThemeToggle } from '@/components/theme-toggle'
 
@@ -31,6 +32,13 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
   }
 
   const links = [
+    {
+      label: "Menu",
+      icon: (
+        <IconMenu2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      ),
+      onClick: () => setOpen(!open),
+    },
     {
       label: "Problems",
       href: "/problems",

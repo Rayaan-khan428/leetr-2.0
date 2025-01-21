@@ -70,7 +70,7 @@ const steps: Step[] = [
 const HeroButton: FC = () => {
   return (
     <Link 
-      href="/dashboard" 
+      href="/login" 
       className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white dark:text-white bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-lg transition-colors duration-200"
     >
       Visit Dashboard
@@ -298,7 +298,7 @@ const CTA: FC = () => {
           </p>
           <div className="flex justify-center">
             <Link 
-              href="/dashboard" 
+              href="/login" 
               className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white dark:text-white bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-lg transition-colors duration-200"
             >
               Visit Dashboard

@@ -52,7 +52,7 @@ export default function AboutPage() {
 
   return (
     <motion.div 
-      className="container mx-auto py-12 px-4"
+      className="container mx-auto py-32 px-4"
       initial="hidden"
       animate="visible"
       variants={containerVariants}

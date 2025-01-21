@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from "@/components/theme-provider"
-import { LayoutProvider } from "@/components/providers/LayoutProvider"
+import { NavigationProvider } from "@/components/providers/NavigationProvider"
+import Footer from "@/components/shared/navigation/Footer"
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -31,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen flex flex-col`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -39,9 +40,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <LayoutProvider>
-              {children}
-            </LayoutProvider>
+            <NavigationProvider>
+              <main className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </NavigationProvider>
             <Toaster />
           </AuthProvider>
         </ThemeProvider>

@@ -558,7 +558,6 @@ export default function FriendsPage() {
                       <YAxis 
                         tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
                         axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.2 }}
-                        grid={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.1 }}
                       />
                       <CartesianGrid 
                         stroke="hsl(var(--muted-foreground))" 

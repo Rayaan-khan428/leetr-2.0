@@ -1,4 +1,4 @@
-import { PrismaClient, Difficulty } from '@prisma/client'
+import { PrismaClient, Difficulty, FriendshipRequestStatus } from '@prisma/client'
 import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
@@ -39,50 +39,104 @@ const LEETCODE_PROBLEMS = [
 const TIME_COMPLEXITIES = ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)', 'O(1)']
 const SPACE_COMPLEXITIES = ['O(n)', 'O(1)', 'O(log n)', 'O(n²)']
 
-async function main() {
-  const USER_EMAIL = 'shahmeer@gmail.com' // The email to populate problems for
+const TARGET_EMAIL = 'rayaan.k.ca@gmail.com' // Replace with your email
 
-  // Clean existing problems for this user
+async function main() {
+  // Find the existing user
   const user = await prisma.users.findUnique({
-    where: { email: USER_EMAIL }
+    where: { email: TARGET_EMAIL }
   })
 
   if (!user) {
-    console.error('User not found!')
-    return
+    console.error('User not found! Make sure to sign in first.')
+    process.exit(1)
   }
 
+  // Clean existing user data
   await prisma.user_problems.deleteMany({
     where: { userId: user.id }
   })
+  await prisma.user_statistics.deleteMany({
+    where: { userId: user.id }
+  })
 
-  // Randomly select 15 problems
+  // Create problems with dates spread over the last year
   const selectedProblems = [...LEETCODE_PROBLEMS]
     .sort(() => Math.random() - 0.5)
-    .slice(0, 15)
+    .slice(0, 20) // Create 20 problems
 
-  // Create the problems
-  const problemsData = selectedProblems.map(problem => ({
-    id: uuidv4(),
-    userId: user.id,
-    leetcodeId: problem.id,
-    problemName: problem.name,
-    difficulty: problem.difficulty,
-    solution: `// Solution for ${problem.name}\nfunction solution() {\n  // TODO: Implement solution\n}`,
-    notes: `Key points to remember:\n- Break down the problem\n- Consider edge cases\n- Think about optimization`,
-    attempts: Math.floor(Math.random() * 3) + 1,
-    timeComplexity: TIME_COMPLEXITIES[Math.floor(Math.random() * TIME_COMPLEXITIES.length)],
-    spaceComplexity: SPACE_COMPLEXITIES[Math.floor(Math.random() * SPACE_COMPLEXITIES.length)],
-    url: `https://leetcode.com/problems/${problem.name.toLowerCase().replace(/\s+/g, '-')}/`,
-    nextReview: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000), // Random date within next 7 days
-    solvedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date within last 30 days
-  }))
+  const problemsData = selectedProblems.map(problem => {
+    const daysAgo = Math.floor(Math.random() * 365)
+    const solvedAt = new Date()
+    solvedAt.setDate(solvedAt.getDate() - daysAgo)
+
+    return {
+      id: uuidv4(),
+      userId: user.id,
+      leetcodeId: problem.id,
+      problemName: problem.name,
+      difficulty: problem.difficulty,
+      solution: `// Solution for ${problem.name}\nfunction solution() {\n  // Implementation\n}`,
+      notes: `Notes for ${problem.name}`,
+      attempts: Math.floor(Math.random() * 3) + 1,
+      timeComplexity: TIME_COMPLEXITIES[Math.floor(Math.random() * TIME_COMPLEXITIES.length)],
+      spaceComplexity: SPACE_COMPLEXITIES[Math.floor(Math.random() * SPACE_COMPLEXITIES.length)],
+      url: `https://leetcode.com/problems/${problem.name.toLowerCase().replace(/\s+/g, '-')}/`,
+      solvedAt,
+      nextReview: new Date(solvedAt.getTime() + 7 * 24 * 60 * 60 * 1000),
+      createdAt: solvedAt,
+      updatedAt: solvedAt,
+    }
+  })
 
   await prisma.user_problems.createMany({
     data: problemsData
   })
 
-  console.log(`Successfully added ${problemsData.length} problems for user ${USER_EMAIL}`)
+  // Calculate statistics
+  const problems = await prisma.user_problems.findMany({
+    where: { userId: user.id },
+    orderBy: { solvedAt: 'desc' }
+  })
+
+  // Calculate streak
+  let streak = 0
+  let currentDate = new Date()
+  let currentStreak = 0
+  
+  for (let i = 0; i < 7; i++) {
+    const dateStr = currentDate.toISOString().split('T')[0]
+    const hasProblemsOnDate = problems.some(
+      p => p.solvedAt.toISOString().split('T')[0] === dateStr
+    )
+    
+    if (hasProblemsOnDate) {
+      currentStreak++
+    } else {
+      break
+    }
+    
+    currentDate.setDate(currentDate.getDate() - 1)
+  }
+  streak = currentStreak
+
+  // Create user statistics
+  await prisma.user_statistics.create({
+    data: {
+      id: uuidv4(),
+      userId: user.id,
+      streak,
+      lastStreak: Math.max(streak - 1, 0),
+      maxStreak: Math.max(streak, Math.floor(Math.random() * 10) + 5),
+      totalSolved: problems.length,
+      lastSolved: problems[0]?.solvedAt || new Date(),
+    }
+  })
+
+  console.log(`Successfully seeded data for user ${TARGET_EMAIL}:`)
+  console.log(`- Created ${problemsData.length} problems`)
+  console.log(`- Current streak: ${streak}`)
+  console.log(`- Total solved: ${problems.length}`)
 }
 
 main()

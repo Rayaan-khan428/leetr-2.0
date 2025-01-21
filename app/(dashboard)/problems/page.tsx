@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Code, FileText } from 'lucide-react'
+import { ActivityHeatmap } from '../friends/components/ActivityHeatmap'
 
 // Interface matching our Prisma schema for user_problems
 interface Problem {
@@ -165,6 +166,7 @@ export default function ProblemsPage() {
   const [showForm, setShowForm] = useState(false)
   const { getToken, user } = useAuth()
   const [streak, setStreak] = useState(0)
+  const [activityData, setActivityData] = useState<Array<{ date: Date, count: number }>>([])
 
   // Wrap fetchProblems in useCallback
   const fetchProblems = useCallback(async () => {
@@ -203,10 +205,53 @@ export default function ProblemsPage() {
     fetchProblems();
   }, [fetchProblems]);
 
+  useEffect(() => {
+    const fetchActivityData = async () => {
+      try {
+        const token = await getToken()
+        const response = await fetch('/api/statistics/activity', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch activity data')
+        }
+
+        const data = await response.json()
+        // Convert string dates back to Date objects
+        setActivityData(data.map((item: any) => ({
+          date: new Date(item.date),
+          count: item.count
+        })))
+      } catch (err) {
+        console.error('Error fetching activity data:', err)
+        setError('Error fetching activity data')
+      }
+    }
+
+    fetchActivityData()
+  }, []) // Fetch once when component mounts
+
   const handleSuccess = () => {
     setShowForm(false)
     fetchProblems()
   }
+
+  const renderActivityHeatmap = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-xl">📅</span>
+          Activity Overview
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="w-full">
+        <ActivityHeatmap data={activityData} />
+      </CardContent>
+    </Card>
+  )
 
   if (loading) {
     return (
@@ -282,6 +327,9 @@ export default function ProblemsPage() {
           }
         />
       </div>
+
+      {/* Add the activity heatmap here, before the form section */}
+      {renderActivityHeatmap()}
 
       {/* Form Section */}
       {error && (

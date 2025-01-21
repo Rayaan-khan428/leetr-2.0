@@ -24,6 +24,14 @@ import {
   Legend,
   PolarRadiusAxis
 } from 'recharts'
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Trophy, Medal, Flame, Target, Sparkles } from 'lucide-react'
+import { motion } from "framer-motion"
 
 interface User {
   id: string
@@ -65,6 +73,19 @@ interface FriendRequest {
   }
 }
 
+interface LeaderboardEntry {
+  id: string
+  displayName: string | null
+  email: string
+  photoURL: string | null
+  stats: {
+    totalSolved: number
+    streak: number
+    lastActive: Date
+    consistency: number // percentage based on daily activity
+  }
+}
+
 /**
  * Friends Page Component
  * @description Displays the user's friends list and friend requests
@@ -80,6 +101,8 @@ export default function FriendsPage() {
     const [error, setError] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const { getToken } = useAuth()
+    const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+    const [isSearchOpen, setIsSearchOpen] = useState(false)
 
   // Fetch friend requests when the component mounts or tab changes
   useEffect(() => {
@@ -93,6 +116,47 @@ export default function FriendsPage() {
       fetchFriends()
     }
   }, [activeTab])
+
+  useEffect(() => {
+    const initializeAndFetchLeaderboard = async () => {
+      try {
+        const token = await getToken()
+        
+        // Initialize statistics first
+        await fetch('/api/statistics/init', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        // Then fetch leaderboard
+        const response = await fetch('/api/statistics', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch leaderboard data')
+        }
+
+        const data = await response.json()
+        setLeaderboard(data)
+      } catch (err) {
+        console.error('Error fetching leaderboard:', err)
+        setError('Error fetching leaderboard data')
+      }
+    }
+
+    initializeAndFetchLeaderboard()
+  }, []) // Fetch once when component mounts
+
+  useEffect(() => {
+    if (isSearchOpen) {
+      fetchFriendRequests()
+    }
+  }, [isSearchOpen])
 
   const fetchFriends = async () => {
     setIsLoadingFriends(true)
@@ -201,10 +265,13 @@ export default function FriendsPage() {
         body: JSON.stringify({ receiverId: userId })
       })
 
+      const data = await response.json()
+      
       if (!response.ok) {
-        throw new Error('Failed to send friend request')
+        throw new Error(data.error || 'Failed to send friend request')
       }
 
+      // Update UI to show pending status
       setSearchResults(prevResults =>
         prevResults.map(user =>
           user.id === userId
@@ -212,8 +279,12 @@ export default function FriendsPage() {
             : user
         )
       )
+
+      // Show success message
+      setError('')
     } catch (err) {
-      setError('Error sending friend request')
+      const errorMessage = err instanceof Error ? err.message : 'Error sending friend request'
+      setError(errorMessage)
       console.error('Friend request error:', err)
     }
   }
@@ -474,97 +545,214 @@ export default function FriendsPage() {
     </div>
   )
 
-  const renderRequestsTab = () => (
-    <div className="space-y-4">
-      {friendRequests
-        .filter(request => request.status === 'PENDING')
-        .map((request) => (
-          <div
-            key={request.id}
-            className="flex items-center justify-between p-4 rounded-lg border"
-          >
-            <div className="flex items-center">
-              <Avatar>
-                <AvatarImage src={request.sender.photoURL || undefined} />
-                <AvatarFallback>
-                  {request.sender.displayName?.[0]?.toUpperCase() || request.sender.email[0].toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="ml-3">
-                <p className="font-medium">
-                  {request.sender.displayName || 'Anonymous User'}
-                </p>
-                <p className="text-sm text-muted-foreground">{request.sender.email}</p>
+  const renderSearchCollapsible = () => (
+    <Collapsible
+      open={isSearchOpen}
+      onOpenChange={setIsSearchOpen}
+      className="w-full space-y-2"
+    >
+      <div className="flex justify-end px-4">
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Add Friends
+            {friendRequests.length > 0 && (
+              <span className="ml-1 rounded-full bg-primary w-5 h-5 text-xs flex items-center justify-center text-primary-foreground">
+                {friendRequests.length}
+              </span>
+            )}
+          </Button>
+        </CollapsibleTrigger>
+      </div>
+      <CollapsibleContent className="space-y-2">
+        <Tabs defaultValue="search" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="search">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </TabsTrigger>
+            <TabsTrigger value="requests">
+              <Clock className="h-4 w-4 mr-2" />
+              Requests {friendRequests.length > 0 && (
+                <span className="ml-2 rounded-full bg-primary w-5 h-5 text-xs flex items-center justify-center text-primary-foreground">
+                  {friendRequests.length}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="search" className="mt-4">
+            {renderSearchTab()}
+          </TabsContent>
+          <TabsContent value="requests" className="mt-4">
+            <ScrollArea className="h-[300px]">
+              <div className="space-y-4">
+                {friendRequests.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No pending friend requests
+                  </div>
+                ) : (
+                  friendRequests.map((request) => (
+                    <motion.div
+                      key={request.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex items-center justify-between p-4 rounded-lg border"
+                    >
+                      <div className="flex items-center">
+                        <Avatar>
+                          <AvatarImage src={request.sender.photoURL || undefined} />
+                          <AvatarFallback>
+                            {request.sender.displayName?.[0]?.toUpperCase() || request.sender.email[0].toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="ml-3">
+                          <p className="font-medium">
+                            {request.sender.displayName || 'Anonymous User'}
+                          </p>
+                          <p className="text-sm text-muted-foreground">{request.sender.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleFriendRequest(request.id, 'ACCEPTED')}
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Accept
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleFriendRequest(request.id, 'REJECTED')}
+                        >
+                          <X className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))
+                )}
               </div>
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+
+  const renderLeaderboard = () => (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-yellow-500" />
+          Leaderboard
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+          {leaderboard.map((entry, index) => (
+            <motion.div
+              key={entry.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="flex items-center justify-between p-4 rounded-lg border mb-2 hover:bg-accent/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-8 h-8">
+                  {index === 0 && <Trophy className="h-6 w-6 text-yellow-500" />}
+                  {index === 1 && <Medal className="h-6 w-6 text-gray-400" />}
+                  {index === 2 && <Medal className="h-6 w-6 text-amber-600" />}
+                  {index > 2 && <span className="text-lg font-bold">{index + 1}</span>}
+                </div>
+                <Avatar>
+                  <AvatarImage src={entry.photoURL || undefined} />
+                  <AvatarFallback>
+                    {entry.displayName?.[0]?.toUpperCase() || entry.email[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium">{entry.displayName || 'Anonymous User'}</p>
+                  <p className="text-sm text-muted-foreground">{entry.stats.totalSolved} problems solved</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-center">
+                  <Flame className="h-4 w-4 text-orange-500 mx-auto" />
+                  <p className="text-sm font-medium">{entry.stats.streak}d</p>
+                  <p className="text-xs text-muted-foreground">Streak</p>
+                </div>
+                <div className="text-center">
+                  <Target className="h-4 w-4 text-green-500 mx-auto" />
+                  <p className="text-sm font-medium">{entry.stats.consistency.toFixed(0)}%</p>
+                  <p className="text-xs text-muted-foreground">Consistency</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  )
+
+  const renderAchievements = () => (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Sparkles className="h-5 w-5 text-purple-500" />
+          Global Statistics
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="p-4">
+            <div className="text-center">
+              <Trophy className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+              <h3 className="text-xl font-bold">
+                {leaderboard[0]?.displayName || 'No one yet'}
+              </h3>
+              <p className="text-sm text-muted-foreground">Most Problems Solved</p>
             </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleFriendRequest(request.id, 'ACCEPTED')}
-              >
-                <Check className="h-4 w-4 mr-1" />
-                Accept
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleFriendRequest(request.id, 'REJECTED')}
-              >
-                <X className="h-4 w-4 mr-1" />
-                Reject
-              </Button>
+          </Card>
+          <Card className="p-4">
+            <div className="text-center">
+              <Flame className="h-8 w-8 text-orange-500 mx-auto mb-2" />
+              <h3 className="text-xl font-bold">
+                {leaderboard.reduce((max, entry) => 
+                  entry.stats.streak > max ? entry.stats.streak : max, 0
+                )}d
+              </h3>
+              <p className="text-sm text-muted-foreground">Longest Streak</p>
             </div>
-          </div>
-        ))}
-      {friendRequests.filter(request => request.status === 'PENDING').length === 0 && (
-        <div className="text-center py-8 text-muted-foreground">
-          No pending friend requests
+          </Card>
+          <Card className="p-4">
+            <div className="text-center">
+              <Target className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <h3 className="text-xl font-bold">
+                {leaderboard.reduce((max, entry) => 
+                  entry.stats.consistency > max ? entry.stats.consistency : max, 0
+                ).toFixed(0)}%
+              </h3>
+              <p className="text-sm text-muted-foreground">Highest Consistency</p>
+            </div>
+          </Card>
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   )
 
   return (
     <div className="container mx-auto py-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Friends</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="search">
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </TabsTrigger>
-              <TabsTrigger value="requests">
-                <Clock className="h-4 w-4 mr-2" />
-                Requests
-              </TabsTrigger>
-              <TabsTrigger value="friends">
-                <UserRound className="h-4 w-4 mr-2" />
-                Friends
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="search" className="mt-4">
-                {renderSearchTab()}
-            </TabsContent>
-            <TabsContent value="requests" className="mt-4">
-                {renderRequestsTab()}
-            </TabsContent>
-            <TabsContent value="friends" className="mt-4">
-                {renderFriendsTab()}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+      {renderSearchCollapsible()}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {renderLeaderboard()}
+      {renderAchievements()}
+      {friends.length > 0 && renderFriendsTab()}
     </div>
   )
 }

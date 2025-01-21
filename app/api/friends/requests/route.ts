@@ -2,6 +2,7 @@
 import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * @swagger
@@ -76,16 +77,14 @@ export async function GET(request: Request) {
       )
     }
 
-    // Fetch all friendships where the current user is either user1 or user2
-    const friendships = await prisma.friendships.findMany({
+    // Fetch friend requests where the current user is the receiver
+    const friendRequests = await prisma.friend_requests.findMany({
       where: {
-        OR: [
-          { user1Id: currentUser.id },
-          { user2Id: currentUser.id }
-        ]
+        receiverId: currentUser.id,
+        status: 'PENDING'
       },
       include: {
-        user1: {
+        sender: {
           select: {
             id: true,
             displayName: true,
@@ -93,7 +92,7 @@ export async function GET(request: Request) {
             photoURL: true
           }
         },
-        user2: {
+        receiver: {
           select: {
             id: true,
             displayName: true,
@@ -104,24 +103,130 @@ export async function GET(request: Request) {
       }
     })
 
-    // Transform the data to get a flat list of friends
-    const friends = friendships.map(friendship => {
-      const friend = friendship.user1Id === currentUser.id 
-        ? friendship.user2 
-        : friendship.user1
-      
-      return {
-        friendshipId: friendship.id,
-        ...friend
+    return NextResponse.json(friendRequests)
+  } catch (error) {
+    console.error('Error fetching friend requests:', error)
+    return NextResponse.json(
+      {
+        error: 'Error fetching friend requests',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const authHeader = request.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'No token provided' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.split('Bearer ')[1]
+    const decodedToken = await verifyAuthToken(token)
+    const currentUser = await prisma.users.findUnique({
+      where: { firebaseUid: decodedToken.uid }
+    })
+
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    const { receiverId } = await request.json()
+    if (!receiverId) {
+      return NextResponse.json(
+        { error: 'Receiver ID is required' },
+        { status: 400 }
+      )
+    }
+
+    // Check if a friend request already exists
+    const existingRequest = await prisma.friend_requests.findFirst({
+      where: {
+        OR: [
+          {
+            senderId: currentUser.id,
+            receiverId: receiverId,
+          },
+          {
+            senderId: receiverId,
+            receiverId: currentUser.id,
+          }
+        ]
       }
     })
 
-    return NextResponse.json(friends)
+    if (existingRequest) {
+      return NextResponse.json(
+        { error: 'Friend request already exists' },
+        { status: 400 }
+      )
+    }
+
+    // Check if they're already friends
+    const existingFriendship = await prisma.friendships.findFirst({
+      where: {
+        OR: [
+          {
+            user1Id: currentUser.id,
+            user2Id: receiverId,
+          },
+          {
+            user1Id: receiverId,
+            user2Id: currentUser.id,
+          }
+        ]
+      }
+    })
+
+    if (existingFriendship) {
+      return NextResponse.json(
+        { error: 'Already friends' },
+        { status: 400 }
+      )
+    }
+
+    // Create new friend request
+    const friendRequest = await prisma.friend_requests.create({
+      data: {
+        id: uuidv4(),
+        senderId: currentUser.id,
+        receiverId: receiverId,
+        status: 'PENDING'
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            photoURL: true
+          }
+        },
+        receiver: {
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            photoURL: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json(friendRequest)
   } catch (error) {
-    console.error('Error fetching friends:', error)
+    console.error('Error creating friend request:', error)
     return NextResponse.json(
       {
-        error: 'Error fetching friends',
+        error: 'Error creating friend request',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

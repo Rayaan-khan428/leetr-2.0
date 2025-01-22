@@ -20,8 +20,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Code, FileText } from 'lucide-react'
+import { Code, FileText, Search } from 'lucide-react'
 import { ActivityHeatmap } from '../friends/components/ActivityHeatmap'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Input } from "@/components/ui/input"
 
 // Interface matching our Prisma schema for user_problems
 interface Problem {
@@ -167,6 +176,9 @@ export default function ProblemsPage() {
   const { getToken, user } = useAuth()
   const [streak, setStreak] = useState(0)
   const [activityData, setActivityData] = useState<Array<{ date: Date, count: number }>>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Wrap fetchProblems in useCallback
   const fetchProblems = useCallback(async () => {
@@ -252,6 +264,37 @@ export default function ProblemsPage() {
       </CardContent>
     </Card>
   )
+
+  // Add this filter function
+  const filteredProblems = problems.filter(problem => {
+    const searchLower = searchQuery.toLowerCase()
+    return (
+      problem.problemName.toLowerCase().includes(searchLower) ||
+      problem.difficulty.toLowerCase().includes(searchLower) ||
+      problem.leetcodeId.toLowerCase().includes(searchLower) ||
+      (problem.timeComplexity?.toLowerCase().includes(searchLower)) ||
+      (problem.spaceComplexity?.toLowerCase().includes(searchLower))
+    )
+  })
+
+  // Update pagination calculations to use filtered problems
+  const totalPages = Math.ceil(filteredProblems.length / pageSize)
+  const paginatedProblems = filteredProblems.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
+  // Add handler for search
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value)
+    setCurrentPage(1) // Reset to first page when searching
+  }
+
+  // Add these pagination helper functions
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(Number(value))
+    setCurrentPage(1) // Reset to first page when changing page size
+  }
 
   if (loading) {
     return (
@@ -349,10 +392,43 @@ export default function ProblemsPage() {
         </Card>
       )}
 
-      {/* Update the Problems Table Section for better mobile view */}
+      {/* Update the Problems Table Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Problem History</CardTitle>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <CardTitle>Problem History</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Show</span>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={handlePageSizeChange}
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5</SelectItem>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-muted-foreground">per page</span>
+              </div>
+            </div>
+            
+            {/* Add search input */}
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search problems by name, difficulty, or complexity..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="pl-8"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {problems.length === 0 ? (
@@ -368,97 +444,144 @@ export default function ProblemsPage() {
                 Add Your First Problem
               </Button>
             </div>
-          ) : (
-            <div className="overflow-x-auto -mx-4 sm:mx-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="font-semibold text-xs sm:text-sm">Problem Name</TableHead>
-                    <TableHead className="font-semibold text-xs sm:text-sm">Difficulty</TableHead>
-                    <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Solved At</TableHead>
-                    <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Complexity</TableHead>
-                    <TableHead className="font-semibold text-xs sm:text-sm hidden lg:table-cell">Next Review</TableHead>
-                    <TableHead className="font-semibold text-xs sm:text-sm">Details</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {problems.map((problem) => (
-                    <TableRow 
-                      key={problem.id}
-                      className="hover:bg-muted/50 transition-colors"
-                    >
-                      <TableCell className="font-medium text-xs sm:text-sm">
-                        <a 
-                          href={problem.url || `https://leetcode.com/problems/${problem.leetcodeId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline"
-                        >
-                          {problem.problemName}
-                        </a>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          problem.difficulty === 'EASY' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                          problem.difficulty === 'MEDIUM' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                          'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                        }`}>
-                          {problem.difficulty}
-                        </span>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-xs sm:text-sm">
-                        {formatDate(problem.solvedAt)}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {problem.timeComplexity || problem.spaceComplexity ? (
-                          <div className="flex items-center gap-2">
-                            {problem.timeComplexity && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs">
-                                T: {problem.timeComplexity}
-                              </span>
-                            )}
-                            {problem.spaceComplexity && (
-                              <span className="inline-flex items-center px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs">
-                                S: {problem.spaceComplexity}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden lg:table-cell text-xs sm:text-sm">
-                        {problem.nextReview ? (
-                          <span className={`text-sm ${
-                            new Date(problem.nextReview) <= new Date() 
-                              ? 'text-red-500 dark:text-red-400 font-medium' 
-                              : 'text-muted-foreground'
-                          }`}>
-                            {formatDate(problem.nextReview)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <ExpandableText 
-                            text={problem.solution} 
-                            icon={Code}
-                            label="Solution"
-                          />
-                          <ExpandableText 
-                            text={problem.notes} 
-                            icon={FileText}
-                            label="Notes"
-                          />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          ) : filteredProblems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <p className="text-base font-medium text-foreground">No matching problems found</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Try adjusting your search query
+              </p>
             </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Problem Name</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Difficulty</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Solved At</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Complexity</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm hidden lg:table-cell">Next Review</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Details</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedProblems.map((problem) => (
+                      <TableRow 
+                        key={problem.id}
+                        className="hover:bg-muted/50 transition-colors"
+                      >
+                        <TableCell className="font-medium text-xs sm:text-sm">
+                          <a 
+                            href={problem.url || `https://leetcode.com/problems/${problem.leetcodeId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                          >
+                            {problem.problemName}
+                          </a>
+                        </TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            problem.difficulty === 'EASY' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                            problem.difficulty === 'MEDIUM' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                            'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                          }`}>
+                            {problem.difficulty}
+                          </span>
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-xs sm:text-sm">
+                          {formatDate(problem.solvedAt)}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {problem.timeComplexity || problem.spaceComplexity ? (
+                            <div className="flex items-center gap-2">
+                              {problem.timeComplexity && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs">
+                                  T: {problem.timeComplexity}
+                                </span>
+                              )}
+                              {problem.spaceComplexity && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-md bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs">
+                                  S: {problem.spaceComplexity}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs sm:text-sm">
+                          {problem.nextReview ? (
+                            <span className={`text-sm ${
+                              new Date(problem.nextReview) <= new Date() 
+                                ? 'text-red-500 dark:text-red-400 font-medium' 
+                                : 'text-muted-foreground'
+                            }`}>
+                              {formatDate(problem.nextReview)}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <ExpandableText 
+                              text={problem.solution} 
+                              icon={Code}
+                              label="Solution"
+                            />
+                            <ExpandableText 
+                              text={problem.notes} 
+                              icon={FileText}
+                              label="Notes"
+                            />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Add pagination controls */}
+              <div className="mt-4 flex items-center justify-between px-2">
+                <div className="text-sm text-muted-foreground">
+                  Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredProblems.length)} of {filteredProblems.length} {searchQuery && `(filtered from ${problems.length})`} problems
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => prev - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                      <Button
+                        key={pageNum}
+                        variant={pageNum === currentPage ? "default" : "outline"}
+                        size="sm"
+                        className="w-8"
+                        onClick={() => setCurrentPage(pageNum)}
+                      >
+                        {pageNum}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    disabled={currentPage === totalPages}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

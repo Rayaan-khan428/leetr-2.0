@@ -1,5 +1,6 @@
 let selectedTime = '';
 let selectedSpace = '';
+let currentUrl = window.location.href;
 
 function getProblemData() {
   console.log('Starting getProblemData');
@@ -93,169 +94,82 @@ function showStatus(message, type = 'error') {
   }, 3000);
 }
 
-function createWidget() {
-  const widget = document.createElement('div');
-  const toggle = document.createElement('div');
+function createTrackerTab() {
+  const tab = document.createElement('div');
+  tab.className = 'leetcode-tracker-tab';
   
-  // Create toggle button
-  toggle.className = 'leetr-toggle';
-  toggle.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-    </svg>
-  `;
-  
-  // Create main widget
-  widget.className = 'leetr-widget';
-  widget.innerHTML = `
-    <div class="leetr-header">
-      <h2 class="leetr-title">LeetCode Tracker</h2>
-      <button class="leetr-close-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-        </svg>
-      </button>
+  tab.innerHTML = `
+    <div class="tab-toggle">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      <span class="tab-toggle-text">Leetr</span>
     </div>
-    <div class="leetr-content">
-      <div class="leetr-section">
-        <label class="leetr-label">Time Complexity</label>
-        <div class="leetr-grid" id="timeComplexity">
-          <button class="leetr-button" data-value="O(1)">O(1)</button>
-          <button class="leetr-button" data-value="O(log n)">O(log n)</button>
-          <button class="leetr-button" data-value="O(n)">O(n)</button>
-          <button class="leetr-button" data-value="O(n log n)">O(n log n)</button>
-          <button class="leetr-button" data-value="O(n²)">O(n²)</button>
-          <button class="leetr-button" data-value="O(2ⁿ)">O(2ⁿ)</button>
-        </div>
+    
+    <div class="tracker-header">
+      <div class="problem-info">
+        <div class="problem-title">Loading...</div>
+        <div class="problem-details">Please wait...</div>
       </div>
-      
-      <div class="leetr-section">
-        <label class="leetr-label">Space Complexity</label>
-        <div class="leetr-grid" id="spaceComplexity">
-          <button class="leetr-button" data-value="O(1)">O(1)</button>
-          <button class="leetr-button" data-value="O(log n)">O(log n)</button>
-          <button class="leetr-button" data-value="O(n)">O(n)</button>
-          <button class="leetr-button" data-value="O(n log n)">O(n log n)</button>
-          <button class="leetr-button" data-value="O(n²)">O(n²)</button>
-          <button class="leetr-button" data-value="O(2ⁿ)">O(2ⁿ)</button>
+    </div>
+
+    <div class="tracker-content">
+      <div class="section">
+        <div class="section-title">Time Complexity</div>
+        <div id="timeComplexity" class="complexity-grid">
+          <button class="btn-complexity" data-value="O(1)">O(1)</button>
+          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
+          <button class="btn-complexity" data-value="O(n)">O(n)</button>
+          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
+          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
+          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
         </div>
       </div>
 
-      <div class="leetr-section">
-        <label class="leetr-label">Solution Approach</label>
-        <textarea class="leetr-textarea" placeholder="Describe your approach..."></textarea>
+      <div class="section">
+        <div class="section-title">Space Complexity</div>
+        <div id="spaceComplexity" class="complexity-grid">
+          <button class="btn-complexity" data-value="O(1)">O(1)</button>
+          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
+          <button class="btn-complexity" data-value="O(n)">O(n)</button>
+          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
+          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
+          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+        </div>
       </div>
 
-      <div class="leetr-section">
-        <button class="leetr-submit">Save Solution</button>
+      <div class="section">
+        <div class="section-title">Solution Approach</div>
+        <textarea id="solution" placeholder="Describe your approach..."></textarea>
       </div>
+
+      <button id="submit">Save Solution</button>
+      <div id="error" class="status hidden"></div>
+      <div id="success" class="status hidden"></div>
     </div>
   `;
 
-  document.body.appendChild(toggle);
-  document.body.appendChild(widget);
+  document.body.appendChild(tab);
 
-  // Add event listeners
+  // Toggle functionality
+  const toggle = tab.querySelector('.tab-toggle');
   toggle.addEventListener('click', () => {
-    widget.classList.toggle('open');
-    toggle.style.display = 'none';
+    tab.classList.toggle('expanded');
+    toggle.querySelector('svg').style.transform = tab.classList.contains('expanded') ? 'rotate(180deg)' : '';
   });
 
-  widget.querySelector('.leetr-close-btn').addEventListener('click', () => {
-    widget.classList.remove('open');
-    toggle.style.display = 'flex';
-  });
+  // Initialize all the event listeners from popup.js
+  initializeTrackerFunctionality(tab);
 
-  // Handle complexity button selections
-  ['timeComplexity', 'spaceComplexity'].forEach(id => {
-    const container = widget.querySelector(`#${id}`);
-    container.addEventListener('click', (e) => {
-      if (e.target.classList.contains('leetr-button')) {
-        container.querySelectorAll('.leetr-button').forEach(btn => {
-          btn.classList.remove('selected');
-        });
-        e.target.classList.add('selected');
-        
-        // Store selected values
-        if (id === 'timeComplexity') {
-          selectedTime = e.target.dataset.value;
-        } else {
-          selectedSpace = e.target.dataset.value;
-        }
-      }
-    });
-  });
-
-  // Add submit handler
-  widget.querySelector('.leetr-submit').addEventListener('click', async () => {
-    const submitBtn = widget.querySelector('.leetr-submit');
-    const solution = widget.querySelector('.leetr-textarea').value;
-
-    if (!selectedTime || !selectedSpace || !solution) {
-      showStatus('Please fill in all fields');
-      return;
-    }
-
-    // Update this part in content.js inside the submit click handler
-try {
-  submitBtn.textContent = 'Saving...';
-  submitBtn.disabled = true;
-
-  const problemData = getProblemData();
-  
-  // Send message to background script
-  chrome.runtime.sendMessage({
-    type: 'PROBLEM_SOLVED',
-    data: {
-      ...problemData,
-      timeComplexity: selectedTime,
-      spaceComplexity: selectedSpace,
-      solution,
-      notes: ''
-    }
-  }, (response) => {
-    if (chrome.runtime.lastError) {
-      console.error('Runtime error:', chrome.runtime.lastError);
-      showStatus(chrome.runtime.lastError.message);
-      submitBtn.textContent = 'Save Solution';
-      submitBtn.disabled = false;
-      return;
-    }
-    
-    if (response && response.error) {
-      showStatus(response.error);
-      submitBtn.textContent = 'Save Solution';
-      submitBtn.disabled = false;
-      return;
-    }
-    
-    submitBtn.textContent = 'Saved!';
-    submitBtn.classList.add('success');
-    showStatus('Problem saved successfully!', 'success');
-    
-    // Reset form after success
-    setTimeout(() => {
-      submitBtn.textContent = 'Save Solution';
-      submitBtn.disabled = false;
-      submitBtn.classList.remove('success');
-      widget.querySelector('.leetr-textarea').value = '';
-      selectedTime = '';
-      selectedSpace = '';
-      widget.querySelectorAll('.leetr-button').forEach(btn => {
-        btn.classList.remove('selected');
-      });
-      widget.classList.remove('open');
-      toggle.style.display = 'flex';
-    }, 2000);
-  });
-
-} catch (error) {
-  console.error('Error:', error);
-  submitBtn.textContent = 'Save Solution';
-  submitBtn.disabled = false;
-  showStatus(error.message);
+  // Start observing URL changes
+  observeUrlChanges();
 }
-  });
+
+// Call this when the page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', createTrackerTab);
+} else {
+  createTrackerTab();
 }
 
 // Listen for messages from popup
@@ -269,9 +183,151 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true; // Keep the message channel open for async responses
 });
 
-// Initialize widget when the page loads
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', createWidget);
-} else {
-  createWidget();
+function initializeTrackerFunctionality(tab) {
+  let selectedTime = '';
+  let selectedSpace = '';
+
+  // Handle complexity button clicks
+  ['timeComplexity', 'spaceComplexity'].forEach(groupId => {
+    tab.querySelector(`#${groupId}`).addEventListener('click', (e) => {
+      if (!e.target.classList.contains('btn-complexity')) return;
+      
+      const buttons = e.currentTarget.querySelectorAll('.btn-complexity');
+      buttons.forEach(btn => btn.classList.remove('selected'));
+      e.target.classList.add('selected');
+
+      if (groupId === 'timeComplexity') {
+        selectedTime = e.target.dataset.value;
+      } else {
+        selectedSpace = e.target.dataset.value;
+      }
+    });
+  });
+
+  // Handle form submission
+  tab.querySelector('#submit').addEventListener('click', async () => {
+    const submitBtn = tab.querySelector('#submit');
+    const solution = tab.querySelector('#solution').value;
+    
+    if (!selectedTime || !selectedSpace || !solution) {
+      showError(tab, 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      submitBtn.textContent = 'Saving...';
+      submitBtn.disabled = true;
+
+      const problemData = getProblemData();
+      
+      chrome.runtime.sendMessage({
+        type: 'PROBLEM_SOLVED',
+        data: {
+          ...problemData,
+          timeComplexity: selectedTime,
+          spaceComplexity: selectedSpace,
+          solution,
+          notes: ''
+        }
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          showError(tab, chrome.runtime.lastError.message);
+          submitBtn.textContent = 'Save Solution';
+          submitBtn.disabled = false;
+          return;
+        }
+        
+        showSuccess(tab, 'Problem saved successfully!');
+        submitBtn.textContent = 'Saved!';
+        submitBtn.classList.add('success');
+        
+        setTimeout(() => {
+          submitBtn.textContent = 'Save Solution';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('success');
+          tab.querySelector('#solution').value = '';
+          tab.querySelectorAll('.btn-complexity').forEach(btn => btn.classList.remove('selected'));
+          selectedTime = '';
+          selectedSpace = '';
+          tab.classList.remove('expanded');
+        }, 2000);
+      });
+
+    } catch (error) {
+      console.error('Error:', error);
+      showError(tab, error.message);
+      submitBtn.textContent = 'Save Solution';
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Update problem info
+  const problemData = getProblemData();
+  updateProblemInfo(tab, problemData);
+}
+
+function showError(tab, message) {
+  const errorEl = tab.querySelector('#error');
+  errorEl.textContent = message;
+  errorEl.classList.remove('hidden');
+  setTimeout(() => errorEl.classList.add('hidden'), 3000);
+}
+
+function showSuccess(tab, message) {
+  const successEl = tab.querySelector('#success');
+  successEl.textContent = message;
+  successEl.classList.remove('hidden');
+  setTimeout(() => successEl.classList.add('hidden'), 3000);
+}
+
+function updateProblemInfo(tab, info) {
+  const { problemName, difficulty, leetcodeId } = info;
+  const titleEl = tab.querySelector('.problem-title');
+  const detailsEl = tab.querySelector('.problem-details');
+  
+  if (problemName && window.location.href.includes('leetcode.com/problems/')) {
+    titleEl.textContent = problemName;
+    detailsEl.textContent = `${difficulty} • Problem #${leetcodeId}`;
+    tab.style.display = 'flex'; // Show the tracker
+  } else {
+    titleEl.textContent = 'Leetr';
+    detailsEl.textContent = 'Please open a LeetCode problem page';
+    tab.style.display = 'none'; // Hide the tracker when not on a problem page
+  }
+}
+
+// Update the observeUrlChanges function
+function observeUrlChanges() {
+  setInterval(() => {
+    if (currentUrl !== window.location.href) {
+      const oldProblemId = getProblemIdFromUrl(currentUrl);
+      const newProblemId = getProblemIdFromUrl(window.location.href);
+      
+      currentUrl = window.location.href;
+      
+      // Only update if we're on a problem page and the problem ID has changed
+      if (currentUrl.includes('leetcode.com/problems/') && oldProblemId !== newProblemId) {
+        const tab = document.querySelector('.leetcode-tracker-tab');
+        if (tab) {
+          const problemData = getProblemData();
+          updateProblemInfo(tab, problemData);
+          
+          // Reset the form
+          tab.querySelector('#solution').value = '';
+          tab.querySelectorAll('.btn-complexity').forEach(btn => btn.classList.remove('selected'));
+          tab.classList.remove('expanded');
+        }
+      }
+    }
+  }, 1000);
+}
+
+// Add this helper function to extract problem ID from URL
+function getProblemIdFromUrl(url) {
+  try {
+    const match = url.match(/problems\/([^\/]+)/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
 }

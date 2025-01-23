@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateProblemInfo(info) {
     const { problemName, difficulty, leetcodeId } = info;
-    const titleEl = document.querySelector('#problemInfo h2');
-    const detailsEl = document.querySelector('#problemInfo p');
+    const titleEl = document.querySelector('.problem-title');
+    const detailsEl = document.querySelector('.problem-details');
     
     if (problemName) {
       titleEl.textContent = problemName;

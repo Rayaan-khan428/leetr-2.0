@@ -4,189 +4,200 @@
   <title>Leetr</title>
   <style>
     body {
-      width: 400px;
+      width: 320px;
       margin: 0;
       padding: 0;
       font-family: ui-sans-serif, system-ui, -apple-system;
-      background: #0a0a0a;
+      background: #000000;
       color: #fff;
+      min-height: 500px;
     }
 
     .container {
-      padding: 20px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
-    #problemInfo {
-      background: #111111;
-      margin: -20px -20px 24px -20px;
-      padding: 24px;
-      border-bottom: 1px solid #222222;
-      position: relative;
-    }
-
-    h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin: 0 0 8px 0;
-      color: #fff;
+    .tracker-header {
+      padding: 16px;
+      border-bottom: 1px solid rgba(24, 118, 255, 0.1);
       display: flex;
       align-items: center;
-      gap: 12px;
-      letter-spacing: -0.025em;
+      gap: 8px;
+      background: #000000;
     }
 
-    h2::before {
-      content: '';
-      display: block;
-      width: 10px;
-      height: 10px;
-      background: #4F46E5;
-      border-radius: 50%;
-    }
-
-    p {
-      color: #6b7280;
-      margin: 0;
-      font-size: 0.875rem;
-      letter-spacing: -0.025em;
-    }
-
-    .section {
-      margin-bottom: 24px;
-    }
-
-    .label {
-      display: block;
-      font-size: 0.875rem;
+    .tracker-header h2 {
+      font-size: 15px;
       font-weight: 500;
-      color: #d1d5db;
-      margin-bottom: 12px;
-      letter-spacing: -0.025em;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .tracker-content {
+      padding: 16px;
+      color: #efefef;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+      margin: 16px 0 8px;
+      color: #1876ff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
     }
 
     .complexity-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 16px;
+      margin: 8px 0;
     }
 
     .btn-complexity {
+      background: rgba(24, 118, 255, 0.05);
       padding: 8px;
-      border: 1px solid #222222;
-      background: #111111;
-      color: #d1d5db;
-      border-radius: 6px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
       cursor: pointer;
-      font-size: 0.875rem;
-      transition: all 0.2s;
-      font-weight: 500;
-      text-transform: none;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(24, 118, 255, 0.1);
+      color: #efefef;
     }
 
     .btn-complexity:hover {
-      background: #171717;
-      border-color: #333333;
+      background: rgba(24, 118, 255, 0.1);
+      border-color: #1876ff;
     }
 
     .btn-complexity.selected {
-      background: #4F46E5;
-      border-color: #4F46E5;
-      color: #fff;
+      background: rgba(24, 118, 255, 0.15);
+      border-color: #1876ff;
+      color: #1876ff;
     }
 
     textarea {
       width: 100%;
-      min-height: 140px;
-      padding: 16px;
-      background: #111111;
-      border: 1px solid #222222;
-      border-radius: 6px;
-      color: #d1d5db;
-      font-family: inherit;
-      font-size: 0.875rem;
+      background: rgba(24, 118, 255, 0.05);
+      border: 1px solid rgba(24, 118, 255, 0.1);
+      border-radius: 4px;
+      color: #efefef;
+      padding: 12px;
+      margin: 8px 0;
+      min-height: 120px;
       resize: vertical;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.5;
       box-sizing: border-box;
-      line-height: 1.6;
-      transition: all 0.2s;
     }
 
     textarea:focus {
       outline: none;
-      border-color: #4F46E5;
-      box-shadow: 0 0 0 1px #4F46E5;
-    }
-
-    textarea::placeholder {
-      color: #4b5563;
+      border-color: #1876ff;
+      box-shadow: 0 0 0 2px rgba(24, 118, 255, 0.1);
     }
 
     #submit {
-      width: 100%;
-      padding: 12px;
-      background: #4F46E5;
-      color: #fff;
+      background: linear-gradient(to right, #1876ff, #4d94ff);
+      color: white;
       border: none;
-      border-radius: 6px;
-      font-weight: 500;
-      font-size: 0.875rem;
+      padding: 10px 16px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: all 0.2s;
-      letter-spacing: -0.025em;
+      width: 100%;
+      font-weight: 500;
+      margin-top: 16px;
+      transition: all 0.2s ease;
+      font-size: 14px;
     }
 
     #submit:hover {
-      background: #4338CA;
+      filter: brightness(1.1);
+      transform: translateY(-1px);
     }
 
-    #submit:disabled {
-      opacity: 0.7;
+    #submit:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    #submit.disabled {
+      opacity: 0.5;
       cursor: not-allowed;
+      transform: none;
+    }
+
+    #submit.success {
+      background: linear-gradient(to right, #059669, #34d399);
     }
 
     .status {
       margin-top: 16px;
       padding: 12px;
-      border-radius: 6px;
-      font-size: 0.875rem;
+      border-radius: 4px;
+      font-size: 13px;
       text-align: center;
     }
 
     #error {
-      background: #450a0a;
+      background: rgba(220, 38, 38, 0.1);
       color: #fca5a5;
-      border: 1px solid #dc2626;
+      border: 1px solid rgba(220, 38, 38, 0.2);
     }
 
     #success {
-      background: #064e3b;
+      background: rgba(5, 150, 105, 0.1);
       color: #6ee7b7;
-      border: 1px solid #059669;
+      border: 1px solid rgba(5, 150, 105, 0.2);
     }
 
     .hidden {
       display: none;
     }
 
-    ::-webkit-scrollbar {
+    /* Custom scrollbar */
+    .tracker-content::-webkit-scrollbar {
       width: 8px;
     }
 
-    ::-webkit-scrollbar-track {
-      background: #111111;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #333333;
+    .tracker-content::-webkit-scrollbar-track {
+      background: rgba(24, 118, 255, 0.05);
       border-radius: 4px;
     }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: #404040;
+    .tracker-content::-webkit-scrollbar-thumb {
+      background: rgba(24, 118, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .tracker-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(24, 118, 255, 0.2);
+    }
+
+    .problem-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .problem-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .problem-details {
+      font-size: 13px;
+      color: #6b7280;
     }
 
     .container.no-problem .section,
@@ -194,57 +205,51 @@
       opacity: 0.5;
       pointer-events: none;
     }
-
-    #submit.success {
-      background: #059669;
-    }
-
-    #submit.disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: #4F46E5;
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div id="problemInfo">
-      <h2>Container With Most Water</h2>
-      <p>Medium • Problem #11</p>
-    </div>
-
-    <div class="section">
-      <label class="label">Time Complexity</label>
-      <div id="timeComplexity" class="complexity-grid">
-        <button class="btn-complexity" data-value="O(1)">O(1)</button>
-        <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
-        <button class="btn-complexity" data-value="O(n)">O(n)</button>
-        <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
-        <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
-        <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+    <div class="tracker-header">
+      <div class="problem-info">
+        <div class="problem-title">Container With Most Water</div>
+        <div class="problem-details">Medium • Problem #11</div>
       </div>
     </div>
 
-    <div class="section">
-      <label class="label">Space Complexity</label>
-      <div id="spaceComplexity" class="complexity-grid">
-        <button class="btn-complexity" data-value="O(1)">O(1)</button>
-        <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
-        <button class="btn-complexity" data-value="O(n)">O(n)</button>
-        <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
-        <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
-        <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+    <div class="tracker-content">
+      <div class="section">
+        <div class="section-title">Time Complexity</div>
+        <div id="timeComplexity" class="complexity-grid">
+          <button class="btn-complexity" data-value="O(1)">O(1)</button>
+          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
+          <button class="btn-complexity" data-value="O(n)">O(n)</button>
+          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
+          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
+          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+        </div>
       </div>
-    </div>
 
-    <div class="section">
-      <label class="label">Solution Approach</label>
-      <textarea id="solution" placeholder="Describe your approach..."></textarea>
-    </div>
+      <div class="section">
+        <div class="section-title">Space Complexity</div>
+        <div id="spaceComplexity" class="complexity-grid">
+          <button class="btn-complexity" data-value="O(1)">O(1)</button>
+          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
+          <button class="btn-complexity" data-value="O(n)">O(n)</button>
+          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
+          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
+          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+        </div>
+      </div>
 
-    <button id="submit">Save Solution</button>
-    <div id="error" class="status hidden"></div>
-    <div id="success" class="status hidden"></div>
+      <div class="section">
+        <div class="section-title">Solution Approach</div>
+        <textarea id="solution" placeholder="Describe your approach..."></textarea>
+      </div>
+
+      <button id="submit">Save Solution</button>
+      <div id="error" class="status hidden"></div>
+      <div id="success" class="status hidden"></div>
+    </div>
   </div>
   <script src="popup.js"></script>
 </body>

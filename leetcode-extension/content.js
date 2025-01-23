@@ -54,12 +54,30 @@ function getProblemData() {
   const problemIndex = urlParts.indexOf('problems');
   const leetcodeId = problemIndex !== -1 ? urlParts[problemIndex + 1] : '';
 
+  // Get the actual solution code from the editor
+  let solution = '';
+  try {
+    // LeetCode's code editor is typically a Monaco editor
+    const editorElement = document.querySelector('.monaco-editor');
+    if (editorElement) {
+      // Get all text content from the editor
+      const codeLines = editorElement.querySelectorAll('.view-line');
+      solution = Array.from(codeLines)
+        .map(line => line.textContent)
+        .join('\n')
+        .trim();
+    }
+  } catch (error) {
+    console.error('Error getting solution:', error);
+  }
+
   const data = {
     leetcodeId,
     problemName,
     difficulty,
     url: window.location.href,
-    solvedAt: new Date().toISOString()
+    solvedAt: new Date().toISOString(),
+    solution // Add the actual code solution
   };
 
   console.log('Problem data collected:', data);
@@ -139,8 +157,8 @@ function createTrackerTab() {
       </div>
 
       <div class="section">
-        <div class="section-title">Solution Approach</div>
-        <textarea id="solution" placeholder="Describe your approach..."></textarea>
+        <div class="section-title">Notes</div>
+        <textarea id="solution" placeholder="Add your notes about the approach..."></textarea>
       </div>
 
       <button id="submit">Save Solution</button>
@@ -207,9 +225,9 @@ function initializeTrackerFunctionality(tab) {
   // Handle form submission
   tab.querySelector('#submit').addEventListener('click', async () => {
     const submitBtn = tab.querySelector('#submit');
-    const solution = tab.querySelector('#solution').value;
+    const notes = tab.querySelector('#solution').value; // This is now notes
     
-    if (!selectedTime || !selectedSpace || !solution) {
+    if (!selectedTime || !selectedSpace || !notes) {
       showError(tab, 'Please fill in all fields');
       return;
     }
@@ -226,8 +244,8 @@ function initializeTrackerFunctionality(tab) {
           ...problemData,
           timeComplexity: selectedTime,
           spaceComplexity: selectedSpace,
-          solution,
-          notes: ''
+          notes: notes, // Use the textarea content as notes
+          // solution is already included from getProblemData
         }
       }, (response) => {
         if (chrome.runtime.lastError) {

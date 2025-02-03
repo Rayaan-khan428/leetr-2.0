@@ -39,7 +39,7 @@ const LEETCODE_PROBLEMS = [
 const TIME_COMPLEXITIES = ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)', 'O(1)']
 const SPACE_COMPLEXITIES = ['O(n)', 'O(1)', 'O(log n)', 'O(n²)']
 
-const TARGET_EMAIL = 'rayaan.k.ca@gmail.com' // Replace with your email
+const TARGET_EMAIL = 'hassaan.taufiq@gmail.com' // Replace with your email
 
 async function main() {
   // Find the existing user

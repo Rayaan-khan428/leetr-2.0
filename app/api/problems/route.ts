@@ -141,20 +141,23 @@ export async function POST(request: Request) {
     } catch (tokenError) {
       console.error('Token verification failed:', tokenError);
       return NextResponse.json(
-        { error: 'Invalid token', details: tokenError.message },
+        { 
+          error: 'Invalid token', 
+          details: tokenError instanceof Error ? tokenError.message : 'Token verification failed'
+        },
         { status: 401 }
       );
     }
   } catch (error) {
     console.error('Detailed error:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
+      name: error instanceof Error ? error.name : 'Unknown error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : 'No stack trace',
     });
     return NextResponse.json(
       { 
         error: 'Error creating problem',
-        details: error.message || 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     );

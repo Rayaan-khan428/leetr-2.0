@@ -1,23 +1,9 @@
 import { NextRequest } from 'next/server'
-import { headers } from 'next/headers'
 import { verifyAuthToken } from '@/middleware/auth'
 import { prisma } from '@/prisma/client'
+import { clients } from './utils'
 
-
-// Store active connections
-const clients = new Set<{
-  userId: string;
-  send: (data: string) => void;
-}>();
-
-// Function to notify all clients of an update
-export function notifyClients(userId: string) {
-  clients.forEach(client => {
-    if (client.userId === userId) {
-      client.send('update');
-    }
-  });
-}
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {

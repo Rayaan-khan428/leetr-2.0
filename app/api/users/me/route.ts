@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/firebase/auth";
 import { headers } from "next/headers";
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const authHeader = headers().get("Authorization");

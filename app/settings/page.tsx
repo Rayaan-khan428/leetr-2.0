@@ -11,7 +11,7 @@ import { useAuth } from "@/context/AuthContext"
 import { getAuth } from "firebase/auth"
 import { app } from "@/lib/firebase"
 import { useDebouncedCallback } from 'use-debounce'
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { PhoneInput } from 'react-international-phone'
 import 'react-international-phone/style.css'
@@ -26,6 +26,9 @@ export default function SettingsPage() {
   const [verificationCode, setVerificationCode] = useState("")
   const [isVerifying, setIsVerifying] = useState(false)
   const [isSendingCode, setIsSendingCode] = useState(false)
+  const [friendActivitySMS, setFriendActivitySMS] = useState(false);
+  const searchParams = useSearchParams()
+  const tab = searchParams.get('tab')
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -43,6 +46,7 @@ export default function SettingsPage() {
           const settings = await response.json();
           setNotifications(settings.emailNotifications);
           setSmsEnabled(settings.smsEnabled);
+          setFriendActivitySMS(settings.friendActivitySMS);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -56,6 +60,7 @@ export default function SettingsPage() {
   const saveSettings = useDebouncedCallback(async (newSettings: { 
     emailNotifications?: boolean;
     smsEnabled?: boolean;
+    friendActivitySMS?: boolean;
   }) => {
     try {
       const token = await auth.currentUser?.getIdToken();
@@ -92,6 +97,16 @@ export default function SettingsPage() {
     setSmsEnabled(checked);
     saveSettings({ smsEnabled: checked });
     toast.success('SMS notification preference saved');
+  };
+
+  const handleFriendActivitySMSChange = (checked: boolean) => {
+    if (!user?.phoneVerified) {
+      toast.error('Please verify your phone number first');
+      return;
+    }
+    setFriendActivitySMS(checked);
+    saveSettings({ friendActivitySMS: checked });
+    toast.success('Friend activity notification preference saved');
   };
 
   const sendVerificationCode = async () => {
@@ -245,7 +260,7 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="general" className="space-y-6 sm:space-y-8">
+      <Tabs defaultValue={tab || "general"} className="space-y-6 sm:space-y-8">
         <TabsList className="flex flex-col sm:grid sm:grid-cols-3 w-full gap-2 sm:gap-4 bg-muted/50 p-1 rounded-lg">
           <TabsTrigger value="general" className="w-full rounded-md">General</TabsTrigger>
           <TabsTrigger value="sms" className="w-full rounded-md">SMS Notifications</TabsTrigger>
@@ -282,9 +297,9 @@ export default function SettingsPage() {
         {/* SMS Tab */}
         <TabsContent value="sms">
           <Card>
-            <CardHeader className="space-y-1 sm:space-y-2">
-              <CardTitle className="text-xl sm:text-2xl">SMS Notifications</CardTitle>
-              <CardDescription className="text-sm">
+            <CardHeader>
+              <CardTitle>SMS Notifications</CardTitle>
+              <CardDescription>
                 Set up SMS notifications for important updates
               </CardDescription>
             </CardHeader>
@@ -304,6 +319,23 @@ export default function SettingsPage() {
                     disabled={!user?.phoneVerified}
                   />
                 </div>
+
+                {/* Add Friend Activity Toggle */}
+                {smsEnabled && user?.phoneVerified && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-lg bg-muted/50 gap-3 sm:gap-4">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium">Friend Activity Notifications</label>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        Get notified when friends complete problems
+                      </p>
+                    </div>
+                    <Switch
+                      checked={friendActivitySMS}
+                      onCheckedChange={handleFriendActivitySMSChange}
+                      disabled={!user?.phoneVerified}
+                    />
+                  </div>
+                )}
 
                 {/* Phone Verification Section */}
                 {renderPhoneVerificationSection()}

@@ -3,6 +3,7 @@ import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { calculateNextReview } from '@/lib/utils/spaced-repetition'
+import { notifyFriendsOfCompletion } from '@/lib/utils/notifications'
 
 export async function POST(request: Request) {
   try {
@@ -114,9 +115,19 @@ export async function POST(request: Request) {
           }
         });
         console.log('Updated existing problem:', updatedProblem.id);
+        
+        // Add notification for updated problems too
+        try {
+          console.log('Notifying friends about updated problem...');
+          await notifyFriendsOfCompletion(user.id, problemName, difficulty);
+        } catch (notificationError) {
+          console.error('Failed to send notifications:', notificationError);
+        }
+        
         return NextResponse.json(updatedProblem);
       }
 
+      // Create new problem
       const newProblem = await prisma.user_problems.create({
         data: {
           id: uuidv4(),
@@ -136,6 +147,13 @@ export async function POST(request: Request) {
       });
       
       console.log('Created new problem:', newProblem.id);
+      try {
+        console.log('Notifying friends about new problem...');
+        await notifyFriendsOfCompletion(user.id, problemName, difficulty);
+      } catch (notificationError) {
+        console.error('Failed to send notifications:', notificationError);
+      }
+
       return NextResponse.json(newProblem, { status: 201 });
 
     } catch (tokenError) {

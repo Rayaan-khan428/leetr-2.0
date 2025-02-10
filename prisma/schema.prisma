@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = []
 }
 
@@ -9,21 +9,15 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum FriendshipRequestStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
-}
-
 model friend_requests {
-  id          String                @id
-  senderId    String
-  receiverId  String
-  status      FriendshipRequestStatus
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  sender      users                 @relation("SentRequests", fields: [senderId], references: [id])
-  receiver    users                 @relation("ReceivedRequests", fields: [receiverId], references: [id])
+  id         String                  @id
+  senderId   String
+  receiverId String
+  status     FriendshipRequestStatus
+  createdAt  DateTime                @default(now())
+  updatedAt  DateTime                @updatedAt
+  receiver   users                   @relation("ReceivedRequests", fields: [receiverId], references: [id])
+  sender     users                   @relation("SentRequests", fields: [senderId], references: [id])
 
   @@unique([senderId, receiverId])
 }
@@ -61,46 +55,53 @@ model user_problems {
 }
 
 model user_settings {
-  id         String   @id
-  userId     String   @unique
-  smsEnabled Boolean  @default(false)
-  emailNotifications Boolean @default(true)
-  timezone   String   @default("UTC")
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  users      users    @relation(fields: [userId], references: [id])
+  id                 String   @id
+  userId             String   @unique
+  smsEnabled         Boolean  @default(true)
+  emailNotifications Boolean  @default(true)
+  friendActivitySMS  Boolean  @default(true)
+  timezone           String   @default("UTC")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  users              users    @relation(fields: [userId], references: [id])
 }
 
 model user_statistics {
-  id            String   @id
-  userId        String   @unique
-  streak        Int      @default(0)
-  lastSolved    DateTime?
-  totalSolved   Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  users         users    @relation(fields: [userId], references: [id])
-  lastStreak    Int      @default(0)
-  maxStreak     Int      @default(0)
+  id          String    @id
+  userId      String    @unique
+  streak      Int       @default(0)
+  lastSolved  DateTime?
+  totalSolved Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastStreak  Int       @default(0)
+  maxStreak   Int       @default(0)
+  users       users     @relation(fields: [userId], references: [id])
 }
 
 model users {
-  id            String          @id
-  firebaseUid   String          @unique
-  email         String          @unique
-  displayName   String?         // From OAuth providers
-  photoURL      String?         // From OAuth providers
-  phoneNumber   String?         // Keep for SMS verification
-  phoneVerified Boolean         @default(false)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  user_problems user_problems[]
-  user_settings user_settings?
-  user_statistics user_statistics?
-  sentRequests     friend_requests[] @relation("SentRequests")
+  id               String            @id
+  firebaseUid      String            @unique
+  email            String            @unique
+  displayName      String?
+  photoURL         String?
+  phoneNumber      String?
+  phoneVerified    Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
   receivedRequests friend_requests[] @relation("ReceivedRequests")
+  sentRequests     friend_requests[] @relation("SentRequests")
   friends          friendships[]     @relation("UserFriends")
   friendsWith      friendships[]     @relation("UserFriendsWith")
+  user_problems    user_problems[]
+  user_settings    user_settings?
+  user_statistics  user_statistics?
+}
+
+enum FriendshipRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
 
 enum Difficulty {
@@ -108,4 +109,3 @@ enum Difficulty {
   MEDIUM
   HARD
 }
-

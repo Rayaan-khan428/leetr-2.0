@@ -49,6 +49,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from '@/hooks/use-toast'
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation"
+import { PhoneVerificationPrompt } from "@/components/friends/PhoneVerificationPrompt"
 
 interface User {
   id: string
@@ -131,6 +132,7 @@ export default function FriendsPage() {
     const [isSearchOpen, setIsSearchOpen] = useState(false)
     const [rankingMetric, setRankingMetric] = useState<string>('totalSolved')
     const [selectedFriendsForComparison, setSelectedFriendsForComparison] = useState<string[]>([])
+    const [showPhonePrompt, setShowPhonePrompt] = useState(false)
 
   // Fetch friend requests when the component mounts or tab changes
   useEffect(() => {
@@ -357,6 +359,11 @@ export default function FriendsPage() {
 
       // Show success message
       setError('')
+
+      // If user hasn't verified phone and this is their first friend request
+      if (!user?.phoneVerified && friends.length === 0) {
+        setShowPhonePrompt(true)
+      }
 
       await refreshFriendData()
     } catch (err) {
@@ -1287,6 +1294,11 @@ export default function FriendsPage() {
           </div>
         )}
       </div>
+
+      <PhoneVerificationPrompt 
+        open={showPhonePrompt} 
+        onClose={() => setShowPhonePrompt(false)} 
+      />
     </div>
   )
 }

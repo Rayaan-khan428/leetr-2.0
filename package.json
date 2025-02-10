@@ -55,7 +55,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.54.2",
     "react-international-phone": "^4.5.0",
-    "recharts": "^2.15.0",
+    "recharts": "^2.15.1",
     "sonner": "^1.7.2",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-react": "^5.12.0",

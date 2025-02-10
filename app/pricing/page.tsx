@@ -56,110 +56,129 @@ export default function PricingPage() {
         {/* Hero Section with Enhanced Typography */}
         <div className="text-center space-y-4 mb-16">
           <h1 className="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-slate-500 dark:from-blue-400 dark:to-slate-300 [background-clip:text]">
-            Simple, transparent pricing
+            A variety of plans for all students
           </h1>
           <p className="text-slate-600 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-            Start for free, upgrade as you grow. Cancel at any time.
+            Start for free, upgrade for more features. Cancel at any time.
           </p>
         </div>
 
-        {/* Pricing Toggle */}
-        <div className="mb-16">
-          <div className="bg-white/5 backdrop-blur-xl rounded-full p-1 inline-flex relative">
-            {frequencies.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setFrequency(option)}
-                className={cn(
-                  'px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 relative',
-                  frequency.value === option.value
-                    ? 'bg-blue-500 text-white shadow-lg'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
-                )}
-              >
-                {option.label}
-                {option.value === '2' && (
-                  <span className="absolute -top-3 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full animate-bounce">
-                    Save 17%
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
-          {updatedTiers.map((tier) => (
-            <div
-              key={tier.id}
-              className={cn(
-                'relative rounded-2xl overflow-hidden',
-                tier.highlighted ? styles.fancyGlassContrast : 'bg-white/5 backdrop-blur-sm',
-                'border border-slate-200/10 dark:border-slate-700/30',
-                'transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl',
-              )}
-            >
-              {tier.highlighted && (
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-slate-500" />
-              )}
-              
-              <div className="p-8">
-                <div className="flex justify-between items-baseline">
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-                    {tier.name}
-                  </h3>
-                  {tier.highlighted && (
-                    <span className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30 rounded-full">
-                      Popular
-                    </span>
-                  )}
-                </div>
-
-                <p className="mt-4 text-slate-600 dark:text-slate-400">
-                  {tier.description}
-                </p>
-
-                <div className="mt-6 flex items-baseline">
-                  <span className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
-                    {typeof tier.price === 'string' ? tier.price : 
-                     (tier.price as Record<string, string>)[frequency.value]}
-                  </span>
-                  <span className="ml-1 text-slate-500 dark:text-slate-400">
-                    {frequency.priceSuffix}
-                  </span>
-                  {frequency.value === '2' && typeof tier.price === 'object' && (tier.price as Record<string, string>)['1'] !== '$0' && (
-                    <span className="ml-2 text-sm text-green-500 font-medium">
-                      (2 months free)
-                    </span>
-                  )}
-                </div>
-
-                <Button
-                  className={cn(
-                    'mt-8 w-full py-6 text-base font-medium transition-all duration-200',
-                    tier.highlighted
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                      : 'bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600'
-                  )}
-                >
-                  {tier.cta}
-                </Button>
-
-                <ul className="mt-8 space-y-4">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-center text-slate-700 dark:text-slate-300">
-                      <CheckIcon className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+        {/* Pricing Content with Overlay */}
+        <div className="relative w-full">
+          {/* Blurred Content */}
+          <div className="filter blur-sm pointer-events-none">
+            {/* Pricing Toggle */}
+            <div className="mb-16 flex justify-center">
+              <div className="bg-white/5 backdrop-blur-xl rounded-full p-1 inline-flex relative">
+                {frequencies.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setFrequency(option)}
+                    className={cn(
+                      'px-6 py-2 rounded-full text-sm font-medium transition-all duration-200 relative',
+                      frequency.value === option.value
+                        ? 'bg-blue-500 text-white shadow-lg'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
+                    )}
+                  >
+                    {option.label}
+                    {option.value === '2' && (
+                      <span className="absolute -top-3 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full animate-bounce">
+                        Save 17%
+                      </span>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
-          ))}
+
+            {/* Pricing Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
+              {updatedTiers.map((tier) => (
+                <div
+                  key={tier.id}
+                  className={cn(
+                    'relative rounded-2xl overflow-hidden',
+                    tier.highlighted ? styles.fancyGlassContrast : 'bg-white/5 backdrop-blur-sm',
+                    'border border-slate-200/10 dark:border-slate-700/30',
+                    'transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl',
+                  )}
+                >
+                  {tier.highlighted && (
+                    <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-slate-500" />
+                  )}
+                  
+                  <div className="p-8">
+                    <div className="flex justify-between items-baseline">
+                      <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {tier.name}
+                      </h3>
+                      {tier.highlighted && (
+                        <span className="px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 dark:text-blue-400 dark:bg-blue-900/30 rounded-full">
+                          Popular
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="mt-4 text-slate-600 dark:text-slate-400">
+                      {tier.description}
+                    </p>
+
+                    <div className="mt-6 flex items-baseline">
+                      <span className="text-5xl font-bold tracking-tight text-slate-900 dark:text-white">
+                        {typeof tier.price === 'string' ? tier.price : 
+                         (tier.price as Record<string, string>)[frequency.value]}
+                      </span>
+                      <span className="ml-1 text-slate-500 dark:text-slate-400">
+                        {frequency.priceSuffix}
+                      </span>
+                      {frequency.value === '2' && typeof tier.price === 'object' && (tier.price as Record<string, string>)['1'] !== '$0' && (
+                        <span className="ml-2 text-sm text-green-500 font-medium">
+                          (2 months free)
+                        </span>
+                      )}
+                    </div>
+
+                    <Button
+                      className={cn(
+                        'mt-8 w-full py-6 text-base font-medium transition-all duration-200',
+                        tier.highlighted
+                          ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                          : 'bg-slate-800 hover:bg-slate-700 text-white dark:bg-slate-700 dark:hover:bg-slate-600'
+                      )}
+                    >
+                      {tier.cta}
+                    </Button>
+
+                    <ul className="mt-8 space-y-4">
+                      {tier.features.map((feature) => (
+                        <li key={feature} className="flex items-center text-slate-700 dark:text-slate-300">
+                          <CheckIcon className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Centered Overlay Message */}
+          <div className="absolute inset-0 flex items-center justify-center z-20">
+            <div className="max-w-2xl mx-auto text-center p-8 bg-blue-500/10 backdrop-blur-xl rounded-xl border border-blue-500/20 shadow-2xl">
+              <h2 className="text-3xl font-bold text-blue-500 mb-4">🎉 Beta Tester Access</h2>
+              <p className="text-lg text-slate-700 dark:text-slate-300">
+                As an early supporter, you have free access to all premium features during our beta period. Thank you for helping us improve Leetr!
+              </p>
+            </div>
+          </div>
+
+          {/* Prevent interactions with blurred content */}
+          <div className="absolute inset-0 z-10" />
         </div>
 
-        {/* FAQ or Additional Info Section */}
+        {/* FAQ Section */}
         <div className="mt-20 text-center">
           <p className="text-slate-600 dark:text-slate-400">
             Have questions? <a href="/contact" className="text-blue-500 hover:text-blue-600">Contact us</a>

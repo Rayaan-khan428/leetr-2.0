@@ -29,7 +29,7 @@ export const tiers: PricingTier[] = [
     name: 'Free',
     id: '0',
     href: '/subscribe',
-    price: { '1': '$0', '2': '$0' },
+    price: { '1': '---', '2': '---' },
     discountPrice: { '1': '', '2': '' },
     description: `Our free tier plan for students or anyone on a budget.`,
     features: [
@@ -46,7 +46,7 @@ export const tiers: PricingTier[] = [
     name: 'Starter',
     id: '1',
     href: '/subscribe',
-    price: { '1': '$4.99', '2': '$49.99' },
+    price: { '1': '---', '2': '---' },
     discountPrice: { '1': '', '2': '' },
     description: `Use Leetr to practice Leetcode and compete with friends.`,
     features: [
@@ -65,7 +65,7 @@ export const tiers: PricingTier[] = [
     name: 'Pro',
     id: '2',
     href: '/contact-us',
-    price: { '1': '$7.99', '2': '$79.99' },
+    price: { '1': '---', '2': '---' },
     discountPrice: { '1': '', '2': '' },
     description: `Use Leetr to compete with friends and ace your next interview.`,
     features: [

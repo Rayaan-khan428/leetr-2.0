@@ -21,17 +21,17 @@ export function Navbar() {
         <div className="flex items-center gap-8">
           <ThemeToggle />
           <nav className="flex items-center gap-6">
-            {/* <Link 
-              href="/pricing"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-            >
-              Pricing
-            </Link> */}
             <Link 
               href="/about"
               className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
             >
               About
+            </Link>
+            <Link 
+              href="/pricing"
+              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              Pricing
             </Link>
             <Link href="/login">
               <ShimmerButton className="rounded-lg py-0.5 px-4 text-sm h-10">

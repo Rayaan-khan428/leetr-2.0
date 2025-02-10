@@ -3,12 +3,22 @@
   "name": "LeetCode Problem Tracker",
   "version": "1.0",
   "description": "Track LeetCode problems with complexity and solutions",
-  "permissions": ["activeTab", "cookies"],
+  "permissions": [
+    "activeTab",
+    "cookies",
+    "scripting"
+  ],
   "host_permissions": [
-    "https://leetcode.com/*",
+    "*://*.leetcode.com/*",
     "http://localhost:3000/*"
   ],
-  "action": {
-    "default_popup": "popup.html"
-  }
+  "content_scripts": [{
+    "matches": ["*://*.leetcode.com/*"],
+    "js": ["content.js"],
+    "css": ["content.css"]
+  }],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {}
 }

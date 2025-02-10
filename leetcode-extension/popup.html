@@ -1,105 +1,256 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LeetCode Tracker</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <title>Leetr</title>
   <style>
     body {
-      width: 400px;
-      background: #fafafa;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont;
+      width: 320px;
+      margin: 0;
+      padding: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system;
+      background: #000000;
+      color: #fff;
+      min-height: 500px;
     }
 
-    .btn {
-      @apply px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200;
+    .container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tracker-header {
+      padding: 16px;
+      border-bottom: 1px solid rgba(24, 118, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #000000;
+    }
+
+    .tracker-header h2 {
+      font-size: 15px;
+      font-weight: 500;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .tracker-content {
+      padding: 16px;
+      color: #efefef;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 500;
+      margin: 16px 0 8px;
+      color: #1876ff;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .section-title:first-child {
+      margin-top: 0;
+    }
+
+    .complexity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 8px 0;
     }
 
     .btn-complexity {
-      @apply px-3 py-2 text-sm font-medium rounded-lg transition-all;
-      @apply border border-gray-200 bg-white hover:bg-gray-50;
-      @apply text-gray-700 hover:text-gray-900;
+      background: rgba(24, 118, 255, 0.05);
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(24, 118, 255, 0.1);
+      color: #efefef;
+    }
+
+    .btn-complexity:hover {
+      background: rgba(24, 118, 255, 0.1);
+      border-color: #1876ff;
     }
 
     .btn-complexity.selected {
-      @apply bg-blue-50 text-blue-700 border-blue-200;
-      @apply ring-2 ring-blue-500 ring-opacity-50;
+      background: rgba(24, 118, 255, 0.15);
+      border-color: #1876ff;
+      color: #1876ff;
     }
 
-    .input-area {
-      @apply w-full px-3 py-2.5 text-sm rounded-lg border;
-      @apply bg-white border-gray-200;
-      @apply focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
-      @apply placeholder-gray-400;
+    textarea {
+      width: 100%;
+      background: rgba(24, 118, 255, 0.05);
+      border: 1px solid rgba(24, 118, 255, 0.1);
+      border-radius: 4px;
+      color: #efefef;
+      padding: 12px;
+      margin: 8px 0;
+      min-height: 120px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.5;
+      box-sizing: border-box;
     }
 
-    .card {
-      @apply bg-white rounded-xl border border-gray-200;
-      @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+    textarea:focus {
+      outline: none;
+      border-color: #1876ff;
+      box-shadow: 0 0 0 2px rgba(24, 118, 255, 0.1);
+    }
+
+    #submit {
+      background: linear-gradient(to right, #1876ff, #4d94ff);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 500;
+      margin-top: 16px;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    #submit:hover {
+      filter: brightness(1.1);
+      transform: translateY(-1px);
+    }
+
+    #submit:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    #submit.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #submit.success {
+      background: linear-gradient(to right, #059669, #34d399);
+    }
+
+    .status {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    #error {
+      background: rgba(220, 38, 38, 0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(220, 38, 38, 0.2);
+    }
+
+    #success {
+      background: rgba(5, 150, 105, 0.1);
+      color: #6ee7b7;
+      border: 1px solid rgba(5, 150, 105, 0.2);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Custom scrollbar */
+    .tracker-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .tracker-content::-webkit-scrollbar-track {
+      background: rgba(24, 118, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .tracker-content::-webkit-scrollbar-thumb {
+      background: rgba(24, 118, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    .tracker-content::-webkit-scrollbar-thumb:hover {
+      background: rgba(24, 118, 255, 0.2);
+    }
+
+    .problem-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .problem-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .problem-details {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    .container.no-problem .section,
+    .container.no-problem #submit {
+      opacity: 0.5;
+      pointer-events: none;
     }
   </style>
 </head>
-<body class="p-6 space-y-6">
-  <!-- Header Card -->
-  <div class="card p-4">
-    <div id="problemInfo" class="space-y-2">
-      <div class="flex items-center gap-2">
-        <div class="w-2 h-2 rounded-full bg-green-500"></div>
-        <h2 class="text-lg font-semibold text-gray-900">LeetCode Problem Tracker</h2>
+<body>
+  <div class="container">
+    <div class="tracker-header">
+      <div class="problem-info">
+        <div class="problem-title">Container With Most Water</div>
+        <div class="problem-details">Medium • Problem #11</div>
       </div>
-      <p class="text-sm text-gray-500">Track your problem-solving journey</p>
+    </div>
+
+    <div class="tracker-content">
+      <div class="section">
+        <div class="section-title">Time Complexity</div>
+        <div id="timeComplexity" class="complexity-grid">
+          <button class="btn-complexity" data-value="O(1)">O(1)</button>
+          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
+          <button class="btn-complexity" data-value="O(n)">O(n)</button>
+          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
+          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
+          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Space Complexity</div>
+        <div id="spaceComplexity" class="complexity-grid">
+          <button class="btn-complexity" data-value="O(1)">O(1)</button>
+          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
+          <button class="btn-complexity" data-value="O(n)">O(n)</button>
+          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
+          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
+          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Solution Approach</div>
+        <textarea id="solution" placeholder="Describe your approach..."></textarea>
+      </div>
+
+      <button id="submit">Save Solution</button>
+      <div id="error" class="status hidden"></div>
+      <div id="success" class="status hidden"></div>
     </div>
   </div>
-
-  <!-- Main Form -->
-  <div class="space-y-5">
-    <!-- Time Complexity -->
-    <div class="space-y-3">
-      <label class="block text-sm font-medium text-gray-700">Time Complexity</label>
-      <div class="grid grid-cols-3 gap-2" id="timeComplexity">
-        <button class="btn-complexity" data-value="O(1)">O(1)</button>
-        <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
-        <button class="btn-complexity" data-value="O(n)">O(n)</button>
-        <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
-        <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
-        <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
-      </div>
-    </div>
-
-    <!-- Space Complexity -->
-    <div class="space-y-3">
-      <label class="block text-sm font-medium text-gray-700">Space Complexity</label>
-      <div class="grid grid-cols-3 gap-2" id="spaceComplexity">
-        <button class="btn-complexity" data-value="O(1)">O(1)</button>
-        <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
-        <button class="btn-complexity" data-value="O(n)">O(n)</button>
-        <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
-        <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
-        <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
-      </div>
-    </div>
-
-    <!-- Solution -->
-    <div class="space-y-3">
-      <label class="block text-sm font-medium text-gray-700">Solution Approach</label>
-      <textarea
-        id="solution"
-        class="input-area min-h-[120px] resize-none"
-        placeholder="Describe your solution approach..."
-      ></textarea>
-    </div>
-
-    <!-- Submit Button -->
-    <button id="submit" class="w-full btn bg-blue-600 text-white hover:bg-blue-700">
-      Save Problem
-    </button>
-
-    <!-- Error Message -->
-    <div id="error" class="text-sm text-red-600 hidden"></div>
-
-    <!-- Success Message -->
-    <div id="success" class="text-sm text-green-600 hidden"></div>
-  </div>
-
   <script src="popup.js"></script>
 </body>
 </html>

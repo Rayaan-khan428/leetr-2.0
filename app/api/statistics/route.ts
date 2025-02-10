@@ -2,6 +2,8 @@ import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     const authHeader = request.headers.get('authorization')

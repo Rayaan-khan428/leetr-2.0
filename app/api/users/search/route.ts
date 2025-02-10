@@ -3,6 +3,17 @@ import { prisma } from '../../../../prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
 
+type UserWithRequests = {
+  id: string;
+  displayName: string | null;
+  email: string;
+  photoURL: string | null;
+  sentRequests: { status: string }[];
+  receivedRequests: { status: string }[];
+}
+
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: Request) {
   try {
     // Auth check
@@ -72,14 +83,14 @@ export async function GET(request: Request) {
     })
 
     // Transform the results to include friendship status
-    const transformedUsers = users.map(user => ({
+    const transformedUsers = (users as UserWithRequests[]).map(user => ({
       id: user.id,
       displayName: user.displayName,
       email: user.email,
       photoURL: user.photoURL,
       friendshipStatus: 
-        (user as any).receivedRequests[0]?.status || 
-        (user as any).sentRequests[0]?.status || 
+        user.receivedRequests[0]?.status || 
+        user.sentRequests[0]?.status || 
         'NONE'
     }))
 

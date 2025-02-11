@@ -33,8 +33,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Input } from "@/components/ui/input"
 import { format } from 'date-fns'
 import type { Problem } from './types'
-import { ReviewCalendar } from './components/ReviewCalendar'
-import { UpcomingReviewsChart } from './components/UpcomingReviewsChart'
+import { ReviewSchedule } from './components/ReviewSchedule'
+import { DifficultyProgressChart } from './components/DifficultyProgressChart'
 
 // Interface matching our Prisma schema for user_problems
 interface Problem {
@@ -378,11 +378,11 @@ export default function ProblemsPage() {
       {/* Activity Overview */}
       {renderActivityHeatmap()}
 
-      {/* Upcoming Reviews Chart */}
-      <UpcomingReviewsChart problems={problems} />
+      {/* After the activity heatmap */}
+      <DifficultyProgressChart problems={problems} />
 
-      {/* Review Calendar */}
-      <ReviewCalendar problems={problems} setSearchQuery={setSearchQuery} />
+      {/* Review Schedule */}
+      <ReviewSchedule problems={problems} setSearchQuery={setSearchQuery} />
 
       {/* Form Section */}
       {error && (

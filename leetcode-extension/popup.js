@@ -141,4 +141,43 @@ document.addEventListener('DOMContentLoaded', () => {
       updateSubmitButtonState(false);
     }
   });
+
+  // Add cookie debug functionality
+  document.getElementById('debugButton').addEventListener('click', async () => {
+    const cookieInfo = document.getElementById('cookieInfo');
+    cookieInfo.style.display = 'block';
+    cookieInfo.textContent = 'Checking...';
+
+    try {
+      const cookie = await chrome.cookies.get({
+        url: 'https://leetcode.com',
+        name: 'LEETCODE_SESSION'
+      });
+
+      if (cookie) {
+        cookieInfo.textContent = `Session: ${cookie.value.substring(0, 8)}... (${cookie.secure ? 'Secure' : 'Not Secure'}, ${cookie.httpOnly ? 'HttpOnly' : 'Not HttpOnly'}, SameSite=${cookie.sameSite})`;
+
+        // Copy cookie to clipboard
+        navigator.clipboard.writeText(cookie.value).then(() => {
+          showSuccess('Cookie copied to clipboard');
+          
+          // Hide the cookie info after a delay
+          setTimeout(() => {
+            cookieInfo.style.display = 'none';
+          }, 3000);
+        });
+      } else {
+        cookieInfo.textContent = 'No LeetCode session found. Please log in.';
+        setTimeout(() => {
+          cookieInfo.style.display = 'none';
+        }, 3000);
+      }
+    } catch (error) {
+      cookieInfo.textContent = `Error: ${error.message}`;
+      console.error('Cookie access error:', error);
+      setTimeout(() => {
+        cookieInfo.style.display = 'none';
+      }, 3000);
+    }
+  });
 });

@@ -96,8 +96,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 function showStatus(message, type = 'error') {
-  const widget = document.querySelector('.leetr-widget');
-  const existingStatus = widget.querySelector('.leetr-status');
+  let widget = document.querySelector('.leetr-widget');
+  
+  // If widget doesn't exist, create it
+  if (!widget) {
+    widget = document.createElement('div');
+    widget.className = 'leetr-widget';
+    const content = document.createElement('div');
+    content.className = 'leetr-content';
+    widget.appendChild(content);
+    document.body.appendChild(widget);
+  }
+
+  const content = widget.querySelector('.leetr-content');
+  const existingStatus = content.querySelector('.leetr-status');
   if (existingStatus) {
     existingStatus.remove();
   }
@@ -105,10 +117,12 @@ function showStatus(message, type = 'error') {
   const statusDiv = document.createElement('div');
   statusDiv.className = `leetr-${type} leetr-status`;
   statusDiv.textContent = message;
-  widget.querySelector('.leetr-content').appendChild(statusDiv);
+  content.appendChild(statusDiv);
 
   setTimeout(() => {
-    statusDiv.remove();
+    if (statusDiv && statusDiv.parentNode) {
+      statusDiv.remove();
+    }
   }, 3000);
 }
 
@@ -145,7 +159,7 @@ function createTrackerTab() {
       </div>
 
       <div class="section">
-        <div class="section-title">Space Complexity</div>
+        <div class="section-title">Space Retard Complexity</div>
         <div id="spaceComplexity" class="complexity-grid">
           <button class="btn-complexity" data-value="O(1)">O(1)</button>
           <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
@@ -164,6 +178,10 @@ function createTrackerTab() {
       <button id="submit">Save Solution</button>
       <div id="error" class="status hidden"></div>
       <div id="success" class="status hidden"></div>
+
+      <!-- Add debug button -->
+      <button id="debugButton" style="margin-top: 8px; font-size: 12px; padding: 4px 8px; background: transparent; border: 1px dashed rgba(24, 118, 255, 0.3); color: #1876ff; width: auto; opacity: 0.7;">Debug: Test Cookie</button>
+      <div id="cookieInfo" style="margin-top: 4px; font-size: 10px; font-family: monospace; color: #6b7280; display: none;"></div>
     </div>
   `;
 
@@ -178,6 +196,44 @@ function createTrackerTab() {
 
   // Initialize all the event listeners from popup.js
   initializeTrackerFunctionality(tab);
+
+  // Add cookie debug functionality
+  const debugButton = tab.querySelector('#debugButton');
+  const cookieInfo = tab.querySelector('#cookieInfo');
+  
+  debugButton.addEventListener('click', async () => {
+    cookieInfo.style.display = 'block';
+    cookieInfo.textContent = 'Checking...';
+
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'GET_LEETCODE_COOKIE' });
+      
+      if (response.cookie) {
+        cookieInfo.textContent = `Session: ${response.cookie.value.substring(0, 8)}... (${response.cookie.secure ? 'Secure' : 'Not Secure'}, ${response.cookie.httpOnly ? 'HttpOnly' : 'Not HttpOnly'}, SameSite=${response.cookie.sameSite})`;
+        
+        // Copy cookie to clipboard
+        navigator.clipboard.writeText(response.cookie.value).then(() => {
+          showStatus('Cookie copied to clipboard', 'success');
+          
+          // Hide the cookie info after a delay
+          setTimeout(() => {
+            cookieInfo.style.display = 'none';
+          }, 3000);
+        });
+      } else {
+        cookieInfo.textContent = 'No LeetCode session found. Please log in.';
+        setTimeout(() => {
+          cookieInfo.style.display = 'none';
+        }, 3000);
+      }
+    } catch (error) {
+      cookieInfo.textContent = `Error: ${error.message}`;
+      console.error('Cookie access error:', error);
+      setTimeout(() => {
+        cookieInfo.style.display = 'none';
+      }, 3000);
+    }
+  });
 
   // Start observing URL changes
   observeUrlChanges();
@@ -349,3 +405,51 @@ function getProblemIdFromUrl(url) {
     return null;
   }
 }
+
+// Add styles for the widget
+const style = document.createElement('style');
+style.textContent = `
+  .leetr-widget {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  .leetr-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+  
+  .leetr-status {
+    padding: 12px 16px;
+    margin: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: opacity 0.3s ease;
+  }
+  
+  .leetr-error {
+    background-color: #fff2f0;
+    border: 1px solid #ffccc7;
+    color: #cf1322;
+  }
+  
+  .leetr-success {
+    background-color: #f6ffed;
+    border: 1px solid #b7eb8f;
+    color: #389e0d;
+  }
+  
+  .leetr-info {
+    background-color: #e6f7ff;
+    border: 1px solid #91d5ff;
+    color: #1890ff;
+  }
+`;
+
+document.head.appendChild(style);

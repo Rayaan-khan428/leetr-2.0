@@ -1,24 +1,33 @@
 {
   "manifest_version": 3,
-  "name": "LeetCode Problem Tracker",
+  "name": "Leetr",
   "version": "1.0",
-  "description": "Track LeetCode problems with complexity and solutions",
+  "description": "Track your LeetCode solutions",
   "permissions": [
     "activeTab",
     "cookies",
-    "scripting"
+    "storage"
   ],
   "host_permissions": [
-    "*://*.leetcode.com/*",
+    "https://leetcode.com/*",
     "http://localhost:3000/*"
   ],
-  "content_scripts": [{
-    "matches": ["*://*.leetcode.com/*"],
-    "js": ["content.js"],
-    "css": ["content.css"]
-  }],
+  "externally_connectable": {
+    "matches": [
+      "http://localhost:3000/*"
+    ]
+  },
   "background": {
     "service_worker": "background.js"
   },
-  "action": {}
+  "content_scripts": [
+    {
+      "matches": ["https://leetcode.com/problems/*"],
+      "js": ["content.js"],
+      "css": ["content.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
 }

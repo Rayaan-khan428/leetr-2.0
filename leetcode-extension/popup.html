@@ -205,6 +205,36 @@
       opacity: 0.5;
       pointer-events: none;
     }
+
+    /* Add styles for debug button */
+    #debugButton {
+      margin-top: 8px;
+      background: rgba(24, 118, 255, 0.05);
+      color: #1876ff;
+      border: 1px solid rgba(24, 118, 255, 0.1);
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    #debugButton:hover {
+      background: rgba(24, 118, 255, 0.1);
+      border-color: #1876ff;
+    }
+
+    #cookieInfo {
+      margin-top: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      word-break: break-all;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -230,7 +260,7 @@
       </div>
 
       <div class="section">
-        <div class="section-title">Space Complexity</div>
+        <div class="section-title">Space Retard Complexity</div>
         <div id="spaceComplexity" class="complexity-grid">
           <button class="btn-complexity" data-value="O(1)">O(1)</button>
           <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
@@ -249,6 +279,10 @@
       <button id="submit">Save Solution</button>
       <div id="error" class="status hidden"></div>
       <div id="success" class="status hidden"></div>
+
+      <!-- Compact debug tools -->
+      <button id="debugButton" style="margin-top: 8px; font-size: 12px; padding: 4px 8px; background: transparent; border: 1px dashed rgba(24, 118, 255, 0.3); color: #1876ff; width: auto; opacity: 0.7;">Debug: Test Cookie</button>
+      <div id="cookieInfo" style="margin-top: 4px; font-size: 10px; font-family: monospace; color: #6b7280; display: none;"></div>
     </div>
   </div>
   <script src="popup.js"></script>

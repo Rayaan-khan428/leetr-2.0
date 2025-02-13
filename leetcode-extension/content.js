@@ -112,82 +112,209 @@ function showStatus(message, type = 'error') {
   }, 3000);
 }
 
-function createTrackerTab() {
-  const tab = document.createElement('div');
-  tab.className = 'leetcode-tracker-tab';
+function createComplexityTracker() {
+  console.log('Attempting to create complexity tracker');
   
-  tab.innerHTML = `
-    <div class="tab-toggle">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-      </svg>
-      <span class="tab-toggle-text">Leetr</span>
-    </div>
-    
-    <div class="tracker-header">
-      <div class="problem-info">
-        <div class="problem-title">Loading...</div>
-        <div class="problem-details">Please wait...</div>
-      </div>
-    </div>
+  // Check if tracker already exists
+  if (document.querySelector('.complexity-tracker')) {
+    console.log('Tracker already exists, skipping creation');
+    return;
+  }
 
-    <div class="tracker-content">
-      <div class="section">
-        <div class="section-title">Time Complexity</div>
-        <div id="timeComplexity" class="complexity-grid">
-          <button class="btn-complexity" data-value="O(1)">O(1)</button>
-          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
-          <button class="btn-complexity" data-value="O(n)">O(n)</button>
-          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
-          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
-          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+  // Check if we're on a successful submission page
+  const submissionResult = document.querySelector('[data-e2e-locator="submission-result"]');
+  if (!submissionResult?.textContent?.includes('Accepted')) {
+    console.log('Not a successful submission, skipping tracker creation');
+    return;
+  }
+
+  // Find the parent container with the flex layout
+  const parentContainer = document.querySelector('.mx-auto.flex.w-full.max-w-\\[700px\\].flex-col.gap-4');
+  if (!parentContainer) {
+    console.log('Could not find parent container');
+    return;
+  }
+
+  const trackerHTML = `
+    <div class="flex w-full flex-col gap-2 rounded-lg border p-3 border-border-tertiary dark:border-border-tertiary">
+      <div class="flex flex-col gap-4">
+        <div class="flex items-center gap-2">
+          <div class="text-sm font-medium text-label-2 dark:text-dark-label-2">Time & Space Complexity</div>
+          <div class="flex-1"></div>
         </div>
-      </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="text-xs text-label-3 dark:text-dark-label-3">Time Complexity</div>
+            <div class="complexity-grid grid grid-cols-3 gap-2">
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(1)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(log n)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(n)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(n log n)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(n²)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(2ⁿ)</button>
+            </div>
+          </div>
 
-      <div class="section">
-        <div class="section-title">Space Complexity</div>
-        <div id="spaceComplexity" class="complexity-grid">
-          <button class="btn-complexity" data-value="O(1)">O(1)</button>
-          <button class="btn-complexity" data-value="O(log n)">O(log n)</button>
-          <button class="btn-complexity" data-value="O(n)">O(n)</button>
-          <button class="btn-complexity" data-value="O(n log n)">O(n log n)</button>
-          <button class="btn-complexity" data-value="O(n²)">O(n²)</button>
-          <button class="btn-complexity" data-value="O(2ⁿ)">O(2ⁿ)</button>
+          <div class="flex flex-col gap-2">
+            <div class="text-xs text-label-3 dark:text-dark-label-3">Space Complexity</div>
+            <div class="complexity-grid grid grid-cols-3 gap-2">
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(1)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(log n)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(n)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(n log n)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(n²)</button>
+              <button class="btn-complexity rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s">O(2ⁿ)</button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div class="section">
-        <div class="section-title">Notes</div>
-        <textarea id="solution" placeholder="Add your notes about the approach..."></textarea>
-      </div>
+        <div class="flex flex-col gap-2">
+          <div class="text-xs text-label-3 dark:text-dark-label-3">Notes</div>
+          <textarea 
+            class="w-full min-h-[80px] rounded-lg px-3 py-2 text-sm resize-none border border-border-tertiary focus:border-blue-s dark:border-dark-border-tertiary dark:focus:border-dark-blue-s bg-overlay-1 dark:bg-dark-overlay-1"
+            placeholder="Add your notes about the approach..."
+          ></textarea>
+        </div>
 
-      <button id="submit">Save Solution</button>
-      <div id="error" class="status hidden"></div>
-      <div id="success" class="status hidden"></div>
+        <button id="save-complexity" class="w-full rounded-lg bg-green-s text-label-r px-4 py-2 font-medium hover:bg-green-3 dark:hover:bg-dark-green-3">
+          Save Solution Details
+        </button>
+      </div>
     </div>
   `;
 
-  document.body.appendChild(tab);
+  // Create wrapper for tracker
+  const trackerWrapper = document.createElement('div');
+  trackerWrapper.className = 'complexity-tracker';
+  trackerWrapper.innerHTML = trackerHTML;
+  
+  // Insert the tracker as a child of the parent container
+  parentContainer.appendChild(trackerWrapper);
+  console.log('Successfully inserted tracker');
 
-  // Toggle functionality
-  const toggle = tab.querySelector('.tab-toggle');
-  toggle.addEventListener('click', () => {
-    tab.classList.toggle('expanded');
-    toggle.querySelector('svg').style.transform = tab.classList.contains('expanded') ? 'rotate(180deg)' : '';
-  });
-
-  // Initialize all the event listeners from popup.js
-  initializeTrackerFunctionality(tab);
-
-  // Start observing URL changes
-  observeUrlChanges();
+  // Initialize the complexity selection functionality
+  initializeComplexityTracking(trackerWrapper);
 }
 
-// Call this when the page loads
+function initializeComplexityTracking(container) {
+  let selectedTime = '';
+  let selectedSpace = '';
+
+  // Handle complexity button clicks
+  container.querySelectorAll('.complexity-grid').forEach((grid, index) => {
+    grid.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('btn-complexity')) return;
+      
+      const buttons = grid.querySelectorAll('.btn-complexity');
+      buttons.forEach(btn => {
+        btn.classList.remove('bg-blue-s', 'text-white');
+        btn.classList.add('border-border-tertiary');
+      });
+      
+      e.target.classList.add('bg-blue-s', 'text-white');
+      e.target.classList.remove('border-border-tertiary');
+
+      if (index === 0) {
+        selectedTime = e.target.textContent;
+      } else {
+        selectedSpace = e.target.textContent;
+      }
+    });
+  });
+
+  // Handle save button click
+  const saveButton = container.querySelector('#save-complexity');
+  const notesTextarea = container.querySelector('textarea');
+
+  saveButton.addEventListener('click', async () => {
+    if (!selectedTime || !selectedSpace || !notesTextarea.value.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      saveButton.textContent = 'Saving...';
+      saveButton.disabled = true;
+
+      const problemData = getProblemData();
+      
+      chrome.runtime.sendMessage({
+        type: 'PROBLEM_SOLVED',
+        data: {
+          ...problemData,
+          timeComplexity: selectedTime,
+          spaceComplexity: selectedSpace,
+          notes: notesTextarea.value.trim(),
+        }
+      }, (response) => {
+        if (chrome.runtime.lastError) {
+          alert(chrome.runtime.lastError.message);
+          saveButton.textContent = 'Save Solution Details';
+          saveButton.disabled = false;
+          return;
+        }
+        
+        saveButton.textContent = 'Saved!';
+        saveButton.classList.add('bg-green-3');
+        
+        setTimeout(() => {
+          saveButton.textContent = 'Save Solution Details';
+          saveButton.disabled = false;
+          saveButton.classList.remove('bg-green-3');
+          notesTextarea.value = '';
+          container.querySelectorAll('.btn-complexity').forEach(btn => {
+            btn.classList.remove('bg-blue-s', 'text-white');
+            btn.classList.add('border-border-tertiary');
+          });
+          selectedTime = '';
+          selectedSpace = '';
+        }, 2000);
+      });
+    } catch (error) {
+      console.error('Error:', error);
+      alert(error.message);
+      saveButton.textContent = 'Save Solution Details';
+      saveButton.disabled = false;
+    }
+  });
+}
+
+function initializeTracker() {
+  console.log('Initializing tracker...');
+  
+  // Try to initialize immediately if we're on a submission page with success
+  const submissionResult = document.querySelector('[data-e2e-locator="submission-result"]');
+  if (submissionResult?.textContent?.includes('Accepted')) {
+    console.log('Found accepted submission, creating tracker');
+    createComplexityTracker();
+  }
+  
+  // Watch for DOM changes
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.addedNodes.length) {
+        const submissionResult = document.querySelector('[data-e2e-locator="submission-result"]');
+        if (submissionResult?.textContent?.includes('Accepted')) {
+          console.log('Detected new accepted submission, creating tracker');
+          createComplexityTracker();
+          break;
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+}
+
+// Initialize when page loads
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', createTrackerTab);
+  document.addEventListener('DOMContentLoaded', initializeTracker);
 } else {
-  createTrackerTab();
+  initializeTracker();
 }
 
 // Listen for messages from popup
@@ -225,7 +352,7 @@ function initializeTrackerFunctionality(tab) {
   // Handle form submission
   tab.querySelector('#submit').addEventListener('click', async () => {
     const submitBtn = tab.querySelector('#submit');
-    const notes = tab.querySelector('#solution').value; // This is now notes
+    const notes = tab.querySelector('#solution').value;
     
     if (!selectedTime || !selectedSpace || !notes) {
       showError(tab, 'Please fill in all fields');
@@ -244,8 +371,7 @@ function initializeTrackerFunctionality(tab) {
           ...problemData,
           timeComplexity: selectedTime,
           spaceComplexity: selectedSpace,
-          notes: notes, // Use the textarea content as notes
-          // solution is already included from getProblemData
+          notes: notes,
         }
       }, (response) => {
         if (chrome.runtime.lastError) {
@@ -285,17 +411,37 @@ function initializeTrackerFunctionality(tab) {
 }
 
 function showError(tab, message) {
-  const errorEl = tab.querySelector('#error');
-  errorEl.textContent = message;
-  errorEl.classList.remove('hidden');
-  setTimeout(() => errorEl.classList.add('hidden'), 3000);
+  const existingStatus = tab.querySelector('.status');
+  if (existingStatus) {
+    existingStatus.remove();
+  }
+
+  const section = tab.querySelector('.section:last-child');
+  const statusDiv = document.createElement('div');
+  statusDiv.className = 'status leetr-error';
+  statusDiv.textContent = message;
+  section.appendChild(statusDiv);
+
+  setTimeout(() => {
+    statusDiv.remove();
+  }, 3000);
 }
 
 function showSuccess(tab, message) {
-  const successEl = tab.querySelector('#success');
-  successEl.textContent = message;
-  successEl.classList.remove('hidden');
-  setTimeout(() => successEl.classList.add('hidden'), 3000);
+  const existingStatus = tab.querySelector('.status');
+  if (existingStatus) {
+    existingStatus.remove();
+  }
+
+  const section = tab.querySelector('.section:last-child');
+  const statusDiv = document.createElement('div');
+  statusDiv.className = 'status leetr-success';
+  statusDiv.textContent = message;
+  section.appendChild(statusDiv);
+
+  setTimeout(() => {
+    statusDiv.remove();
+  }, 3000);
 }
 
 function updateProblemInfo(tab, info) {

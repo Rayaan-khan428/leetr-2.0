@@ -1,5 +1,5 @@
 'use client'
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { 
   getAuth, 
   onAuthStateChanged,
@@ -208,10 +208,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signout = async () => {
-    await signOut(auth)
-    await setAuthCookie(null)
-  }
+  const signout = useCallback(async () => {
+    try {
+      await auth.signOut()
+      // Clear any other auth state/cookies if needed
+      window.location.href = '/' // Use window.location for a full page refresh
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }, [])
 
   const getToken = async () => {
     return auth.currentUser?.getIdToken();

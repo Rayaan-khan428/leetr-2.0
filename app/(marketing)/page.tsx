@@ -69,25 +69,25 @@ const steps: Step[] = [
 
 const HeroButton: FC = () => {
   return (
-    <Link 
-      href="/login" 
-      className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white dark:text-white bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-lg transition-colors duration-200"
-    >
-      Visit Dashboard
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M5 12h14" />
-        <path d="m12 5 7 7-7 7" />
-      </svg>
+    <Link href="/login">
+      <ShimmerButton className="rounded-lg px-8 py-6 text-base">
+        Get Started
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="ml-2"
+        >
+          <path d="M5 12h14" />
+          <path d="m12 5 7 7-7 7" />
+        </svg>
+      </ShimmerButton>
     </Link>
   );
 };
@@ -297,25 +297,25 @@ const CTA: FC = () => {
             Join thousands of developers who have already improved their interview skills
           </p>
           <div className="flex justify-center">
-            <Link 
-              href="/login" 
-              className="inline-flex items-center gap-2 px-6 py-3 text-base font-medium text-white dark:text-white bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 rounded-lg transition-colors duration-200"
-            >
-              Visit Dashboard
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
+            <Link href="/login">
+              <ShimmerButton className="rounded-lg px-8 py-6 text-base">
+                Get Started
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="ml-2"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
+              </ShimmerButton>
             </Link>
           </div>
         </div>

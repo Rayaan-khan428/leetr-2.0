@@ -1,13 +1,12 @@
-'use client'
+"use client"
 
-import React, { useState } from "react"
+import React, { useState, useCallback } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
-import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar"
 import {
   IconArrowLeft,
   IconLayoutDashboard,
@@ -20,16 +19,11 @@ import { ThemeToggle } from '@/components/theme-toggle'
 export function SideNavigation({ children }: { children?: React.ReactNode }) {
   const { user, signout } = useAuth()
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(true)
 
-  const handleLogout = async () => {
-    try {
-      await signout()
-      router.push('/login')
-    } catch (error) {
-      console.error('Logout error:', error)
-    }
-  }
+  const handleLogout = useCallback(() => {
+    signout()
+  }, [signout])
 
   const links = [
     {
@@ -62,7 +56,6 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
     },
     {
       label: "Logout",
-      href: "#",
       icon: (
         <IconArrowLeft className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
       ),
@@ -72,55 +65,79 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar open={open} setOpen={setOpen} className="border-r border-border">
-        <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {open ? <Logo /> : <LogoIcon />}
-            <div className="mt-8 flex flex-col gap-2">
-              {links.map((link, idx) => (
-                <SidebarLink key={idx} link={link} />
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-col gap-4">
-            <ThemeToggle />
-            {user && (
-              <SidebarLink
-                link={{
-                  label: user.displayName || "User",
-                  href: "/settings",
-                  icon: user.photoURL ? (
-                    <Image
-                      src={user.photoURL}
-                      className="h-7 w-7 flex-shrink-0 rounded-full"
-                      width={50}
-                      height={50}
-                      alt="Avatar"
-                    />
-                  ) : (
-                    <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                      {user.displayName?.[0] || "U"}
-                    </div>
-                  ),
-                }}
-              />
-            )}
-          </div>
-        </SidebarBody>
-      </Sidebar>
       <div 
         className={cn(
-          "flex-1 transition-all duration-300",
-          "md:ml-[60px]", // Default margin for collapsed state
-          open && "md:ml-[240px]" // Expanded state margin
+          "fixed top-0 left-0 h-screen bg-background border-r transition-all duration-300",
+          open ? "w-64" : "w-20"
         )}
       >
-        <div className="container mx-auto p-4 md:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
-            {children}
+        <div className="flex flex-col h-full p-4">
+          <div className="flex justify-between items-center mb-8">
+            {open ? <Logo /> : <LogoIcon />}
+          </div>
+          
+          <nav className="flex-1 space-y-2">
+            {links.map((link, idx) => (
+              <div key={idx} className="relative">
+                {link.href ? (
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                      "text-sm text-muted-foreground hover:text-foreground"
+                    )}
+                    onClick={link.onClick}
+                  >
+                    {link.icon}
+                    {open && <span>{link.label}</span>}
+                  </Link>
+                ) : (
+                  <button
+                    onClick={link.onClick}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors w-full",
+                      "text-sm text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {link.icon}
+                    {open && <span>{link.label}</span>}
+                  </button>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          <div className="mt-auto pt-4 space-y-4">
+            <ThemeToggle />
+            {user && (
+              <div className="flex items-center gap-3 px-3 py-2">
+                {user.photoURL ? (
+                  <Image
+                    src={user.photoURL}
+                    alt="Avatar"
+                    width={28}
+                    height={28}
+                    className="rounded-full"
+                  />
+                ) : (
+                  <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                    {user.displayName?.[0] || "U"}
+                  </div>
+                )}
+                {open && <span className="text-sm">{user.displayName}</span>}
+              </div>
+            )}
           </div>
         </div>
       </div>
+      <main className={cn(
+        "flex-1 transition-all duration-300 p-8",
+        open ? "ml-64" : "ml-20"
+      )}>
+        <div className="max-w-7xl mx-auto">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }
@@ -152,4 +169,7 @@ const LogoIcon = () => {
       <div className="h-5 w-6 bg-black dark:bg-white rounded-br-lg rounded-tr-sm rounded-tl-lg rounded-bl-sm flex-shrink-0" />
     </Link>
   )
-} 
+}
+
+export { SideNavigation as Sidebar }
+export default SideNavigation 

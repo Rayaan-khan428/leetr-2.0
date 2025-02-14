@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from "@/components/theme-provider"
-import { NavigationProvider } from "@/components/providers/NavigationProvider"
 import Footer from "@/components/shared/navigation/Footer"
 import localFont from "next/font/local";
 import "./globals.css";
@@ -9,15 +8,25 @@ import { Toaster } from "sonner";
 
 // Load Geist font families with their full weight ranges
 const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+  src: [
+    {
+      path: './fonts/GeistVF.woff2',
+      weight: '100 900',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-geist-sans',
 });
 
 const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+  src: [
+    {
+      path: './fonts/GeistMonoVF.woff2',
+      weight: '100 900',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-geist-mono',
 });
 
 export const metadata: Metadata = {
@@ -25,6 +34,7 @@ export const metadata: Metadata = {
   description: "Track and improve your LeetCode problem-solving journey",
 };
 
+// app/layout.tsx (Root Layout)
 export default function RootLayout({
   children,
 }: {
@@ -32,7 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans min-h-screen flex flex-col`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -40,12 +50,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <NavigationProvider>
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-            </NavigationProvider>
+            {children}
             <Toaster />
           </AuthProvider>
         </ThemeProvider>

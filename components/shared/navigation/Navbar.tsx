@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useAuth } from '@/context/AuthContext'
 import Link from 'next/link'
@@ -9,7 +9,7 @@ export function Navbar() {
   const { user } = useAuth()
   
   return (
-    <header className="fixed top-0 w-full z-50 border-b dark:border-gray-800 border-gray-200 dark:bg-black/50 bg-white/50 backdrop-blur-xl">
+    <nav className="fixed top-0 w-full border-b bg-background backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link 
           href="/" 
@@ -23,24 +23,32 @@ export function Navbar() {
           <nav className="flex items-center gap-6">
             <Link 
               href="/about"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               About
             </Link>
             <Link 
+              href="/blog"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Blog
+            </Link>
+            <Link 
               href="/pricing"
-              className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Pricing
             </Link>
             <Link href="/login">
               <ShimmerButton className="rounded-lg py-0.5 px-4 text-sm h-10">
-                {user ? 'Dashboard' : 'Get Started'}
+                {user ? 'Dashboard' : 'Login'}
               </ShimmerButton>
             </Link>
           </nav>
         </div>
       </div>
-    </header>
+    </nav>
   )
 }
+
+export default Navbar;

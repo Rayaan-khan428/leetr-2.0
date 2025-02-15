@@ -1,22 +1,10 @@
 // app/api/users/search/route.ts
-import { prisma } from '../../../../prisma/client'
+import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
 
-type UserWithRequests = {
-  id: string;
-  displayName: string | null;
-  email: string;
-  photoURL: string | null;
-  sentRequests: { status: string }[];
-  receivedRequests: { status: string }[];
-}
-
-export const dynamic = 'force-dynamic'
-
 export async function GET(request: Request) {
   try {
-    // Auth check
     const authHeader = request.headers.get('authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
@@ -49,19 +37,17 @@ export async function GET(request: Request) {
       )
     }
 
-    // Search users by displayName or email
+    // Optimized search query using the new compound index
     const users = await prisma.users.findMany({
       where: {
         AND: [
           {
             OR: [
-              { displayName: { contains: query, mode: 'insensitive' } },
-              { email: { contains: query, mode: 'insensitive' } }
+              { email: { contains: query, mode: 'insensitive' } },
+              { displayName: { contains: query, mode: 'insensitive' } }
             ]
           },
-          { 
-            id: { not: currentUser.id } // Exclude current user
-          }
+          { id: { not: currentUser.id } }
         ]
       },
       select: {
@@ -69,29 +55,30 @@ export async function GET(request: Request) {
         displayName: true,
         email: true,
         photoURL: true,
-        // Include friendship status
-        sentRequests: {
-          where: { receiverId: currentUser.id },
-          select: { status: true }
-        },
-        receivedRequests: {
-          where: { senderId: currentUser.id },
-          select: { status: true }
+        // Optimize friend status check
+        _count: {
+          select: {
+            friends: {
+              where: {
+                OR: [
+                  { user2Id: currentUser.id },
+                  { user1Id: currentUser.id }
+                ]
+              }
+            }
+          }
         }
       },
-      take: 10 // Limit results
+      take: 10 // Limit results for better performance
     })
 
-    // Transform the results to include friendship status
-    const transformedUsers = (users as UserWithRequests[]).map(user => ({
+    // Transform results to include friendship status
+    const transformedUsers = users.map(user => ({
       id: user.id,
       displayName: user.displayName,
       email: user.email,
       photoURL: user.photoURL,
-      friendshipStatus: 
-        user.receivedRequests[0]?.status || 
-        user.sentRequests[0]?.status || 
-        'NONE'
+      friendshipStatus: user._count.friends > 0 ? 'ACCEPTED' : 'NONE'
     }))
 
     return NextResponse.json(transformedUsers)

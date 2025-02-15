@@ -837,17 +837,17 @@ export default function FriendsPage() {
   const getRankingMetricValue = (entry: LeaderboardEntry) => {
     switch (rankingMetric) {
       case 'totalSolved':
-        return entry.stats.totalSolved
+        return entry.stats.totalSolved || 0
       case 'streak':
-        return entry.stats.streak
+        return entry.stats.streak || 0
       case 'lastWeek':
-        return entry.stats.lastWeekSolved
+        return entry.stats.lastWeekSolved || 0
       case 'lastMonth':
-        return entry.stats.lastMonthSolved
+        return entry.stats.lastMonthSolved || 0
       case 'consistency':
-        return entry.stats.consistency
+        return entry.stats.consistency || 0
       default:
-        return entry.stats.totalSolved
+        return entry.stats.totalSolved || 0
     }
   }
 
@@ -881,8 +881,8 @@ export default function FriendsPage() {
               const isCurrentUser = entry.id === user?.id;
               const metricValue = getRankingMetricValue(entry);
               const metricDisplay = rankingMetric === 'consistency' 
-                ? `${metricValue.toFixed(1)}%`
-                : metricValue.toString();
+                ? `${(metricValue || 0).toFixed(1)}%`
+                : (metricValue || 0).toString();
 
               return (
                 <motion.div
@@ -1207,47 +1207,7 @@ export default function FriendsPage() {
                   )}
                 </p>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={cleanupFriendData}
-                className="hover:bg-destructive hover:text-destructive-foreground relative z-10"
-              >
-                REMOVE BEFORE RELEASE: Reset Friend Data
-              </Button>
             </div>
-
-            {hasNoFriends && (
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-start space-x-4 border rounded-lg bg-background/80 backdrop-blur-sm p-4">
-                  <span className="text-xl">1️⃣</span>
-                  <div>
-                    <h3 className="font-semibold">Find Friends</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Click the "Add Friends" button above to search for other coders
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4 border rounded-lg bg-background/80 backdrop-blur-sm p-4">
-                  <span className="text-xl">2️⃣</span>
-                  <div>
-                    <h3 className="font-semibold">Send Friend Requests</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Connect with others to see their progress and statistics
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-4 border rounded-lg bg-background/80 backdrop-blur-sm p-4">
-                  <span className="text-xl">3️⃣</span>
-                  <div>
-                    <h3 className="font-semibold">Compare & Compete</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Track your progress together and motivate each other
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </BackgroundGradientAnimation>
       </div>

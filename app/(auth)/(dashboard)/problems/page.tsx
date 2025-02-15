@@ -37,19 +37,25 @@ import { ReviewSchedule } from './components/ReviewSchedule'
 import { DifficultyProgressChart } from './components/DifficultyProgressChart'
 
 // Interface matching our Prisma schema for user_problems
-interface Problem {
-  id: string
-  leetcodeId: string
-  problemName: string
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD'
-  solvedAt: string
-  timeComplexity?: string
-  spaceComplexity?: string
-  solution?: string
-  notes?: string
-  attempts?: number
-  url?: string
-  nextReview?: string
+interface Friend {
+    friendshipId: string
+    id: string
+    displayName: string | null
+    email: string
+    photoURL: string | null
+    friendshipStatus: 'NONE' | 'PENDING' | 'ACCEPTED' | 'REJECTED'
+    problemStats: {
+      totalProblems: number
+      easy: number
+      medium: number
+      hard: number
+      recentlySolved: number
+    }
+    user_statistics?: {  // Match the database field name
+      streak: number
+      totalSolved: number
+      lastSolved: Date | null
+    }
 }
 
 // Reusable component for expandable text fields (solution and notes)
@@ -176,7 +182,6 @@ export default function ProblemsPage() {
   const [problems, setProblems] = useState<Problem[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
   const { getToken, user } = useAuth()
   const [streak, setStreak] = useState(0)
   const [activityData, setActivityData] = useState<Array<{ date: Date, count: number }>>([])
@@ -251,7 +256,6 @@ export default function ProblemsPage() {
   }, []) // Fetch once when component mounts
 
   const handleSuccess = () => {
-    setShowForm(false)
     fetchProblems()
   }
 
@@ -320,12 +324,6 @@ export default function ProblemsPage() {
             {user?.displayName ? `Welcome back, ${user.displayName}` : 'Track your coding journey'}
           </p>
         </div>
-        <Button 
-          onClick={() => setShowForm(!showForm)}
-          className="w-full sm:w-auto"
-        >
-          {showForm ? 'Close Form' : '+ Add New Problem'}
-        </Button>
       </div>
 
       {/* Stats Overview */}
@@ -391,17 +389,6 @@ export default function ProblemsPage() {
         </Alert>
       )}
 
-      {showForm && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New Problem</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProblemForm onSuccess={handleSuccess} />
-          </CardContent>
-        </Card>
-      )}
-
       {/* Problems Table */}
       <Card id="problems-table">
         <CardHeader>
@@ -445,14 +432,8 @@ export default function ProblemsPage() {
             <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
               <p className="text-base sm:text-lg font-medium text-foreground">No problems solved yet</p>
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Start tracking your LeetCode progress by adding your first solved problem
+                Start tracking your LeetCode progress by solving problems
               </p>
-              <Button 
-                onClick={() => setShowForm(true)} 
-                className="mt-4 w-full sm:w-auto"
-              >
-                Add Your First Problem
-              </Button>
             </div>
           ) : filteredProblems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">

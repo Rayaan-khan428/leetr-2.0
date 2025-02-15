@@ -58,6 +58,8 @@ model user_problems {
   users           users      @relation(fields: [userId], references: [id])
 
   @@unique([userId, leetcodeId])
+  @@index([solvedAt])
+  @@index([userId, difficulty])
 }
 
 model user_settings {
@@ -101,6 +103,8 @@ model users {
   receivedRequests friend_requests[] @relation("ReceivedRequests")
   friends          friendships[]     @relation("UserFriends")
   friendsWith      friendships[]     @relation("UserFriendsWith")
+
+  @@index([email, displayName])
 }
 
 enum Difficulty {

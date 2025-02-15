@@ -170,6 +170,17 @@ function createComplexityTracker() {
         </div>
 
         <div class="flex flex-col gap-2">
+          <div class="text-xs text-label-3 dark:text-dark-label-3">Difficulty Rating</div>
+          <div class="difficulty-grid grid grid-cols-5 gap-2">
+            <button class="btn-difficulty rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s" data-rating="1">Very Easy</button>
+            <button class="btn-difficulty rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s" data-rating="2">Easy</button>
+            <button class="btn-difficulty rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s" data-rating="3">Medium</button>
+            <button class="btn-difficulty rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s" data-rating="4">Hard</button>
+            <button class="btn-difficulty rounded px-2 py-1 text-xs border border-border-tertiary hover:border-blue-s dark:border-dark-border-tertiary dark:hover:border-dark-blue-s" data-rating="5">Very Hard</button>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
           <div class="text-xs text-label-3 dark:text-dark-label-3">Notes</div>
           <textarea 
             class="w-full min-h-[80px] rounded-lg px-3 py-2 text-sm resize-none border border-border-tertiary focus:border-blue-s dark:border-dark-border-tertiary dark:focus:border-dark-blue-s bg-overlay-1 dark:bg-dark-overlay-1"
@@ -200,6 +211,7 @@ function createComplexityTracker() {
 function initializeComplexityTracking(container) {
   let selectedTime = '';
   let selectedSpace = '';
+  let selectedDifficulty = null;
 
   // Handle complexity button clicks
   container.querySelectorAll('.complexity-grid').forEach((grid, index) => {
@@ -223,12 +235,28 @@ function initializeComplexityTracking(container) {
     });
   });
 
+  // Handle difficulty rating clicks
+  container.querySelector('.difficulty-grid').addEventListener('click', (e) => {
+    if (!e.target.classList.contains('btn-difficulty')) return;
+    
+    const buttons = container.querySelectorAll('.btn-difficulty');
+    buttons.forEach(btn => {
+      btn.classList.remove('bg-blue-s', 'text-white');
+      btn.classList.add('border-border-tertiary');
+    });
+    
+    e.target.classList.add('bg-blue-s', 'text-white');
+    e.target.classList.remove('border-border-tertiary');
+    
+    selectedDifficulty = parseInt(e.target.dataset.rating);
+  });
+
   // Handle save button click
   const saveButton = container.querySelector('#save-complexity');
   const notesTextarea = container.querySelector('textarea');
 
   saveButton.addEventListener('click', async () => {
-    if (!selectedTime || !selectedSpace || !notesTextarea.value.trim()) {
+    if (!selectedTime || !selectedSpace || !selectedDifficulty || !notesTextarea.value.trim()) {
       alert('Please fill in all fields');
       return;
     }
@@ -245,6 +273,7 @@ function initializeComplexityTracking(container) {
           ...problemData,
           timeComplexity: selectedTime,
           spaceComplexity: selectedSpace,
+          difficultyRating: selectedDifficulty,
           notes: notesTextarea.value.trim(),
         }
       }, (response) => {
@@ -263,12 +292,13 @@ function initializeComplexityTracking(container) {
           saveButton.disabled = false;
           saveButton.classList.remove('bg-green-3');
           notesTextarea.value = '';
-          container.querySelectorAll('.btn-complexity').forEach(btn => {
+          container.querySelectorAll('.btn-complexity, .btn-difficulty').forEach(btn => {
             btn.classList.remove('bg-blue-s', 'text-white');
             btn.classList.add('border-border-tertiary');
           });
           selectedTime = '';
           selectedSpace = '';
+          selectedDifficulty = null;
         }, 2000);
       });
     } catch (error) {

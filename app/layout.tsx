@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from "@/components/theme-provider"
 import Footer from "@/components/shared/navigation/Footer"
+import { TypeformWidget } from "@/components/shared/TypeformWidget"
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -52,6 +53,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <Toaster />
+            <TypeformWidget />
           </AuthProvider>
         </ThemeProvider>
       </body>

@@ -450,6 +450,7 @@ export default function ProblemsPage() {
                     <TableRow>
                       <TableHead className="font-semibold text-xs sm:text-sm">Problem Name</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm">Difficulty</TableHead>
+                      <TableHead className="font-semibold text-xs sm:text-sm">Attempts</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm hidden sm:table-cell">Solved At</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm hidden md:table-cell">Complexity</TableHead>
                       <TableHead className="font-semibold text-xs sm:text-sm hidden lg:table-cell">Next Review</TableHead>
@@ -479,6 +480,11 @@ export default function ProblemsPage() {
                             'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                           }`}>
                             {problem.difficulty}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs sm:text-sm">
+                            {problem.attempts} {problem.attempts === 1 ? 'try' : 'tries'}
                           </span>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell text-xs sm:text-sm">

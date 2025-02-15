@@ -39,8 +39,7 @@ const LEETCODE_PROBLEMS = [
 const TIME_COMPLEXITIES = ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)', 'O(1)']
 const SPACE_COMPLEXITIES = ['O(n)', 'O(1)', 'O(log n)', 'O(n²)']
 
-const TARGET_EMAIL = 'hassaan.taufiq@gmail.com' // Replace with your email
-
+const TARGET_EMAIL = 'rayaan.k.ca@gmail.com'
 async function main() {
   // Find the existing user
   const user = await prisma.users.findUnique({
@@ -61,9 +60,10 @@ async function main() {
   })
 
   // Create problems with dates spread over the last year
+  const numProblems = Math.floor(Math.random() * 21) + 10 // Random number between 10 and 30
   const selectedProblems = [...LEETCODE_PROBLEMS]
     .sort(() => Math.random() - 0.5)
-    .slice(0, 20) // Create 20 problems
+    .slice(0, numProblems) // Create random number of problems
 
   const problemsData = selectedProblems.map(problem => {
     const daysAgo = Math.floor(Math.random() * 365)

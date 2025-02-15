@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { Problem } from '../types'
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 interface ReviewScheduleProps {
@@ -234,6 +234,7 @@ export function ReviewSchedule({ problems, setSearchQuery }: ReviewScheduleProps
                   data={reviewData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                 >
+                  <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="formattedDate" 
                     tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
@@ -250,7 +251,6 @@ export function ReviewSchedule({ problems, setSearchQuery }: ReviewScheduleProps
                     tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                     axisLine={{ stroke: 'hsl(var(--border))' }}
                     tickLine={{ stroke: 'hsl(var(--border))' }}
-                    gridLines={{ stroke: 'hsl(var(--border))' }}
                   />
                   <RechartsTooltip
                     cursor={{ fill: 'hsl(var(--muted)/0.1)' }}

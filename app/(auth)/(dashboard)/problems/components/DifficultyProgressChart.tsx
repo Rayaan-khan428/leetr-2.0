@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, Line, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts'
@@ -83,7 +82,7 @@ export function DifficultyProgressChart({ problems }: DifficultyProgressChartPro
                                 'text-red-800 dark:text-red-300'
                               }
                             >
-                              {entry.value} {entry.dataKey.charAt(0).toUpperCase() + entry.dataKey.slice(1)}
+                              {entry.value} {typeof entry.dataKey === 'string' ? entry.dataKey.charAt(0).toUpperCase() + entry.dataKey.slice(1) : entry.dataKey}
                             </p>
                           ))}
                           <p className="font-medium pt-1 border-t">

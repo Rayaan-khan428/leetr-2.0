@@ -86,6 +86,7 @@ async function main() {
       nextReview: new Date(solvedAt.getTime() + 7 * 24 * 60 * 60 * 1000),
       createdAt: solvedAt,
       updatedAt: solvedAt,
+      difficultyRating: Math.floor(Math.random() * 10) + 1, // Random rating between 1 and 10
     }
   })
 

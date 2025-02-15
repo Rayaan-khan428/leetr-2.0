@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, addDays } from 'date-fns'
-import { Calendar, ChevronLeft, ChevronRight, BarChart as BarChartIcon } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -68,6 +68,19 @@ export function ReviewSchedule({ problems, setSearchQuery }: ReviewScheduleProps
     }
   })
 
+  // Get upcoming reviews sorted by date
+  const upcomingReviews = problems
+    .filter(p => p.nextReview)
+    .sort((a, b) => new Date(a.nextReview!).getTime() - new Date(b.nextReview!).getTime())
+    .reduce((acc, problem) => {
+      const reviewDate = format(new Date(problem.nextReview!), 'yyyy-MM-dd')
+      if (!acc[reviewDate]) {
+        acc[reviewDate] = []
+      }
+      acc[reviewDate].push(problem)
+      return acc
+    }, {} as Record<string, Problem[]>)
+
   // Shared handlers
   const handleProblemClick = (problemName: string) => {
     setSearchQuery(problemName)
@@ -117,16 +130,16 @@ export function ReviewSchedule({ problems, setSearchQuery }: ReviewScheduleProps
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+            <span className="text-xl">📅</span>
             Review Schedule
           </CardTitle>
           <div className="flex items-center gap-4">
             <ToggleGroup type="single" value={view} onValueChange={(value) => value && setView(value as 'calendar' | 'chart')}>
               <ToggleGroupItem value="calendar" aria-label="Calendar view">
-                <Calendar className="h-4 w-4" />
+                <span className="text-base">📅</span>
               </ToggleGroupItem>
               <ToggleGroupItem value="chart" aria-label="Chart view">
-                <BarChartIcon className="h-4 w-4" />
+                <span className="text-base">📊</span>
               </ToggleGroupItem>
             </ToggleGroup>
             <div className="flex items-center gap-2">
@@ -207,7 +220,14 @@ export function ReviewSchedule({ problems, setSearchQuery }: ReviewScheduleProps
                                   'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                                 )}
                               >
-                                {problem.problemName}
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-2 h-2 rounded-full ${
+                                    problem.difficulty === 'EASY' ? 'bg-green-500' :
+                                    problem.difficulty === 'MEDIUM' ? 'bg-yellow-500' :
+                                    'bg-red-500'
+                                  }`} />
+                                  <span className="text-sm">{problem.problemName}</span>
+                                </div>
                               </div>
                             </TooltipTrigger>
                             <TooltipContent>

@@ -111,7 +111,11 @@ export async function POST(request: Request) {
             spaceComplexity,
             updatedAt: new Date(),
             solvedAt: new Date(),
-            nextReview: calculateNextReview(existingProblem.attempts + 1, new Date())
+            nextReview: calculateNextReview({
+              attempts: existingProblem.attempts + 1,
+              lastReviewDate: new Date(),
+              difficultyRating: 3 // Using default medium difficulty if not specified
+            })
           }
         });
         console.log('Updated existing problem:', updatedProblem.id);
@@ -142,7 +146,11 @@ export async function POST(request: Request) {
           url,
           updatedAt: new Date(),
           solvedAt: new Date(),
-          nextReview: calculateNextReview(1, new Date())
+          nextReview: calculateNextReview({
+            attempts: 1,
+            lastReviewDate: new Date(),
+            difficultyRating: 3 // Using default medium difficulty if not specified
+          })
         }
       });
       

@@ -47,8 +47,8 @@ export function ReviewCalendar({ problems, setSearchQuery }: ReviewCalendarProps
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Review Schedule
+            {/* <Calendar className="h-5 w-5" /> */}
+            📅 Review Schedule
           </CardTitle>
           <div className="flex items-center gap-2">
             <Button

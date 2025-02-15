@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = []
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum FriendshipRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model friend_requests {
+  id          String                @id
+  senderId    String
+  receiverId  String
+  status      FriendshipRequestStatus
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  sender      users                 @relation("SentRequests", fields: [senderId], references: [id])
+  receiver    users                 @relation("ReceivedRequests", fields: [receiverId], references: [id])
+
+  @@unique([senderId, receiverId])
+}
+
+model friendships {
+  id        String   @id
+  user1Id   String
+  user2Id   String
+  createdAt DateTime @default(now())
+  user1     users    @relation("UserFriends", fields: [user1Id], references: [id])
+  user2     users    @relation("UserFriendsWith", fields: [user2Id], references: [id])
+
+  @@unique([user1Id, user2Id])
+}
+
+model user_problems {
+  id              String     @id
+  userId          String
+  leetcodeId      String
+  problemName     String
+  difficulty      Difficulty
+  solution        String?
+  notes           String?
+  solvedAt        DateTime   @default(now())
+  attempts        Int        @default(1)
+  timeComplexity  String?
+  spaceComplexity String?
+  url             String?
+  nextReview      DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now())
+  users           users      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, leetcodeId])
+}
+
+model user_settings {
+  id         String   @id
+  userId     String   @unique
+  smsEnabled Boolean  @default(false)
+  emailNotifications Boolean @default(true)
+  timezone   String   @default("UTC")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  users      users    @relation(fields: [userId], references: [id])
+}
+
+model user_statistics {
+  id            String   @id
+  userId        String   @unique
+  streak        Int      @default(0)
+  lastSolved    DateTime?
+  totalSolved   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  users         users    @relation(fields: [userId], references: [id])
+  lastStreak    Int      @default(0)
+  maxStreak     Int      @default(0)
+}
+
+model users {
+  id            String          @id
+  firebaseUid   String          @unique
+  email         String          @unique
+  displayName   String?         // From OAuth providers
+  photoURL      String?         // From OAuth providers
+  phoneNumber   String?         // Keep for SMS verification
+  phoneVerified Boolean         @default(false)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  user_problems user_problems[]
+  user_settings user_settings?
+  user_statistics user_statistics?
+  sentRequests     friend_requests[] @relation("SentRequests")
+  receivedRequests friend_requests[] @relation("ReceivedRequests")
+  friends          friendships[]     @relation("UserFriends")
+  friendsWith      friendships[]     @relation("UserFriendsWith")
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+

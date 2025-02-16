@@ -19,20 +19,13 @@ import { ThemeToggle } from '@/components/theme-toggle'
 export function SideNavigation({ children }: { children?: React.ReactNode }) {
   const { user, signout } = useAuth()
   const router = useRouter()
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(false)
 
   const handleLogout = useCallback(() => {
     signout()
   }, [signout])
 
   const links = [
-    {
-      label: "Menu",
-      icon: (
-        <IconMenu2 className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-      ),
-      onClick: () => setOpen(!open),
-    },
     {
       label: "Problems",
       href: "/problems",
@@ -68,12 +61,16 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
       <div 
         className={cn(
           "fixed top-0 left-0 h-screen bg-background border-r transition-all duration-300",
-          open ? "w-64" : "w-20"
+          "group hover:w-64 w-20"
         )}
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
       >
         <div className="flex flex-col h-full p-4">
           <div className="flex justify-between items-center mb-8">
-            {open ? <Logo /> : <LogoIcon />}
+            <div className="transition-opacity duration-300">
+              {open ? <Logo /> : <LogoIcon />}
+            </div>
           </div>
           
           <nav className="flex-1 space-y-2">
@@ -89,7 +86,12 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
                     onClick={link.onClick}
                   >
                     {link.icon}
-                    {open && <span>{link.label}</span>}
+                    <span className={cn(
+                      "transition-all duration-300",
+                      "opacity-0 group-hover:opacity-100 whitespace-nowrap"
+                    )}>
+                      {link.label}
+                    </span>
                   </Link>
                 ) : (
                   <button
@@ -100,7 +102,12 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
                     )}
                   >
                     {link.icon}
-                    {open && <span>{link.label}</span>}
+                    <span className={cn(
+                      "transition-all duration-300",
+                      "opacity-0 group-hover:opacity-100 whitespace-nowrap"
+                    )}>
+                      {link.label}
+                    </span>
                   </button>
                 )}
               </div>
@@ -124,7 +131,12 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
                     {user.displayName?.[0] || "U"}
                   </div>
                 )}
-                {open && <span className="text-sm">{user.displayName}</span>}
+                <span className={cn(
+                  "text-sm transition-all duration-300",
+                  "opacity-0 group-hover:opacity-100 whitespace-nowrap"
+                )}>
+                  {user.displayName}
+                </span>
               </div>
             )}
           </div>
@@ -132,7 +144,7 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
       </div>
       <main className={cn(
         "flex-1 transition-all duration-300 p-8",
-        open ? "ml-64" : "ml-20"
+        "ml-20"
       )}>
         <div className="max-w-7xl mx-auto">
           {children}

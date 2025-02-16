@@ -1,32 +1,33 @@
 "use client"
 
+import { useEffect, useState } from "react"
+import { useAuth } from "@/context/AuthContext"
 import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { toast } from "@/hooks/use-toast"
+import { useDebouncedCallback } from "use-debounce"
+import { usePhoneVerification } from "@/hooks/use-phone-verification"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import { CheckCircle } from "lucide-react"
-import { useAuth } from "@/context/AuthContext"
-import { getAuth } from "firebase/auth"
-import { app } from "@/lib/firebase"
-import { useDebouncedCallback } from 'use-debounce'
 import { useRouter, useSearchParams } from "next/navigation"
-import { Input } from "@/components/ui/input"
 import { PhoneInput } from 'react-international-phone'
 import 'react-international-phone/style.css'
+import { getAuth } from "firebase/auth"
+import { app } from "@/lib/firebase"
+import { CheckCircle } from "lucide-react"
 
 export default function SettingsPage() {
-  const { user } = useAuth();
-  const auth = getAuth(app);
-  const [notifications, setNotifications] = useState(true)
+  const { user } = useAuth()
+  const auth = getAuth(app)
+  const [notifications, setNotifications] = useState(false)
   const [smsEnabled, setSmsEnabled] = useState(false)
-  const router = useRouter();
+  const [friendActivitySMS, setFriendActivitySMS] = useState(false)
   const [phoneNumber, setPhoneNumber] = useState("")
   const [verificationCode, setVerificationCode] = useState("")
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [isSendingCode, setIsSendingCode] = useState(false)
-  const [friendActivitySMS, setFriendActivitySMS] = useState(false);
+  const { isSendingCode, isVerifying, sendVerificationCode, verifyCode, resetState } = usePhoneVerification()
+  const router = useRouter()
   const searchParams = useSearchParams()
   const tab = searchParams.get('tab')
 
@@ -56,7 +57,6 @@ export default function SettingsPage() {
     loadSettings();
   }, [user, auth.currentUser]);
 
-  // Update saveSettings to handle both email and SMS notifications
   const saveSettings = useDebouncedCallback(async (newSettings: { 
     emailNotifications?: boolean;
     smsEnabled?: boolean;
@@ -75,97 +75,79 @@ export default function SettingsPage() {
       });
 
       if (!response.ok) {
-        toast.error('Failed to save settings');
+        toast({
+          title: "Error",
+          description: "Failed to save settings",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
+      toast({
+        title: "Error",
+        description: "Failed to save settings",
+        variant: "destructive"
+      });
     }
   }, 500);
 
   const handleNotificationsChange = (checked: boolean) => {
     setNotifications(checked);
     saveSettings({ emailNotifications: checked });
-    toast.success('Notification preference saved');
+    toast({
+      title: "Success",
+      description: "Notification preference saved",
+    });
   };
 
   const handleSMSChange = (checked: boolean) => {
     if (!user?.phoneVerified) {
-      toast.error('Please verify your phone number first');
+      toast({
+        title: "Error",
+        description: "Please verify your phone number first",
+        variant: "destructive"
+      });
       return;
     }
     setSmsEnabled(checked);
     saveSettings({ smsEnabled: checked });
-    toast.success('SMS notification preference saved');
+    toast({
+      title: "Success",
+      description: "SMS notification preference saved",
+    });
   };
 
   const handleFriendActivitySMSChange = (checked: boolean) => {
     if (!user?.phoneVerified) {
-      toast.error('Please verify your phone number first');
+      toast({
+        title: "Error",
+        description: "Please verify your phone number first",
+        variant: "destructive"
+      });
       return;
     }
     setFriendActivitySMS(checked);
     saveSettings({ friendActivitySMS: checked });
-    toast.success('Friend activity notification preference saved');
+    toast({
+      title: "Success",
+      description: "Friend activity notification preference saved",
+    });
   };
 
-  const sendVerificationCode = async () => {
-    try {
-      setIsSendingCode(true);
-      const token = await auth.currentUser?.getIdToken();
-      
-      const response = await fetch('/api/twilio/send-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ phoneNumber })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to send verification code');
-      }
-
-      setIsVerifying(true);
-      toast.success('Verification code sent!');
-    } catch (error) {
-      console.error('Error sending code:', error);
-      toast.error('Failed to send verification code');
-    } finally {
-      setIsSendingCode(false);
+  const handleSendCode = async () => {
+    const success = await sendVerificationCode(phoneNumber);
+    if (!success) {
+      setPhoneNumber("");
     }
   };
 
-  const verifyCode = async () => {
-    try {
-      const token = await auth.currentUser?.getIdToken();
-      
-      const response = await fetch('/api/twilio/verify-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          phoneNumber,
-          code: verificationCode
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.valid) {
-        toast.success('Phone number verified successfully!');
-        setIsVerifying(false);
-        // Refresh the page or update the UI
-        window.location.reload();
-      } else {
-        toast.error('Invalid verification code');
-      }
-    } catch (error) {
-      console.error('Error verifying code:', error);
-      toast.error('Failed to verify code');
+  const handleVerifyCode = async () => {
+    const success = await verifyCode(phoneNumber, verificationCode);
+    if (success) {
+      resetState();
+      setVerificationCode("");
+      setPhoneNumber("");
+      window.location.reload();
     }
   };
 
@@ -213,8 +195,8 @@ export default function SettingsPage() {
                 } as React.CSSProperties}
               />
               <Button 
-                onClick={sendVerificationCode}
-                disabled={!phoneNumber || isSendingCode}
+                onClick={handleSendCode}
+                disabled={isSendingCode || !phoneNumber}
                 className="w-full sm:w-auto"
               >
                 {isSendingCode ? "Sending..." : "Send Verification Code"}
@@ -230,7 +212,7 @@ export default function SettingsPage() {
               />
               <div className="flex gap-2">
                 <Button 
-                  onClick={verifyCode}
+                  onClick={handleVerifyCode}
                   disabled={!verificationCode}
                   className="w-full sm:w-auto"
                 >
@@ -238,7 +220,7 @@ export default function SettingsPage() {
                 </Button>
                 <Button 
                   variant="outline"
-                  onClick={() => setIsVerifying(false)}
+                  onClick={() => resetState()}
                   className="w-full sm:w-auto"
                 >
                   Cancel

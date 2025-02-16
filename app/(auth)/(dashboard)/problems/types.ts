@@ -1,5 +1,6 @@
 export interface Problem {
   id: string
+  userId: string
   leetcodeId: string
   problemName: string
   difficulty: 'EASY' | 'MEDIUM' | 'HARD'
@@ -8,7 +9,10 @@ export interface Problem {
   spaceComplexity?: string
   solution?: string
   notes?: string
-  attempts?: number
+  attempts: number
   url?: string
   nextReview?: string
+  createdAt: string
+  updatedAt: string
+  difficultyRating?: number
 } 

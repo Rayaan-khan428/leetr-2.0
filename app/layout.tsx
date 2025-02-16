@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from "@/components/theme-provider"
 import Footer from "@/components/shared/navigation/Footer"
+import { TypeformWidget } from "@/components/shared/TypeformWidget"
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "sonner";
@@ -10,7 +11,7 @@ import { Toaster } from "sonner";
 const geistSans = localFont({
   src: [
     {
-      path: './fonts/GeistVF.woff2',
+      path: './fonts/GeistVF.woff',
       weight: '100 900',
       style: 'normal',
     },
@@ -21,7 +22,7 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: [
     {
-      path: './fonts/GeistMonoVF.woff2',
+      path: './fonts/GeistMonoVF.woff',
       weight: '100 900',
       style: 'normal',
     },
@@ -52,6 +53,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <Toaster />
+            <TypeformWidget />
           </AuthProvider>
         </ThemeProvider>
       </body>

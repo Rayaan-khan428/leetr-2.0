@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import { format, subDays, eachDayOfInterval } from "date-fns"

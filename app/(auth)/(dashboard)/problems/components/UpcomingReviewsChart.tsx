@@ -3,7 +3,7 @@ import { format, addDays } from 'date-fns'
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { Problem } from '../types'
 
 interface UpcomingReviewsChartProps {
@@ -112,6 +112,7 @@ export function UpcomingReviewsChart({ problems }: UpcomingReviewsChartProps) {
               data={reviewData}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
             >
+              <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" />
               <XAxis 
                 dataKey="formattedDate" 
                 tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
@@ -128,7 +129,6 @@ export function UpcomingReviewsChart({ problems }: UpcomingReviewsChartProps) {
                 tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                 axisLine={{ stroke: 'hsl(var(--border))' }}
                 tickLine={{ stroke: 'hsl(var(--border))' }}
-                gridLines={{ stroke: 'hsl(var(--border))' }}
               />
               <RechartsTooltip
                 cursor={{ fill: 'hsl(var(--muted)/0.1)' }}

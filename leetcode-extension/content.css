@@ -555,3 +555,41 @@
     transform: scale(1.1);
   }
 }
+
+.btn-difficulty {
+  background: #2d2d2d;
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #3d3d3d;
+  color: #efefef;
+  position: relative;
+  overflow: hidden;
+  font-weight: 500;
+}
+
+.btn-difficulty:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  border-color: #2563eb;
+  background: #363636;
+}
+
+.btn-difficulty.selected {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  border-color: #3b82f6;
+  box-shadow: 
+    0 0 15px rgba(37, 99, 235, 0.3),
+    0 0 30px rgba(37, 99, 235, 0.1);
+  animation: selectedPulse 2s infinite;
+}
+
+.difficulty-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}

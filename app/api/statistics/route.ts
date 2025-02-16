@@ -27,35 +27,64 @@ export async function GET(request: Request) {
       )
     }
 
-    // Get all friends
-    const friendships = await prisma.friendships.findMany({
+    // Get all friends with their problem stats in a single query
+    const friendsWithStats = await prisma.friendships.findMany({
       where: {
         OR: [
           { user1Id: currentUser.id },
           { user2Id: currentUser.id }
         ]
       },
-      include: {
+      select: {
+        id: true,
         user1: {
-          include: {
-            user_statistics: true,
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            photoURL: true,
+            user_statistics: {
+              select: {
+                totalSolved: true,
+                streak: true,
+                lastSolved: true
+              }
+            },
             user_problems: {
               where: {
                 solvedAt: {
-                  gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
+                  gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
                 }
+              },
+              select: {
+                difficulty: true,
+                solvedAt: true
               }
             }
           }
         },
         user2: {
-          include: {
-            user_statistics: true,
+          select: {
+            id: true,
+            displayName: true,
+            email: true,
+            photoURL: true,
+            user_statistics: {
+              select: {
+                totalSolved: true,
+                streak: true,
+                lastSolved: true
+              }
+            },
             user_problems: {
               where: {
                 solvedAt: {
-                  gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Last 7 days
+                  gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
                 }
+              },
+              select: {
+                difficulty: true,
+                solvedAt: true
               }
             }
           }
@@ -63,62 +92,43 @@ export async function GET(request: Request) {
       }
     })
 
-    // Transform data for leaderboard
-    const leaderboardData = friendships.map(friendship => {
-      const friend = friendship.user1Id === currentUser.id ? friendship.user2 : friendship.user1
-      const stats = friend.user_statistics
+    // Transform the data efficiently
+    const transformedFriends = friendsWithStats.map(friendship => {
+      const friend = friendship.user1.id === currentUser.id ? friendship.user2 : friendship.user1
       const recentProblems = friend.user_problems
+      
+      const problemStats = {
+        totalProblems: friend.user_statistics?.totalSolved || 0,
+        streak: friend.user_statistics?.streak || 0,
+        lastSolved: friend.user_statistics?.lastSolved,
+        easy: 0,
+        medium: 0,
+        hard: 0,
+        recentlySolved: recentProblems.length
+      }
+
+      // Count difficulties in a single pass
+      recentProblems.forEach(problem => {
+        const difficulty = problem.difficulty.toLowerCase() as 'easy' | 'medium' | 'hard'
+        problemStats[difficulty] += 1
+      })
 
       return {
+        friendshipId: friendship.id,
         id: friend.id,
         displayName: friend.displayName,
         email: friend.email,
         photoURL: friend.photoURL,
-        stats: {
-          totalSolved: stats?.totalSolved || 0,
-          streak: stats?.streak || 0,
-          lastActive: stats?.lastSolved || new Date(),
-          consistency: (recentProblems.length / 7) * 100 // % of days active in last week
-        }
+        problemStats
       }
     })
 
-    // Add current user to leaderboard
-    const currentUserStats = await prisma.user_statistics.findUnique({
-      where: { userId: currentUser.id }
-    })
-
-    const currentUserRecentProblems = await prisma.user_problems.count({
-      where: {
-        userId: currentUser.id,
-        solvedAt: {
-          gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-        }
-      }
-    })
-
-    leaderboardData.push({
-      id: currentUser.id,
-      displayName: currentUser.displayName,
-      email: currentUser.email,
-      photoURL: currentUser.photoURL,
-      stats: {
-        totalSolved: currentUserStats?.totalSolved || 0,
-        streak: currentUserStats?.streak || 0,
-        lastActive: currentUserStats?.lastSolved || new Date(),
-        consistency: (currentUserRecentProblems / 7) * 100
-      }
-    })
-
-    // Sort by total solved
-    leaderboardData.sort((a, b) => b.stats.totalSolved - a.stats.totalSolved)
-
-    return NextResponse.json(leaderboardData)
+    return NextResponse.json(transformedFriends)
   } catch (error) {
-    console.error('Error fetching statistics:', error)
+    console.error('Error fetching friends statistics:', error)
     return NextResponse.json(
       {
-        error: 'Error fetching statistics',
+        error: 'Error fetching friends statistics',
         details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

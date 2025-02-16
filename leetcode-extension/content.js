@@ -5,8 +5,9 @@ let currentUrl = window.location.href;
 function getProblemData() {
   console.log('Starting getProblemData');
   
-  // Get problem title
+  // Get problem title and numerical ID
   const titleSelectors = [
+    '#bf306ea3-80df-39c6-fb5d-10b7fde48666 > div > div.flex.w-full.flex-1.flex-col.gap-4.overflow-y-auto.px-4.py-5 > div.flex.items-start.justify-between.gap-4 > div > div > a',
     '[data-cy="question-title"]',
     'div[class*="title-"]',
     '.mr-2.text-lg',
@@ -15,12 +16,19 @@ function getProblemData() {
   ];
 
   let problemName = '';
+  let numericalId = '';
   for (const selector of titleSelectors) {
     const element = document.querySelector(selector);
     if (element) {
-      problemName = element.textContent.trim();
-      console.log('Found problem name:', problemName, 'using selector:', selector);
-      break;
+      const fullTitle = element.textContent.trim();
+      // Extract numerical ID and title (format: "141. Linked List Cycle")
+      const match = fullTitle.match(/^(\d+)\.\s*(.+)$/);
+      if (match) {
+        numericalId = match[1];
+        problemName = match[2];
+        console.log('Found problem:', { numericalId, problemName });
+        break;
+      }
     }
   }
 
@@ -73,11 +81,12 @@ function getProblemData() {
 
   const data = {
     leetcodeId,
+    numericalId, // Add the numerical ID
     problemName,
     difficulty,
     url: window.location.href,
     solvedAt: new Date().toISOString(),
-    solution // Add the actual code solution
+    solution
   };
 
   console.log('Problem data collected:', data);

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Leetr</title>
+  <style>
+    /* Base styles */
+    body {
+      width: 350px;
+      padding: 16px;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+
+    /* Layout */
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #2d2d2d;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 600;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo img {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Problem card */
+    .problem-info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      background: #2d2d2d;
+      border-radius: 8px;
+      border: 1px solid #3d3d3d;
+    }
+
+    /* Problem header */
+    .problem-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .problem-title-section {
+      flex: 1;
+    }
+
+    .problem-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .problem-id {
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    /* Difficulty badge */
+    .difficulty-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: capitalize;
+    }
+
+    .difficulty-badge.EASY {
+      background: rgba(0, 175, 155, 0.15);
+      color: #00af9b;
+    }
+
+    .difficulty-badge.MEDIUM {
+      background: rgba(255, 192, 30, 0.15);
+      color: #ffc01e;
+    }
+
+    .difficulty-badge.HARD {
+      background: rgba(255, 55, 95, 0.15);
+      color: #ff375f;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    /* Common card styles */
+    .stat-item,
+    .complexity-item,
+    .notes-section {
+      background: #1a1a1a;
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #3d3d3d;
+    }
+
+    /* Common label styles */
+    .stat-label,
+    .complexity-label,
+    .notes-label {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+
+    /* Notes section */
+    .notes-section {
+      margin-top: 4px;
+      padding: 12px;
+    }
+
+    .notes-content {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #fff;
+      white-space: pre-wrap;
+    }
+
+    .notes-content.not-found {
+      color: #9ca3af;
+      text-align: center;
+      font-style: italic;
+      padding: 16px;
+    }
+
+    .notes-content.error {
+      color: #ef4444;
+      text-align: center;
+      padding: 16px;
+    }
+
+    /* Complexity section */
+    .complexity-section {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .complexity-value {
+      font-size: 13px;
+      font-weight: 500;
+      color: #2563eb;
+      font-family: monospace;
+    }
+
+    /* Status messages */
+    .not-found {
+      text-align: center;
+      color: #9ca3af;
+      padding: 32px 0;
+      font-size: 14px;
+    }
+
+    /* Badges and indicators */
+    .solved-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      background: rgba(37, 99, 235, 0.15);
+      color: #2563eb;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-top: 8px;
+    }
+
+    /* Rating stars */
+    .rating-stars {
+      display: flex;
+      gap: 2px;
+      align-items: center;
+    }
+
+    .star {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .star svg {
+      width: 14px;
+      height: 14px;
+      fill: currentColor;
+    }
+
+    .star {
+      color: #ffc01e;
+      transition: color 0.2s ease;
+    }
+
+    .star.empty {
+      color: #4b5563;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <img src="icon16.png" alt="Leetr" />
+        Leetr
+      </div>
+    </div>
+    <div id="content">
+      <div class="not-found">Open a LeetCode problem to see details</div>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 

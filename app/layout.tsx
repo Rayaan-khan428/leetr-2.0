@@ -11,7 +11,7 @@ import { Toaster } from "sonner";
 const geistSans = localFont({
   src: [
     {
-      path: './fonts/GeistVF.woff2',
+      path: './fonts/GeistVF.woff',
       weight: '100 900',
       style: 'normal',
     },
@@ -22,7 +22,7 @@ const geistSans = localFont({
 const geistMono = localFont({
   src: [
     {
-      path: './fonts/GeistMonoVF.woff2',
+      path: './fonts/GeistMonoVF.woff',
       weight: '100 900',
       style: 'normal',
     },

@@ -1140,6 +1140,57 @@ export default function FriendsPage() {
       )
     }
 
+    const renderChallengesSection = () => (
+      <Card className="relative">
+        <div className="absolute inset-0 backdrop-blur-md bg-background/50 z-10 flex items-center justify-center">
+          <div className="text-center space-y-2">
+            <span className="text-4xl">🎮</span>
+            <h3 className="text-2xl font-bold">Challenges</h3>
+            <p className="text-muted-foreground">Coming Soon</p>
+          </div>
+        </div>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <span className="text-xl">🎮</span>
+            Challenges
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="p-4">
+              <div className="text-center space-y-2">
+                <span className="text-3xl block">⚔️</span>
+                <h3 className="text-xl font-bold">Daily Duels</h3>
+                <p className="text-sm text-muted-foreground">
+                  Challenge friends to daily coding battles
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              <div className="text-center space-y-2">
+                <span className="text-3xl block">🏃</span>
+                <h3 className="text-xl font-bold">Speed Runs</h3>
+                <p className="text-sm text-muted-foreground">
+                  Race against time and friends
+                </p>
+              </div>
+            </Card>
+
+            <Card className="p-4">
+              <div className="text-center space-y-2">
+                <span className="text-3xl block">🎯</span>
+                <h3 className="text-xl font-bold">Weekly Goals</h3>
+                <p className="text-sm text-muted-foreground">
+                  Set and achieve goals together
+                </p>
+              </div>
+            </Card>
+          </div>
+        </CardContent>
+      </Card>
+    )
+
     const cleanupFriendData = async () => {
       try {
         const token = await getToken()
@@ -1239,6 +1290,9 @@ export default function FriendsPage() {
 
         {/* Global Stats */}
         {renderGlobalStats()}
+
+        {/* Challenges Section */}
+        {renderChallengesSection()}
 
         {/* Main content */}
         <div className="grid grid-cols-1 gap-6">

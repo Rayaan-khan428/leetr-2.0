@@ -1,6 +1,7 @@
 import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
+import { ProblemCategory } from '@prisma/client'
 
 /**
  * @swagger
@@ -118,6 +119,7 @@ export async function GET(request: Request) {
               select: {
                 difficulty: true,
                 solvedAt: true,
+                categories: true,
               }
             },
             user_statistics: true
@@ -133,6 +135,7 @@ export async function GET(request: Request) {
               select: {
                 difficulty: true,
                 solvedAt: true,
+                categories: true,
               }
             },
             user_statistics: true
@@ -158,7 +161,19 @@ export async function GET(request: Request) {
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
             return new Date(p.solvedAt) > oneWeekAgo;
-          }).length
+          }).length,
+        categories: {
+          ARRAYS_AND_STRINGS: friend.user_problems.filter(p => p.categories.includes('ARRAYS_AND_STRINGS')).length,
+          LINKED_LISTS: friend.user_problems.filter(p => p.categories.includes('LINKED_LISTS')).length,
+          TREES_AND_GRAPHS: friend.user_problems.filter(p => p.categories.includes('TREES_AND_GRAPHS')).length,
+          DYNAMIC_PROGRAMMING: friend.user_problems.filter(p => p.categories.includes('DYNAMIC_PROGRAMMING')).length,
+          SORTING_AND_SEARCHING: friend.user_problems.filter(p => p.categories.includes('SORTING_AND_SEARCHING')).length,
+          STACK_AND_QUEUE: friend.user_problems.filter(p => p.categories.includes('STACK_AND_QUEUE')).length,
+          HASH_TABLES: friend.user_problems.filter(p => p.categories.includes('HASH_TABLES')).length,
+          RECURSION_AND_BACKTRACKING: friend.user_problems.filter(p => p.categories.includes('RECURSION_AND_BACKTRACKING')).length,
+          BIT_MANIPULATION: friend.user_problems.filter(p => p.categories.includes('BIT_MANIPULATION')).length,
+          MATH_AND_LOGIC: friend.user_problems.filter(p => p.categories.includes('MATH_AND_LOGIC')).length,
+        }
       }
 
       return {

@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import type { Problem } from '../types'
+import { Badge } from "@/components/ui/badge"
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -72,6 +73,18 @@ interface ProblemsTableProps {
   setCurrentPage: (page: number) => void
   pageSize: number
   searchQuery: string
+}
+
+const getCategoryColor = (category: MainCategory) => {
+  const colors: Record<string, { bg: string; text: string }> = {
+    ARRAY_STRING: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+    HASH_BASED: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    LINKED: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-300' },
+    STACK_QUEUE: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-300' },
+    TREE: { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    GRAPH: { bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-800 dark:text-pink-300' },
+  }
+  return colors[category] || { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-800 dark:text-gray-300' }
 }
 
 export function ProblemsTable({
@@ -155,6 +168,29 @@ export function ProblemsTable({
                         }`}>
                           {problem.difficulty}
                         </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {problem.mainCategory && (
+                          <Badge 
+                            variant="secondary"
+                            className={cn(
+                              "text-xs",
+                              getCategoryColor(problem.mainCategory).bg,
+                              getCategoryColor(problem.mainCategory).text
+                            )}
+                          >
+                            {problem.mainCategory.replace('_', ' ')}
+                          </Badge>
+                        )}
+                        {problem.subCategories?.map((subCat) => (
+                          <Badge 
+                            key={subCat}
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            {subCat.replace('_', ' ').toLowerCase()}
+                          </Badge>
+                        ))}
                       </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <span>#{problem.leetcodeId}</span>

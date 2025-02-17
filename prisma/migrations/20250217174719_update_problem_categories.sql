@@ -1,0 +1,34 @@
+-- First, create a backup of the existing categories
+CREATE TABLE problem_categories_backup AS
+SELECT * FROM "_ProblemCategoryTouser_problems";
+
+-- Drop the existing enum type after creating a new one
+DROP TYPE IF EXISTS "ProblemCategory";
+CREATE TYPE "ProblemCategory" AS ENUM (
+  'ARRAYS_AND_STRINGS',
+  'LINKED_LISTS',
+  'TREES_AND_GRAPHS',
+  'DYNAMIC_PROGRAMMING',
+  'SORTING_AND_SEARCHING',
+  'STACK_AND_QUEUE',
+  'HASH_TABLES',
+  'RECURSION_AND_BACKTRACKING',
+  'BIT_MANIPULATION',
+  'MATH_AND_LOGIC'
+);
+
+-- Map old categories to new ones
+UPDATE "_ProblemCategoryTouser_problems" pc
+SET "B" = CASE
+  WHEN pc."B" IN ('ARRAY', 'STRING') THEN 'ARRAYS_AND_STRINGS'
+  WHEN pc."B" = 'LINKED_LIST' THEN 'LINKED_LISTS'
+  WHEN pc."B" IN ('TREE', 'GRAPH', 'BINARY_TREE') THEN 'TREES_AND_GRAPHS'
+  WHEN pc."B" = 'DYNAMIC_PROGRAMMING' THEN 'DYNAMIC_PROGRAMMING'
+  WHEN pc."B" IN ('SORTING', 'BINARY_SEARCH') THEN 'SORTING_AND_SEARCHING'
+  WHEN pc."B" IN ('STACK', 'QUEUE') THEN 'STACK_AND_QUEUE'
+  WHEN pc."B" = 'HASH_TABLE' THEN 'HASH_TABLES'
+  WHEN pc."B" IN ('RECURSION', 'BACKTRACKING') THEN 'RECURSION_AND_BACKTRACKING'
+  WHEN pc."B" = 'BIT_MANIPULATION' THEN 'BIT_MANIPULATION'
+  WHEN pc."B" IN ('MATH', 'NUMBER_THEORY') THEN 'MATH_AND_LOGIC'
+  ELSE 'ARRAYS_AND_STRINGS' -- Default fallback
+END::text::ProblemCategory; 

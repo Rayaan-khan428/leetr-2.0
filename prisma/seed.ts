@@ -1,4 +1,4 @@
-import { PrismaClient, Difficulty, FriendshipRequestStatus } from '@prisma/client'
+import { PrismaClient, Difficulty, FriendshipRequestStatus, MainCategory, SubCategory } from '@prisma/client'
 import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
@@ -39,7 +39,111 @@ const LEETCODE_PROBLEMS = [
 const TIME_COMPLEXITIES = ['O(n)', 'O(n log n)', 'O(n²)', 'O(log n)', 'O(1)']
 const SPACE_COMPLEXITIES = ['O(n)', 'O(1)', 'O(log n)', 'O(n²)']
 
-const TARGET_EMAIL = 'rayaan.k.ca@gmail.com'
+const TARGET_EMAIL = 'rayaan1516@gmail.com'
+
+const sampleProblems = [
+  {
+    leetcodeId: "1",
+    problemName: "Two Sum",
+    difficulty: "EASY" as Difficulty,
+    solution: "Using a hash map to store complements...",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(n)",
+    mainCategory: "HASH_BASED" as MainCategory,
+    subCategories: ["HASH_MAP"] as SubCategory[],
+  },
+  {
+    leetcodeId: "20",
+    problemName: "Valid Parentheses",
+    difficulty: "EASY" as Difficulty,
+    solution: "Using a stack to track opening brackets...",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(n)",
+    mainCategory: "STACK_QUEUE" as MainCategory,
+    subCategories: ["STACK"] as SubCategory[],
+  },
+  {
+    leetcodeId: "121",
+    problemName: "Best Time to Buy and Sell Stock",
+    difficulty: "EASY" as Difficulty,
+    solution: "Using one pass with tracking minimum...",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(1)",
+    mainCategory: "ARRAY_STRING" as MainCategory,
+    subCategories: ["ARRAY"] as SubCategory[],
+  },
+  {
+    leetcodeId: "200",
+    problemName: "Number of Islands",
+    difficulty: "MEDIUM" as Difficulty,
+    solution: "Using DFS to explore connected land...",
+    timeComplexity: "O(m*n)",
+    spaceComplexity: "O(m*n)",
+    mainCategory: "GRAPH" as MainCategory,
+    subCategories: ["DFS", "MATRIX"] as SubCategory[],
+  },
+  {
+    leetcodeId: "206",
+    problemName: "Reverse Linked List",
+    difficulty: "EASY" as Difficulty,
+    solution: "Using three pointers approach...",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(1)",
+    mainCategory: "LINKED" as MainCategory,
+    subCategories: ["SINGLY_LINKED"] as SubCategory[],
+  },
+  {
+    leetcodeId: "3",
+    problemName: "Longest Substring Without Repeating Characters",
+    difficulty: "MEDIUM" as Difficulty,
+    solution: "Using sliding window technique...",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(min(m,n))",
+    mainCategory: "ARRAY_STRING" as MainCategory,
+    subCategories: ["SLIDING_WINDOW", "HASH_SET"] as SubCategory[],
+  },
+  {
+    leetcodeId: "98",
+    problemName: "Validate Binary Search Tree",
+    difficulty: "MEDIUM" as Difficulty,
+    solution: "Using inorder traversal...",
+    timeComplexity: "O(n)",
+    spaceComplexity: "O(h)",
+    mainCategory: "TREE" as MainCategory,
+    subCategories: ["BINARY_SEARCH_TREE"] as SubCategory[],
+  },
+  {
+    leetcodeId: "23",
+    problemName: "Merge k Sorted Lists",
+    difficulty: "HARD" as Difficulty,
+    solution: "Using priority queue...",
+    timeComplexity: "O(N log k)",
+    spaceComplexity: "O(k)",
+    mainCategory: "LINKED" as MainCategory,
+    subCategories: ["PRIORITY_QUEUE", "SINGLY_LINKED"] as SubCategory[],
+  },
+  {
+    leetcodeId: "127",
+    problemName: "Word Ladder",
+    difficulty: "HARD" as Difficulty,
+    solution: "Using BFS with word pattern matching...",
+    timeComplexity: "O(N * 26 * L)",
+    spaceComplexity: "O(N)",
+    mainCategory: "GRAPH" as MainCategory,
+    subCategories: ["BFS"] as SubCategory[],
+  },
+  {
+    leetcodeId: "212",
+    problemName: "Word Search II",
+    difficulty: "HARD" as Difficulty,
+    solution: "Using Trie and backtracking...",
+    timeComplexity: "O(M * N * 4^L)",
+    spaceComplexity: "O(N)",
+    mainCategory: "TREE" as MainCategory,
+    subCategories: ["TRIE", "MATRIX"] as SubCategory[],
+  }
+]
+
 async function main() {
   // Find the existing user
   const user = await prisma.users.findUnique({
@@ -59,40 +163,24 @@ async function main() {
     where: { userId: user.id }
   })
 
-  // Create problems with dates spread over the last year
-  const numProblems = Math.floor(Math.random() * 21) + 10 // Random number between 10 and 30
-  const selectedProblems = [...LEETCODE_PROBLEMS]
-    .sort(() => Math.random() - 0.5)
-    .slice(0, numProblems) // Create random number of problems
-
-  const problemsData = selectedProblems.map(problem => {
-    const daysAgo = Math.floor(Math.random() * 365)
-    const solvedAt = new Date()
-    solvedAt.setDate(solvedAt.getDate() - daysAgo)
-
-    return {
-      id: uuidv4(),
-      userId: user.id,
-      leetcodeId: problem.id,
-      problemName: problem.name,
-      difficulty: problem.difficulty,
-      solution: `// Solution for ${problem.name}\nfunction solution() {\n  // Implementation\n}`,
-      notes: `Notes for ${problem.name}`,
-      attempts: Math.floor(Math.random() * 3) + 1,
-      timeComplexity: TIME_COMPLEXITIES[Math.floor(Math.random() * TIME_COMPLEXITIES.length)],
-      spaceComplexity: SPACE_COMPLEXITIES[Math.floor(Math.random() * SPACE_COMPLEXITIES.length)],
-      url: `https://leetcode.com/problems/${problem.name.toLowerCase().replace(/\s+/g, '-')}/`,
-      solvedAt,
-      nextReview: new Date(solvedAt.getTime() + 7 * 24 * 60 * 60 * 1000),
-      createdAt: solvedAt,
-      updatedAt: solvedAt,
-      difficultyRating: Math.floor(Math.random() * 10) + 1, // Random rating between 1 and 10
-    }
-  })
-
-  await prisma.user_problems.createMany({
-    data: problemsData
-  })
+  // Create problems for the user
+  for (const problem of sampleProblems) {
+    await prisma.user_problems.create({
+      data: {
+        id: `prob_${Math.random().toString(36).substr(2, 9)}`,
+        userId: user.id,
+        leetcodeId: problem.leetcodeId,
+        problemName: problem.problemName,
+        difficulty: problem.difficulty,
+        solution: problem.solution,
+        timeComplexity: problem.timeComplexity,
+        spaceComplexity: problem.spaceComplexity,
+        mainCategory: problem.mainCategory,
+        subCategories: problem.subCategories,
+        solvedAt: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000),
+      },
+    })
+  }
 
   // Calculate statistics
   const problems = await prisma.user_problems.findMany({
@@ -135,7 +223,7 @@ async function main() {
   })
 
   console.log(`Successfully seeded data for user ${TARGET_EMAIL}:`)
-  console.log(`- Created ${problemsData.length} problems`)
+  console.log(`- Created ${problems.length} problems`)
   console.log(`- Current streak: ${streak}`)
   console.log(`- Total solved: ${problems.length}`)
 }

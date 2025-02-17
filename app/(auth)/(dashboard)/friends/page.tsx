@@ -73,6 +73,18 @@ interface Friend {
       medium: number
       hard: number
       recentlySolved: number
+      categories?: {
+        ARRAYS_AND_STRINGS?: number
+        LINKED_LISTS?: number
+        TREES_AND_GRAPHS?: number
+        DYNAMIC_PROGRAMMING?: number
+        SORTING_AND_SEARCHING?: number
+        STACK_AND_QUEUE?: number
+        HASH_TABLES?: number
+        RECURSION_AND_BACKTRACKING?: number
+        BIT_MANIPULATION?: number
+        MATH_AND_LOGIC?: number
+      }
     }
     user_statistics?: {  // Match the database field name
       streak: number
@@ -217,15 +229,48 @@ export default function FriendsPage() {
           }
 
           const data = await response.json()
-          setLeaderboard(data)
+          
+          // Transform the data to match LeaderboardEntry interface with null checks
+          const transformedData = data.map((entry: any) => ({
+            id: entry.id,
+            displayName: entry.displayName,
+            email: entry.email,
+            photoURL: entry.photoURL,
+            stats: {
+              totalSolved: entry.problemStats?.totalProblems || 0,
+              streak: entry.problemStats?.streak || 0,
+              lastActive: entry.problemStats?.lastSolved || new Date(),
+              lastWeekSolved: entry.problemStats?.recentlySolved || 0,
+              lastMonthSolved: entry.problemStats?.recentlySolved || 0,
+              consistency: calculateConsistency(entry.problemStats || {})
+            }
+          }))
+
+          setLeaderboard(transformedData)
         } catch (err) {
           console.error('Error fetching leaderboard:', err)
           setError('Error fetching leaderboard data')
+          // Set empty leaderboard instead of leaving it undefined
+          setLeaderboard([])
         }
       }
 
       initializeAndFetchLeaderboard()
     }, [getToken])
+
+    // Helper function to calculate consistency
+    const calculateConsistency = (stats: any) => {
+      if (!stats?.lastSolved) return 0
+      try {
+        const lastSolvedDate = new Date(stats.lastSolved)
+        if (isNaN(lastSolvedDate.getTime())) return 0
+        const daysSinceLastSolved = Math.floor((Date.now() - lastSolvedDate.getTime()) / (1000 * 60 * 60 * 24))
+        return daysSinceLastSolved <= 7 ? 100 : Math.max(0, 100 - (daysSinceLastSolved - 7) * 10)
+      } catch (error) {
+        console.error('Error calculating consistency:', error)
+        return 0
+      }
+    }
 
     useEffect(() => {
       if (isSearchOpen) {
@@ -545,10 +590,10 @@ export default function FriendsPage() {
                     </ResponsiveContainer>
                   </div>
 
-                  {/* Bar Chart */}
+                  {/* Difficulty Distribution Bar Chart */}
                   <div className="h-[300px] w-full bg-card rounded-lg p-4">
                     <ResponsiveContainer width="100%" height="100%">
-                      <RechartsBarChart 
+                      <RechartsBarChart
                         data={[
                           { name: 'Easy', value: friend.problemStats.easy },
                           { name: 'Medium', value: friend.problemStats.medium },
@@ -857,8 +902,17 @@ export default function FriendsPage() {
             <CardTitle className="flex items-center gap-2">
               <span className="text-xl">🏆</span>
               Leaderboard
+              {leaderboard.length === 0 && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  (No participants yet)
+                </span>
+              )}
             </CardTitle>
-            <Select value={rankingMetric} onValueChange={setRankingMetric}>
+            <Select 
+              value={rankingMetric} 
+              onValueChange={setRankingMetric}
+              disabled={leaderboard.length === 0}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Ranking Metric" />
               </SelectTrigger>
@@ -874,52 +928,58 @@ export default function FriendsPage() {
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-            {[...leaderboard]
-              .sort((a, b) => getRankingMetricValue(b) - getRankingMetricValue(a))
-              .map((entry, index) => {
-                const isCurrentUser = entry.id === user?.id;
-                const metricValue = getRankingMetricValue(entry);
-                const metricDisplay = rankingMetric === 'consistency' 
-                  ? `${(metricValue || 0).toFixed(1)}%`
-                  : (metricValue || 0).toString();
+            {leaderboard.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground space-y-4">
+                <span className="text-4xl">🎯</span>
+                <p>No leaderboard data yet</p>
+                <p className="text-sm">Start solving problems to appear on the leaderboard!</p>
+              </div>
+            ) : (
+              [...leaderboard]
+                .sort((a, b) => (getRankingMetricValue(b) || 0) - (getRankingMetricValue(a) || 0))
+                .map((entry, index) => {
+                  const isCurrentUser = entry.id === user?.id;
+                  const metricValue = getRankingMetricValue(entry);
+                  const metricDisplay = rankingMetric === 'streak' ? 'days' : 'problems';
 
-                return (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`flex items-center justify-between p-4 rounded-lg border mb-2 ${
-                      isCurrentUser ? 'bg-muted/50' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-8 h-8">
-                        {index === 0 && <span className="text-3xl block mb-2">🏆</span>}
-                        {index === 1 && <span className="text-3xl block mb-2">🥈</span>}
-                        {index === 2 && <span className="text-3xl block mb-2">🥉</span>}
-                        {index > 2 && <span className="text-lg font-bold">{index + 1}</span>}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={entry.photoURL || undefined} />
-                          <AvatarFallback>
-                            {entry.displayName?.[0]?.toUpperCase() || entry.email[0].toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">
-                            {isCurrentUser ? 'You' : (entry.displayName || 'Anonymous User')}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {metricDisplay} {rankingMetric === 'streak' ? 'days' : ''}
-                          </p>
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`flex items-center justify-between p-4 rounded-lg border mb-2 ${
+                        isCurrentUser ? 'bg-muted/50' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-center w-8 h-8">
+                          {index === 0 && <span className="text-3xl block mb-2">🏆</span>}
+                          {index === 1 && <span className="text-3xl block mb-2">🥈</span>}
+                          {index === 2 && <span className="text-3xl block mb-2">🥉</span>}
+                          {index > 2 && <span className="text-lg font-bold">{index + 1}</span>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={entry.photoURL || undefined} />
+                            <AvatarFallback>
+                              {entry.displayName?.[0]?.toUpperCase() || entry.email[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">
+                              {isCurrentUser ? 'You' : (entry.displayName || 'Anonymous User')}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {metricValue} {metricDisplay}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-            })}
+                    </motion.div>
+                  );
+                })
+            )}
           </ScrollArea>
         </CardContent>
       </Card>
@@ -1063,15 +1123,18 @@ export default function FriendsPage() {
     }
 
     const renderGlobalStats = () => {
+      // Add null checks and default values
       const longestStreakUser = leaderboard.reduce((max, entry) => 
-        entry.stats.streak > (max?.stats.streak || 0) ? entry : max, 
+        (entry?.stats?.streak || 0) > (max?.stats?.streak || 0) ? entry : max, 
         null as LeaderboardEntry | null
       );
 
       const mostConsistentUser = leaderboard.reduce((max, entry) => 
-        entry.stats.consistency > (max?.stats.consistency || 0) ? entry : max,
+        (entry?.stats?.consistency || 0) > (max?.stats?.consistency || 0) ? entry : max,
         null as LeaderboardEntry | null
       );
+
+      const topSolver = leaderboard.length > 0 ? leaderboard[0] : null;
 
       return (
         <Card>
@@ -1079,6 +1142,11 @@ export default function FriendsPage() {
             <CardTitle className="flex items-center gap-2">
               <span className="text-xl">✨</span>
               Global Statistics
+              {leaderboard.length === 0 && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  (No data yet)
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1087,11 +1155,15 @@ export default function FriendsPage() {
                 <div className="text-center space-y-2">
                   <span className="text-3xl block">👑</span>
                   <h3 className="text-xl font-bold">
-                    {leaderboard[0]?.stats.totalSolved || 0}
+                    {topSolver?.stats?.totalSolved || 0}
                   </h3>
                   <p className="text-sm text-muted-foreground">Most Problems Solved</p>
                   <p className="text-xs text-muted-foreground">
-                    by {leaderboard[0]?.displayName || 'Anonymous'}
+                    {topSolver ? (
+                      `by ${topSolver.displayName || 'Anonymous'}`
+                    ) : (
+                      'No problems solved yet'
+                    )}
                   </p>
                 </div>
               </Card>
@@ -1100,11 +1172,15 @@ export default function FriendsPage() {
                 <div className="text-center space-y-2">
                   <span className="text-3xl block">🔥</span>
                   <h3 className="text-xl font-bold">
-                    {longestStreakUser?.stats.streak || 0}d
+                    {longestStreakUser?.stats?.streak || 0}d
                   </h3>
                   <p className="text-sm text-muted-foreground">Longest Streak</p>
                   <p className="text-xs text-muted-foreground">
-                    by {longestStreakUser?.displayName || 'Anonymous'}
+                    {longestStreakUser ? (
+                      `by ${longestStreakUser.displayName || 'Anonymous'}`
+                    ) : (
+                      'No streaks yet'
+                    )}
                   </p>
                 </div>
               </Card>
@@ -1113,11 +1189,15 @@ export default function FriendsPage() {
                 <div className="text-center space-y-2">
                   <span className="text-3xl block">🎯</span>
                   <h3 className="text-xl font-bold">
-                    {mostConsistentUser?.stats.consistency.toFixed(0) || 0}%
+                    {(mostConsistentUser?.stats?.consistency || 0).toFixed(0)}%
                   </h3>
                   <p className="text-sm text-muted-foreground">Highest Consistency</p>
                   <p className="text-xs text-muted-foreground">
-                    by {mostConsistentUser?.displayName || 'Anonymous'}
+                    {mostConsistentUser ? (
+                      `by ${mostConsistentUser.displayName || 'Anonymous'}`
+                    ) : (
+                      'No consistency data yet'
+                    )}
                   </p>
                 </div>
               </Card>

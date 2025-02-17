@@ -34,23 +34,25 @@ model friendships {
 }
 
 model user_problems {
-  id               String     @id
+  id               String           @id
   userId           String
   leetcodeId       String
   problemName      String
   difficulty       Difficulty
   solution         String?
   notes            String?
-  solvedAt         DateTime   @default(now())
-  attempts         Int        @default(1)
+  solvedAt         DateTime         @default(now())
+  attempts         Int              @default(1)
   timeComplexity   String?
   spaceComplexity  String?
   url              String?
   nextReview       DateTime?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @default(now())
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @default(now())
   difficultyRating Int?
-  users            users      @relation(fields: [userId], references: [id])
+  mainCategory     MainCategory
+  subCategories    SubCategory[]
+  users            users            @relation(fields: [userId], references: [id])
 
   @@unique([userId, leetcodeId])
   @@index([solvedAt])
@@ -113,4 +115,51 @@ enum Difficulty {
   EASY
   MEDIUM
   HARD
+}
+
+enum MainCategory {
+  ARRAY_STRING
+  HASH_BASED
+  LINKED
+  STACK_QUEUE
+  TREE
+  GRAPH
+}
+
+enum SubCategory {
+  // Array/String
+  ARRAY
+  STRING
+  TWO_POINTERS
+  SLIDING_WINDOW
+  MATRIX
+
+  // Hash Based
+  HASH_MAP
+  HASH_SET
+
+  // Linked
+  SINGLY_LINKED
+  DOUBLY_LINKED
+  CIRCULAR_LINKED
+
+  // Stack/Queue
+  STACK
+  QUEUE
+  DEQUE
+  PRIORITY_QUEUE
+
+  // Tree
+  BINARY_TREE
+  BINARY_SEARCH_TREE
+  NARY_TREE
+  TRIE
+  SEGMENT_TREE
+
+  // Graph
+  DIRECTED_GRAPH
+  UNDIRECTED_GRAPH
+  DFS
+  BFS
+  TOPOLOGICAL_SORT
 }

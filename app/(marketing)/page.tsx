@@ -21,34 +21,34 @@ interface Step {
 
 const features: Feature[] = [
   {
-    title: "Spaced Repetition",
-    description: "This is the best way to learn, and Leetr determines the best time to review each problem, reminding you when to review through sms.",
+    title: "Spaced Repetition That Works",
+    description: "Our algorithm knows when you're about to forget that tricky DP solution. Get smart SMS reminders that you'll actually want to check (no more notification graveyard) 🧠",
     icon: <IconRobot className="w-6 h-6 text-blue-500" />,
   },
   {
-    title: "Associated neetcode solutions",
-    description: "The extension will automatically associate the problem you are solving with the neetcode solution, so you can easily see the solution and compare your solution.",
+    title: "NeetCode Solutions, Automatically",
+    description: "Stuck on a problem? We automatically link NeetCode's solution videos right where you need them. Because sometimes you need to see how it's done 📚",
     icon: <IconCode className="w-6 h-6 text-blue-500" />,
   },
   {
-    title: "Progress Tracking",
-    description: "Monitor your improvement with detailed analytics to see your strengths and weaknesses, and get personalized recommendations.",
+    title: "Ditch The Spreadsheet Life",
+    description: "Let's be honest - that Google Sheet isn't cutting it anymore. Our extension tracks everything: solutions, time complexity, patterns. Future you will be grateful 📈",
     icon: <IconGraph className="w-6 h-6 text-blue-500" />,
   },
   {
-    title: "Customizable SMS Notifications",
-    description: '"Whos gonna carry the boats?" select from a multitude of tones that make you look forward to your review sessions.',
-    icon: <IconGraph className="w-6 h-6 text-blue-500" />,
+    title: "SMS Reminders That Hit Different",
+    description: "From \"Who's gonna carry the boats?\" to \"Time to crush another medium\" - choose notifications that actually motivate you to keep grinding 💪",
+    icon: <IconBrain className="w-6 h-6 text-blue-500" />,
   },
   {
-    title: "Import your current spreadsheet",
-    description: "Import your current spreadsheet of problems and solutions, and we will update everything on our end for you.",
-    icon: <IconGraph className="w-6 h-6 text-blue-500" />,
+    title: "Import Your Progress",
+    description: "Already grinding with a spreadsheet? We'll import all your problems, solutions, and notes in one click. Keep your progress, lose the hassle 🚀",
+    icon: <IconLayoutGrid className="w-6 h-6 text-blue-500" />,
   },
   {
-    title: "Friends and goal setting",
-    description: "Add friends and compete with them to see who the most cracked one amongst you is.",
-    icon: <IconGraph className="w-6 h-6 text-blue-500" />,
+    title: "Level Up Together",
+    description: "Add your study group and track who's putting in work. Nothing beats some friendly competition to keep the momentum going 🏆",
+    icon: <IconTarget className="w-6 h-6 text-blue-500" />,
   },
 ];
 
@@ -69,26 +69,37 @@ const steps: Step[] = [
 
 const HeroButton: FC = () => {
   return (
-    <Link href="/login">
-      <ShimmerButton className="rounded-lg px-8 py-6 text-base">
-        Get Started
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="ml-2"
+    <div className="flex justify-center gap-4">
+      <Link href="/guide">
+        <ShimmerButton 
+          className="rounded-lg px-8 py-6 text-base min-w-[200px]"
         >
-          <path d="M5 12h14" />
-          <path d="m12 5 7 7-7 7" />
-        </svg>
-      </ShimmerButton>
-    </Link>
+          LeetCode Guide
+        </ShimmerButton>
+      </Link>
+      <Link href="/login">
+        <ShimmerButton 
+          className="rounded-lg px-8 py-6 text-base min-w-[200px] flex items-center justify-center"
+        >
+          Get Started
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="ml-2"
+          >
+            <path d="M5 12h14" />
+            <path d="m12 5 7 7-7 7" />
+          </svg>
+        </ShimmerButton>
+      </Link>
+    </div>
   );
 };
 

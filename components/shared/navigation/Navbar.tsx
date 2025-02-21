@@ -28,10 +28,10 @@ export function Navbar() {
               About
             </Link>
             <Link 
-              href="/blog"
+              href="/guide"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Blog
+              Guide
             </Link>
             <Link 
               href="/pricing"

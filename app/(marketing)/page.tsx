@@ -54,16 +54,16 @@ const features: Feature[] = [
 
 const steps: Step[] = [
   {
-    title: "Download the Leetr Chrome Extension",
-    description: "This is your way to easily document your solution, no more spreadsheets!",
+    title: "Quick Setup",
+    description: "Sign up and install our Chrome extension. Import your existing LeetCode progress or start fresh - no more messy spreadsheets.",
   },
   {
-    title: "Use the Leetr Dashboard",
-    description: "You can view the information in the Leetr Dashboard, quickly see your progress and notes you took.",
+    title: "Track Your Progress",
+    description: "Use our extension to document solutions, patterns, and time complexity while you solve problems. Access NeetCode videos right where you need them.",
   },
   {
-    title: "Compete with your friends",
-    description: "Add friends and compete with them to see who the most cracked one amongst you is.",
+    title: "Never Forget Solutions",
+    description: "Get smart SMS reminders to review past problems before you forget them. Track your progress and compete with friends to stay motivated.",
   },
 ];
 
@@ -228,16 +228,16 @@ const HowItWorks: FC = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
-            How it works
+            Your Journey to Success
           </h2>
           <p className="mt-4 text-gray-600 dark:text-gray-400 text-lg">
-            Start improving your interview skills in three simple steps
+            A structured approach to mastering technical interviews
           </p>
         </div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left side - Vertical cards */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {steps.map((step, index) => (
               <motion.div
                 key={index}
@@ -246,34 +246,38 @@ const HowItWorks: FC = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="relative"
               >
-                <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-500/10 rounded-full flex items-center justify-center">
+                <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 p-8 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-start gap-6">
+                    <div className="flex-shrink-0 w-14 h-14 bg-blue-100 dark:bg-blue-500/10 rounded-full flex items-center justify-center">
                       <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                         {index + 1}
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                      <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
                         {step.title}
                       </h3>
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
                         {step.description}
                       </p>
                     </div>
                   </div>
                 </div>
+                {index < steps.length - 1 && (
+                  <div className="absolute h-8 w-1 bg-blue-200 dark:bg-blue-900 left-[2.25rem] -bottom-8 transform translate-x-[-50%]" />
+                )}
               </motion.div>
             ))}
           </div>
 
-          {/* Right side - Video */}
+          {/* Right side - Video with enhanced styling */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800"
+            className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800 group"
           >
+            <div className="absolute inset-0 bg-blue-500/10 group-hover:bg-blue-500/5 transition-colors duration-300" />
             <video
               className="w-full h-full object-cover"
               autoPlay
@@ -287,8 +291,7 @@ const HowItWorks: FC = () => {
               Your browser does not support the video tag.
             </video>
             
-            {/* Optional: Keep the gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
           </motion.div>
         </div>
       </div>

@@ -1,9 +1,10 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Github, Linkedin, Mail } from 'lucide-react'
+import { Github, Linkedin, Mail, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { IconBrain, IconCode, IconRocket } from '@tabler/icons-react'
 
 export default function AboutPage() {
   const teamMembers = [
@@ -29,146 +30,144 @@ export default function AboutPage() {
     }
   ]
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2
+  const milestones = [
+    {
+      title: "The Hackathon",
+      description: "Started as a rough prototype at Hack Western 2023. We built a basic Chrome extension that could track LeetCode solutions - it barely worked, but the idea stuck.",
+      icon: <IconCode className="w-6 h-6 text-blue-500" />,
+      link: {
+        text: "View Original Devpost",
+        url: "https://devpost.com/software/leetr"
       }
+    },
+    {
+      title: "The Realization",
+      description: "During our internship hunts, we discovered just how crucial LeetCode was. Our old spreadsheets weren't cutting it, and we remembered our hackathon project.",
+      icon: <IconBrain className="w-6 h-6 text-blue-500" />
+    },
+    {
+      title: "The Rebuild",
+      description: "We dusted off the code, completely rebuilt it from scratch, and turned it into what Leetr is today - a proper tool for serious technical interview prep.",
+      icon: <IconRocket className="w-6 h-6 text-blue-500" />
     }
-  }
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5
-      }
-    }
-  }
+  ]
 
   return (
-    <motion.div 
-      className="container mx-auto py-32 px-4"
-      initial="hidden"
-      animate="visible"
-      variants={containerVariants}
-    >
-      <div className="max-w-4xl mx-auto space-y-12">
-        {/* Mission Section */}
-        <motion.div variants={cardVariants}>
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Our Mission
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Leetr was created with a simple goal: to help developers track and improve their 
-                technical interview preparation journey. We believe in making the learning process 
-                structured, measurable, and effective.
-              </p>
-              <p className="text-lg text-muted-foreground leading-relaxed">
-                Our platform combines intelligent problem tracking, spaced repetition, and 
-                comprehensive solution management to help you master technical interviews.
-              </p>
-            </CardContent>
-          </Card>
+    <div className="container mx-auto py-32 px-4">
+      <div className="max-w-4xl mx-auto space-y-16">
+        {/* Origin Story Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center space-y-6"
+        >
+          <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Our Story
+          </h1>
+          <p className="text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+            From a sleep-deprived hackathon project to a tool that's helping developers master technical interviews.
+          </p>
         </motion.div>
 
-        {/* Key Features Section */}
-        <motion.div variants={cardVariants}>
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                What Sets Us Apart
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-6 md:grid-cols-2">
-              {[
-                {
-                  title: 'Smart Progress Tracking',
-                  description: 'Track your problem-solving journey with detailed insights and analytics.'
-                },
-                {
-                  title: 'Spaced Repetition',
-                  description: 'Review problems at optimal intervals to strengthen your understanding.'
-                },
-                {
-                  title: 'Comprehensive Solutions',
-                  description: 'Store and access your solutions with time and space complexity analysis.'
-                },
-                {
-                  title: 'Community Driven',
-                  description: 'Learn and grow with a community of like-minded developers.'
-                }
-              ].map((feature, index) => (
-                <motion.div 
-                  key={index} 
-                  className="space-y-2 p-4 rounded-lg hover:bg-muted/50 transition-colors duration-200"
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300 }}
-                >
-                  <h3 className="font-semibold text-xl bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
-                </motion.div>
-              ))}
-            </CardContent>
-          </Card>
+        {/* Journey Timeline */}
+        <div className="space-y-8">
+          {milestones.map((milestone, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.2 }}
+              className="flex gap-6 items-start"
+            >
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                {milestone.icon}
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {milestone.title}
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {milestone.description}
+                </p>
+                {milestone.link && (
+                  <Link 
+                    href={milestone.link.url}
+                    target="_blank"
+                    className="inline-flex items-center text-blue-500 hover:text-blue-600 font-medium mt-2"
+                  >
+                    {milestone.link.text}
+                    <ExternalLink className="ml-2 h-4 w-4" />
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Mission Statement */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 p-8 rounded-2xl border border-blue-100 dark:border-blue-900"
+        >
+          <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Built By Students, For Students
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            As students who've gone through the grind ourselves, we know exactly what it's like. 
+            The endless LeetCode problems, the messy spreadsheets, the forgotten solutions - we've been there. 
+            That's why we built Leetr: to help every CS student get cracked at technical interviews, 
+            regardless of their background or experience. No fancy AI, no complicated systems - 
+            just the tools you actually need to track your progress and crush your interviews.
+          </p>
         </motion.div>
 
         {/* Team Section */}
-        <motion.div variants={cardVariants}>
-          <Card className="hover:shadow-lg transition-shadow duration-300">
-            <CardHeader>
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Meet the Team
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-8 md:grid-cols-2">
-                {teamMembers.map((member, index) => (
-                  <motion.div 
-                    key={index} 
-                    className="space-y-4 p-6 rounded-lg hover:bg-muted/50 transition-colors duration-200"
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 300 }}
-                  >
-                    <h3 className="text-2xl font-semibold">{member.name}</h3>
-                    <p className="text-sm text-primary font-medium">{member.role}</p>
-                    <p className="text-muted-foreground">{member.bio}</p>
-                    <div className="flex space-x-4">
-                      {Object.entries(member.links).map(([platform, url]) => (
-                        <motion.div
-                          key={platform}
-                          whileHover={{ scale: 1.2 }}
-                          whileTap={{ scale: 0.9 }}
-                        >
-                          <Link 
-                            href={url}
-                            className="text-muted-foreground hover:text-primary transition-colors duration-200"
-                            target="_blank"
-                          >
-                            {platform === 'github' && <Github className="h-5 w-5" />}
-                            {platform === 'linkedin' && <Linkedin className="h-5 w-5" />}
-                            {platform === 'email' && <Mail className="h-5 w-5" />}
-                          </Link>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <h2 className="text-2xl font-bold mb-8 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            Meet the Team
+          </h2>
+          <div className="grid gap-8 md:grid-cols-2">
+            {teamMembers.map((member, index) => (
+              <motion.div 
+                key={index} 
+                className="bg-white dark:bg-gray-900 p-6 rounded-xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow duration-300"
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <h3 className="text-xl font-semibold">{member.name}</h3>
+                <p className="text-sm text-blue-500 font-medium mt-1">{member.role}</p>
+                <p className="text-muted-foreground mt-3">{member.bio}</p>
+                <div className="flex space-x-4 mt-4">
+                  {Object.entries(member.links).map(([platform, url]) => (
+                    <motion.div
+                      key={platform}
+                      whileHover={{ scale: 1.2 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Link 
+                        href={url}
+                        className="text-muted-foreground hover:text-blue-500 transition-colors duration-200"
+                        target="_blank"
+                      >
+                        {platform === 'github' && <Github className="h-5 w-5" />}
+                        {platform === 'linkedin' && <Linkedin className="h-5 w-5" />}
+                        {platform === 'email' && <Mail className="h-5 w-5" />}
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   )
 } 

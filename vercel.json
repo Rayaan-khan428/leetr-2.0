@@ -1,4 +1,8 @@
 {
   "buildCommand": "prisma generate && next build",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "crons": [{
+    "path": "/api/reviews/notify",
+    "schedule": "0 9 * * *" 
+  }]
 } 

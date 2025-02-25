@@ -10,7 +10,7 @@ export function Footer() {
       { name: 'Pricing', href: '/pricing' },
     ],
     resources: [
-      { name: 'Blog', href: '/blog' },
+      { name: 'LeetCode Guide', href: '/guide' },
       { name: 'Changelog', href: '/changelog' }
     ],
     company: [

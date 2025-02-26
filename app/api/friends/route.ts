@@ -1,7 +1,6 @@
 import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
-import { ProblemCategory } from '@prisma/client'
 
 /**
  * @swagger
@@ -119,7 +118,8 @@ export async function GET(request: Request) {
               select: {
                 difficulty: true,
                 solvedAt: true,
-                categories: true,
+                mainCategory: true,
+                subCategories: true,
               }
             },
             user_statistics: true
@@ -135,7 +135,8 @@ export async function GET(request: Request) {
               select: {
                 difficulty: true,
                 solvedAt: true,
-                categories: true,
+                mainCategory: true,
+                subCategories: true,
               }
             },
             user_statistics: true
@@ -163,16 +164,44 @@ export async function GET(request: Request) {
             return new Date(p.solvedAt) > oneWeekAgo;
           }).length,
         categories: {
-          ARRAYS_AND_STRINGS: friend.user_problems.filter(p => p.categories.includes('ARRAYS_AND_STRINGS')).length,
-          LINKED_LISTS: friend.user_problems.filter(p => p.categories.includes('LINKED_LISTS')).length,
-          TREES_AND_GRAPHS: friend.user_problems.filter(p => p.categories.includes('TREES_AND_GRAPHS')).length,
-          DYNAMIC_PROGRAMMING: friend.user_problems.filter(p => p.categories.includes('DYNAMIC_PROGRAMMING')).length,
-          SORTING_AND_SEARCHING: friend.user_problems.filter(p => p.categories.includes('SORTING_AND_SEARCHING')).length,
-          STACK_AND_QUEUE: friend.user_problems.filter(p => p.categories.includes('STACK_AND_QUEUE')).length,
-          HASH_TABLES: friend.user_problems.filter(p => p.categories.includes('HASH_TABLES')).length,
-          RECURSION_AND_BACKTRACKING: friend.user_problems.filter(p => p.categories.includes('RECURSION_AND_BACKTRACKING')).length,
-          BIT_MANIPULATION: friend.user_problems.filter(p => p.categories.includes('BIT_MANIPULATION')).length,
-          MATH_AND_LOGIC: friend.user_problems.filter(p => p.categories.includes('MATH_AND_LOGIC')).length,
+          // Count by main category
+          ARRAY_STRING: friend.user_problems.filter(p => p.mainCategory === 'ARRAY_STRING').length,
+          HASH_BASED: friend.user_problems.filter(p => p.mainCategory === 'HASH_BASED').length,
+          LINKED: friend.user_problems.filter(p => p.mainCategory === 'LINKED').length,
+          STACK_QUEUE: friend.user_problems.filter(p => p.mainCategory === 'STACK_QUEUE').length,
+          TREE: friend.user_problems.filter(p => p.mainCategory === 'TREE').length,
+          GRAPH: friend.user_problems.filter(p => p.mainCategory === 'GRAPH').length,
+          
+          // Count by subcategories
+          ARRAY: friend.user_problems.filter(p => p.subCategories.includes('ARRAY')).length,
+          STRING: friend.user_problems.filter(p => p.subCategories.includes('STRING')).length,
+          TWO_POINTERS: friend.user_problems.filter(p => p.subCategories.includes('TWO_POINTERS')).length,
+          SLIDING_WINDOW: friend.user_problems.filter(p => p.subCategories.includes('SLIDING_WINDOW')).length,
+          MATRIX: friend.user_problems.filter(p => p.subCategories.includes('MATRIX')).length,
+          
+          HASH_MAP: friend.user_problems.filter(p => p.subCategories.includes('HASH_MAP')).length,
+          HASH_SET: friend.user_problems.filter(p => p.subCategories.includes('HASH_SET')).length,
+          
+          SINGLY_LINKED: friend.user_problems.filter(p => p.subCategories.includes('SINGLY_LINKED')).length,
+          DOUBLY_LINKED: friend.user_problems.filter(p => p.subCategories.includes('DOUBLY_LINKED')).length,
+          CIRCULAR_LINKED: friend.user_problems.filter(p => p.subCategories.includes('CIRCULAR_LINKED')).length,
+          
+          STACK: friend.user_problems.filter(p => p.subCategories.includes('STACK')).length,
+          QUEUE: friend.user_problems.filter(p => p.subCategories.includes('QUEUE')).length,
+          DEQUE: friend.user_problems.filter(p => p.subCategories.includes('DEQUE')).length,
+          PRIORITY_QUEUE: friend.user_problems.filter(p => p.subCategories.includes('PRIORITY_QUEUE')).length,
+          
+          BINARY_TREE: friend.user_problems.filter(p => p.subCategories.includes('BINARY_TREE')).length,
+          BINARY_SEARCH_TREE: friend.user_problems.filter(p => p.subCategories.includes('BINARY_SEARCH_TREE')).length,
+          NARY_TREE: friend.user_problems.filter(p => p.subCategories.includes('NARY_TREE')).length,
+          TRIE: friend.user_problems.filter(p => p.subCategories.includes('TRIE')).length,
+          SEGMENT_TREE: friend.user_problems.filter(p => p.subCategories.includes('SEGMENT_TREE')).length,
+          
+          DIRECTED_GRAPH: friend.user_problems.filter(p => p.subCategories.includes('DIRECTED_GRAPH')).length,
+          UNDIRECTED_GRAPH: friend.user_problems.filter(p => p.subCategories.includes('UNDIRECTED_GRAPH')).length,
+          DFS: friend.user_problems.filter(p => p.subCategories.includes('DFS')).length,
+          BFS: friend.user_problems.filter(p => p.subCategories.includes('BFS')).length,
+          TOPOLOGICAL_SORT: friend.user_problems.filter(p => p.subCategories.includes('TOPOLOGICAL_SORT')).length,
         }
       }
 

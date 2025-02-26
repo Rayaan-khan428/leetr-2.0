@@ -50,6 +50,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from '@/hooks/use-toast'
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation"
 import { PhoneVerificationPrompt } from "@/components/friends/PhoneVerificationPrompt"
+import { FriendSearch } from '@/components/friends/FriendSearch'
+import { FriendRequests } from '@/components/friends/FriendRequests'
+import { FriendCard } from '@/components/friends/FriendCard'
 
 interface User {
   id: string
@@ -74,16 +77,39 @@ interface Friend {
       hard: number
       recentlySolved: number
       categories?: {
-        ARRAYS_AND_STRINGS?: number
-        LINKED_LISTS?: number
-        TREES_AND_GRAPHS?: number
-        DYNAMIC_PROGRAMMING?: number
-        SORTING_AND_SEARCHING?: number
-        STACK_AND_QUEUE?: number
-        HASH_TABLES?: number
-        RECURSION_AND_BACKTRACKING?: number
-        BIT_MANIPULATION?: number
-        MATH_AND_LOGIC?: number
+        // Main categories
+        ARRAY_STRING?: number
+        HASH_BASED?: number
+        LINKED?: number
+        STACK_QUEUE?: number
+        TREE?: number
+        GRAPH?: number
+        
+        // Subcategories
+        ARRAY?: number
+        STRING?: number
+        TWO_POINTERS?: number
+        SLIDING_WINDOW?: number
+        MATRIX?: number
+        HASH_MAP?: number
+        HASH_SET?: number
+        SINGLY_LINKED?: number
+        DOUBLY_LINKED?: number
+        CIRCULAR_LINKED?: number
+        STACK?: number
+        QUEUE?: number
+        DEQUE?: number
+        PRIORITY_QUEUE?: number
+        BINARY_TREE?: number
+        BINARY_SEARCH_TREE?: number
+        NARY_TREE?: number
+        TRIE?: number
+        SEGMENT_TREE?: number
+        DIRECTED_GRAPH?: number
+        UNDIRECTED_GRAPH?: number
+        DFS?: number
+        BFS?: number
+        TOPOLOGICAL_SORT?: number
       }
     }
     user_statistics?: {  // Match the database field name
@@ -164,6 +190,11 @@ export default function FriendsPage() {
       } catch (err) {
         console.error('Error fetching friends:', err)
         setError('Error fetching friends')
+        toast({
+          title: "Error",
+          description: "Failed to load friends list. Please try again.",
+          variant: "destructive"
+        })
       } finally {
         setIsLoadingFriends(false)
       }
@@ -508,210 +539,48 @@ export default function FriendsPage() {
           ))
         ) : friends.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            You haven't added any friends yet
+            <div className="mb-4 text-4xl">👋</div>
+            <h3 className="text-xl font-medium mb-2">You haven't added any friends yet</h3>
+            <p className="mb-4">Search for friends by email or name to get started</p>
+            <Button 
+              onClick={() => setIsSearchOpen(true)}
+              size="lg"
+            >
+              <span className="mr-2">🔍</span>
+              Find Friends
+            </Button>
           </div>
         ) : (
-          friends.map((friend) => (
-            <Card key={friend.friendshipId} className="p-4">
-              <div className="flex flex-col space-y-4">
-                {/* Friend Info Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Avatar>
-                      <AvatarImage src={friend.photoURL || undefined} />
-                      <AvatarFallback>
-                        {friend.displayName?.[0]?.toUpperCase() || friend.email[0].toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="ml-3">
-                      <p className="font-medium">
-                        {friend.displayName || 'Anonymous User'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{friend.email}</p>
-                    </div>
-                  </div>
-                  {getFriendActionButton(friend)}
-                </div>
-
-                {/* Statistics Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {/* Radar Chart */}
-                  <div className="h-[300px] w-full bg-card rounded-lg p-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart 
-                        outerRadius={90} 
-                        data={[
-                          {
-                            subject: 'Easy',
-                            value: (friend.problemStats.easy / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Medium',
-                            value: (friend.problemStats.medium / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Hard',
-                            value: (friend.problemStats.hard / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Recent',
-                            value: (friend.problemStats.recentlySolved / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Total',
-                            value: (friend.problemStats.totalProblems / 2000) * 100 || 0,
-                          },
-                        ]}
-                      >
-                        <PolarGrid 
-                          gridType="polygon"
-                          stroke="hsl(var(--muted-foreground))" 
-                          strokeOpacity={0.2}
-                        />
-                        <PolarAngleAxis 
-                          dataKey="subject" 
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                        />
-                        <PolarRadiusAxis 
-                          angle={30} 
-                          domain={[0, 100]} 
-                          tick={false}
-                          axisLine={false}
-                        />
-                        <Radar
-                          name="Stats"
-                          dataKey="value"
-                          stroke="hsl(var(--primary))"
-                          fill="hsl(var(--primary))"
-                          fillOpacity={0.2}
-                          isAnimationActive={false}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Difficulty Distribution Bar Chart */}
-                  <div className="h-[300px] w-full bg-card rounded-lg p-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RechartsBarChart
-                        data={[
-                          { name: 'Easy', value: friend.problemStats.easy },
-                          { name: 'Medium', value: friend.problemStats.medium },
-                          { name: 'Hard', value: friend.problemStats.hard },
-                        ]}
-                        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                      >
-                        <XAxis 
-                          dataKey="name"
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                          axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.2 }}
-                        />
-                        <YAxis 
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                          axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.2 }}
-                        />
-                        <CartesianGrid 
-                          stroke="hsl(var(--muted-foreground))" 
-                          strokeOpacity={0.1} 
-                          vertical={false}
-                        />
-                        <Bar 
-                          dataKey="value" 
-                          fill="hsl(var(--primary))"
-                          isAnimationActive={false}
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </RechartsBarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Summary Statistics */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Total Solved</p>
-                    <p className="text-2xl font-bold">{friend.problemStats.totalProblems}</p>
-                  </Card>
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Last 7 Days</p>
-                    <p className="text-2xl font-bold">{friend.problemStats.recentlySolved}</p>
-                  </Card>
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Hard Problems</p>
-                    <p className="text-2xl font-bold">{friend.problemStats.hard}</p>
-                  </Card>
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Success Rate</p>
-                    <p className="text-2xl font-bold">
-                      {((friend.problemStats.totalProblems / 2000) * 100).toFixed(1)}%
-                    </p>
-                  </Card>
-                </div>
-              </div>
-            </Card>
-          ))
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1 }}
+          >
+            {friends.map((friend) => (
+              <motion.div
+                key={friend.friendshipId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <FriendCard 
+                  friend={friend} 
+                  getToken={getToken} 
+                  onFriendRemoved={refreshFriendData} 
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         )}
       </div>
     )
 
     const renderSearchTab = () => (
-      <div>
-        <div className="flex gap-2 mb-4">
-          <Input
-            placeholder="Search users by email or name"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            className="h-11"
-          />
-          <Button 
-            onClick={handleSearch} 
-            disabled={isLoading}
-            size="lg"
-          >
-            <span className="mr-2">🔍</span>
-            Search
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {isLoading ? (
-            // Loading skeletons
-            [...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-[200px]" />
-                  <Skeleton className="h-4 w-[150px]" />
-                </div>
-              </div>
-            ))
-          ) : (
-            searchResults.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between p-4 rounded-lg border"
-              >
-                <div className="flex items-center">
-                  <Avatar>
-                    <AvatarImage src={user.photoURL || undefined} />
-                    <AvatarFallback>
-                      {user.displayName?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="ml-3">
-                    <p className="font-medium">
-                      {user.displayName || 'Anonymous User'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                  </div>
-                </div>
-                {getFriendActionButton(user)}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      <FriendSearch 
+        getToken={getToken} 
+        onFriendStatusChange={refreshFriendData}
+        friends={friends.map(f => ({ id: f.id, friendshipId: f.friendshipId }))}
+      />
     )
 
     const renderSearchCollapsible = () => (
@@ -790,11 +659,15 @@ export default function FriendsPage() {
               ) : (
                 <>
                   <span className="text-lg">👋</span>
-                  Add Friends
-                  {friendRequests.length > 0 && (
-                    <span className="ml-1 rounded-full bg-background w-5 h-5 text-xs flex items-center justify-center text-foreground">
-                      {friendRequests.length}
-                    </span>
+                  {friendRequests.length > 0 ? (
+                    <>
+                      Friend Requests
+                      <span className="ml-1 rounded-full bg-background w-5 h-5 text-xs flex items-center justify-center text-foreground">
+                        {friendRequests.length}
+                      </span>
+                    </>
+                  ) : (
+                    "Add Friends"
                   )}
                 </>
               )}
@@ -821,57 +694,10 @@ export default function FriendsPage() {
               {renderSearchTab()}
             </TabsContent>
             <TabsContent value="requests" className="mt-4">
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {friendRequests.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No pending friend requests
-                    </div>
-                  ) : (
-                    friendRequests.map((request) => (
-                      <motion.div
-                        key={request.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-between p-4 rounded-lg border"
-                      >
-                        <div className="flex items-center">
-                          <Avatar>
-                            <AvatarImage src={request.sender.photoURL || undefined} />
-                            <AvatarFallback>
-                              {request.sender.displayName?.[0]?.toUpperCase() || request.sender.email[0].toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="ml-3">
-                            <p className="font-medium">
-                              {request.sender.displayName || 'Anonymous User'}
-                            </p>
-                            <p className="text-sm text-muted-foreground">{request.sender.email}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleFriendRequest(request.id, 'ACCEPTED')}
-                          >
-                            <span className="mr-2">✅</span>
-                            Accept
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleFriendRequest(request.id, 'REJECTED')}
-                          >
-                            <span className="mr-2">❌</span>
-                            Reject
-                          </Button>
-                        </div>
-                      </motion.div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
+              <FriendRequests 
+                getToken={getToken} 
+                onRequestHandled={refreshFriendData} 
+              />
             </TabsContent>
           </Tabs>
         </CollapsibleContent>
@@ -1346,11 +1172,29 @@ export default function FriendsPage() {
 
     // Add this function to refresh all friend-related data
     const refreshFriendData = async () => {
-      console.log('Refreshing friend data')
-      await Promise.all([
-        fetchFriends(),
-        fetchFriendRequests()
-      ])
+      try {
+        setIsLoadingFriends(true)
+        setIsLoadingRequests(true)
+        
+        await Promise.all([
+          fetchFriends(),
+          fetchFriendRequests()
+        ])
+        
+        // Clear any previous errors
+        setError(null)
+      } catch (err) {
+        console.error('Error refreshing friend data:', err)
+        setError('Failed to refresh friend data')
+        toast({
+          title: "Error",
+          description: "Failed to refresh friend data. Please try again.",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoadingFriends(false)
+        setIsLoadingRequests(false)
+      }
     }
 
     return (
@@ -1368,6 +1212,14 @@ export default function FriendsPage() {
           )}
         </div>
 
+        {/* Loading indicator */}
+        {(isLoadingFriends || isLoadingRequests) && (
+          <div className="flex justify-center items-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="ml-2 text-muted-foreground">Loading...</span>
+          </div>
+        )}
+
         {/* Global Stats */}
         {renderGlobalStats()}
 
@@ -1382,7 +1234,13 @@ export default function FriendsPage() {
           {/* Friends List */}
           {friends.length > 0 && (
             <div className="mt-6">
-              <h2 className="text-2xl font-bold mb-4">Your Friends</h2>
+              <h2 className="text-2xl font-bold mb-4 flex items-center">
+                <span className="mr-2">👥</span>
+                Your Friends
+                <span className="ml-2 text-muted-foreground text-sm">
+                  ({friends.length})
+                </span>
+              </h2>
               {renderFriendsTab()}
             </div>
           )}

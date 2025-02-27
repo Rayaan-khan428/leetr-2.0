@@ -60,13 +60,13 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
     <div className="flex min-h-screen">
       <div 
         className={cn(
-          "fixed top-0 left-0 h-screen bg-background border-r transition-all duration-300",
+          "relative h-screen bg-background border-r transition-all duration-300 flex-shrink-0",
           "group hover:w-64 w-20"
         )}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
       >
-        <div className="flex flex-col h-full p-4">
+        <div className="flex flex-col h-full p-4 sticky top-0">
           <div className="flex justify-between items-center mb-8">
             <div className="transition-opacity duration-300">
               {open ? <Logo /> : <LogoIcon />}
@@ -142,10 +142,7 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
           </div>
         </div>
       </div>
-      <main className={cn(
-        "flex-1 transition-all duration-300 p-8",
-        "ml-20"
-      )}>
+      <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto">
           {children}
         </div>

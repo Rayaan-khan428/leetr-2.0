@@ -57,96 +57,100 @@ export function SideNavigation({ children }: { children?: React.ReactNode }) {
   ]
 
   return (
-    <div className="flex min-h-screen">
-      <div 
-        className={cn(
-          "fixed top-0 left-0 h-screen bg-background border-r transition-all duration-300",
-          "group hover:w-64 w-20"
+    <div className="min-h-screen flex">
+      <div className={cn(
+        "w-20 flex-shrink-0",
+        "transition-all duration-300",
+        "group/sidebar hover:w-64"
+      )}>
+        <div className={cn(
+          "fixed top-0 left-0 h-full border-r bg-background",
+          "w-20 group-hover/sidebar:w-64",
+          "transition-all duration-300"
         )}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-      >
-        <div className="flex flex-col h-full p-4">
-          <div className="flex justify-between items-center mb-8">
-            <div className="transition-opacity duration-300">
-              {open ? <Logo /> : <LogoIcon />}
+        >
+          <div className="flex flex-col h-full p-4">
+            <div className="flex justify-between items-center mb-8">
+              <div className="transition-opacity duration-300">
+                {open ? <Logo /> : <LogoIcon />}
+              </div>
             </div>
-          </div>
-          
-          <nav className="flex-1 space-y-2">
-            {links.map((link, idx) => (
-              <div key={idx} className="relative">
-                {link.href ? (
-                  <Link
-                    href={link.href}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
-                      "text-sm text-muted-foreground hover:text-foreground"
-                    )}
-                    onClick={link.onClick}
-                  >
-                    {link.icon}
-                    <span className={cn(
-                      "transition-all duration-300",
-                      "opacity-0 group-hover:opacity-100 whitespace-nowrap"
-                    )}>
-                      {link.label}
-                    </span>
-                  </Link>
-                ) : (
-                  <button
-                    onClick={link.onClick}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors w-full",
-                      "text-sm text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {link.icon}
-                    <span className={cn(
-                      "transition-all duration-300",
-                      "opacity-0 group-hover:opacity-100 whitespace-nowrap"
-                    )}>
-                      {link.label}
-                    </span>
-                  </button>
-                )}
-              </div>
-            ))}
-          </nav>
+            
+            <nav className="flex-1 space-y-2">
+              {links.map((link, idx) => (
+                <div key={idx} className="relative">
+                  {link.href ? (
+                    <Link
+                      href={link.href}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors",
+                        "text-sm text-muted-foreground hover:text-foreground"
+                      )}
+                      onClick={link.onClick}
+                    >
+                      {link.icon}
+                      <span className={cn(
+                        "transition-all duration-300",
+                        "opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap"
+                      )}>
+                        {link.label}
+                      </span>
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={link.onClick}
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-accent transition-colors w-full",
+                        "text-sm text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {link.icon}
+                      <span className={cn(
+                        "transition-all duration-300",
+                        "opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap"
+                      )}>
+                        {link.label}
+                      </span>
+                    </button>
+                  )}
+                </div>
+              ))}
+            </nav>
 
-          <div className="mt-auto pt-4 space-y-4">
-            <ThemeToggle />
-            {user && (
-              <div className="flex items-center gap-3 px-3 py-2">
-                {user.photoURL ? (
-                  <Image
-                    src={user.photoURL}
-                    alt="Avatar"
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                ) : (
-                  <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                    {user.displayName?.[0] || "U"}
-                  </div>
-                )}
-                <span className={cn(
-                  "text-sm transition-all duration-300",
-                  "opacity-0 group-hover:opacity-100 whitespace-nowrap"
-                )}>
-                  {user.displayName}
-                </span>
-              </div>
-            )}
+            <div className="mt-auto pt-4 space-y-4">
+              <ThemeToggle />
+              {user && (
+                <div className="flex items-center gap-3 px-3 py-2">
+                  {user.photoURL ? (
+                    <Image
+                      src={user.photoURL}
+                      alt="Avatar"
+                      width={28}
+                      height={28}
+                      className="rounded-full"
+                    />
+                  ) : (
+                    <div className="h-7 w-7 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                      {user.displayName?.[0] || "U"}
+                    </div>
+                  )}
+                  <span className={cn(
+                    "text-sm transition-all duration-300",
+                    "opacity-0 group-hover/sidebar:opacity-100 whitespace-nowrap"
+                  )}>
+                    {user.displayName}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-      <main className={cn(
-        "flex-1 transition-all duration-300 p-8",
-        "ml-20"
-      )}>
-        <div className="max-w-7xl mx-auto">
+
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto p-8">
           {children}
         </div>
       </main>

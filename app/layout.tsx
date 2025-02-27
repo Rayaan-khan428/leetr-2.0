@@ -31,7 +31,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "LeetTracker",
+  title: "Leetr",
   description: "Track and improve your LeetCode problem-solving journey",
 };
 

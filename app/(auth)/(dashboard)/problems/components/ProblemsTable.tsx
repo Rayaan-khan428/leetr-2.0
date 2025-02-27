@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Code, FileText } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Code, FileText, Trash2 } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -16,8 +16,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import type { Problem } from '../types'
+
 import { MainCategory, SubCategory } from '../types'
 import { Badge } from "@/components/ui/badge"
+
+import { useAuth } from '@/context/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -74,6 +90,7 @@ interface ProblemsTableProps {
   setCurrentPage: (page: number) => void
   pageSize: number
   searchQuery: string
+  onDeleteComplete: () => void
 }
 
 const getCategoryColor = (category: MainCategory) => {
@@ -116,13 +133,47 @@ export function ProblemsTable({
   currentPage,
   setCurrentPage,
   pageSize,
-  searchQuery
+  searchQuery,
+  onDeleteComplete
 }: ProblemsTableProps) {
   const totalPages = Math.ceil(filteredProblems.length / pageSize)
   const paginatedProblems = filteredProblems.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   )
+
+  const { getToken } = useAuth()
+  const { toast } = useToast()
+
+  const handleDelete = async (id: string) => {
+    try {
+      const token = await getToken()
+      const response = await fetch(`/api/problems/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete problem')
+      }
+
+      toast({
+        title: "Problem deleted",
+        description: "The problem has been removed from your history"
+      })
+      
+      // Refresh the problems list
+      onDeleteComplete()
+    } catch (error) {
+      toast({
+        title: "Failed to delete problem",
+        description: "Please try again",
+        variant: "destructive"
+      })
+    }
+  }
 
   if (problems.length === 0) {
     return (

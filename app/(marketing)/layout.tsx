@@ -3,7 +3,7 @@ import { Navbar } from "@/components/shared/navigation/Navbar";
 import { Footer } from "@/components/shared/navigation/Footer";
 
 export const metadata: Metadata = {
-  title: "LeetTracker",
+  title: "Leetr",
   description: "Track and improve your LeetCode problem-solving journey",
 };
 

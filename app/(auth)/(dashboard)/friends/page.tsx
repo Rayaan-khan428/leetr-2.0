@@ -172,6 +172,7 @@ export default function FriendsPage() {
     const [activeTab, setActiveTab] = useState('friends')
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState<User[]>([])
+    const [leaderboardView, setLeaderboardView] = useState<'list' | 'grid'>('list')
 
     const fetchFriends = useCallback(async () => {
       setIsLoadingFriends(true)
@@ -734,34 +735,54 @@ export default function FriendsPage() {
                 </span>
               )}
             </CardTitle>
-            <Select 
-              value={rankingMetric} 
-              onValueChange={setRankingMetric}
-              disabled={leaderboard.length === 0}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Ranking Metric" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="totalSolved">Total Solved</SelectItem>
-                <SelectItem value="streak">Current Streak</SelectItem>
-                <SelectItem value="lastWeek">Last 7 Days</SelectItem>
-                <SelectItem value="lastMonth">Last 30 Days</SelectItem>
-                <SelectItem value="consistency">Consistency</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center border rounded-md overflow-hidden">
+                <Button 
+                  variant={leaderboardView === 'list' ? "default" : "ghost"} 
+                  size="sm"
+                  onClick={() => setLeaderboardView('list')}
+                  className="rounded-none h-8 px-3"
+                >
+                  List
+                </Button>
+                <Button 
+                  variant={leaderboardView === 'grid' ? "default" : "ghost"} 
+                  size="sm"
+                  onClick={() => setLeaderboardView('grid')}
+                  className="rounded-none h-8 px-3"
+                >
+                  Grid
+                </Button>
+              </div>
+              <Select 
+                value={rankingMetric} 
+                onValueChange={setRankingMetric}
+                disabled={leaderboard.length === 0}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Ranking Metric" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="totalSolved">Total Solved</SelectItem>
+                  <SelectItem value="streak">Current Streak</SelectItem>
+                  <SelectItem value="lastWeek">Last 7 Days</SelectItem>
+                  <SelectItem value="lastMonth">Last 30 Days</SelectItem>
+                  <SelectItem value="consistency">Consistency</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-            {leaderboard.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground space-y-4">
-                <span className="text-4xl">🎯</span>
-                <p>No leaderboard data yet</p>
-                <p className="text-sm">Start solving problems to appear on the leaderboard!</p>
-              </div>
-            ) : (
-              [...leaderboard]
+          {leaderboard.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[300px] text-center text-muted-foreground space-y-4">
+              <span className="text-4xl">🎯</span>
+              <p>No leaderboard data yet</p>
+              <p className="text-sm">Start solving problems to appear on the leaderboard!</p>
+            </div>
+          ) : leaderboardView === 'list' ? (
+            <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+              {[...leaderboard]
                 .sort((a, b) => (getRankingMetricValue(b) || 0) - (getRankingMetricValue(a) || 0))
                 .map((entry, index) => {
                   const isCurrentUser = entry.id === user?.id;
@@ -802,11 +823,84 @@ export default function FriendsPage() {
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Progress bar for visual comparison */}
+                      <div className="w-1/3 hidden md:block">
+                        <div className="h-2 bg-muted rounded-full w-full">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              index === 0 ? 'bg-yellow-500' : 
+                              index === 1 ? 'bg-gray-400' : 
+                              index === 2 ? 'bg-amber-700' : 'bg-primary'
+                            }`}
+                            style={{ 
+                              width: `${(metricValue / (getRankingMetricValue(leaderboard[0]) || 1)) * 100}%` 
+                            }}
+                          />
+                        </div>
+                      </div>
                     </motion.div>
                   );
-                })
-            )}
-          </ScrollArea>
+                })}
+            </ScrollArea>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[...leaderboard]
+                .sort((a, b) => (getRankingMetricValue(b) || 0) - (getRankingMetricValue(a) || 0))
+                .map((entry, index) => {
+                  const isCurrentUser = entry.id === user?.id;
+                  const metricValue = getRankingMetricValue(entry);
+                  const metricDisplay = rankingMetric === 'streak' ? 'days' : 'problems';
+
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`p-4 rounded-lg border ${
+                        isCurrentUser ? 'bg-muted/50 border-primary' : ''
+                      } ${index < 3 ? 'border-2' : ''} ${
+                        index === 0 ? 'border-yellow-500' : 
+                        index === 1 ? 'border-gray-400' : 
+                        index === 2 ? 'border-amber-700' : ''
+                      }`}
+                    >
+                      <div className="flex flex-col items-center text-center gap-2">
+                        <div className="relative">
+                          <Avatar className="h-16 w-16">
+                            <AvatarImage src={entry.photoURL || undefined} />
+                            <AvatarFallback className="text-xl">
+                              {entry.displayName?.[0]?.toUpperCase() || entry.email[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-background border">
+                            {index + 1}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="font-medium mt-2">
+                            {isCurrentUser ? 'You' : (entry.displayName || 'Anonymous User')}
+                          </p>
+                          <div className="flex items-center justify-center gap-1 mt-1">
+                            {index === 0 && <span className="text-lg">🏆</span>}
+                            {index === 1 && <span className="text-lg">🥈</span>}
+                            {index === 2 && <span className="text-lg">🥉</span>}
+                            <p className="text-lg font-bold">
+                              {metricValue}
+                            </p>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {metricDisplay}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+            </div>
+          )}
         </CardContent>
       </Card>
     )
@@ -817,130 +911,255 @@ export default function FriendsPage() {
       )
 
       return (
-        <Card className="mt-6">
+        <Card className="mt-6" id="friend-comparison">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="text-xl">🤝</span>
-              Friend Comparison
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">🤝</span>
+                Friend Comparison
+              </CardTitle>
+              {friends.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    if (selectedFriendsForComparison.length === friends.length) {
+                      setSelectedFriendsForComparison([])
+                    } else {
+                      setSelectedFriendsForComparison(friends.map(f => f.friendshipId))
+                    }
+                  }}
+                >
+                  {selectedFriendsForComparison.length === friends.length ? "Deselect All" : "Compare All"}
+                </Button>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Select up to two friends to compare their statistics
+              {friends.length === 0 
+                ? "Add friends to compare their statistics" 
+                : "Select friends below to compare their statistics"}
             </p>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-6">
               {/* Friend Selection */}
-              <div className="flex flex-wrap gap-4">
-                {friends.map(friend => (
-                  <Button
-                    key={friend.friendshipId}
-                    variant={selectedFriendsForComparison.includes(friend.friendshipId) ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedFriendsForComparison(prev => {
-                        if (prev.includes(friend.friendshipId)) {
-                          return prev.filter(id => id !== friend.friendshipId)
-                        }
-                        return [...prev.slice(-1), friend.friendshipId]
-                      })
-                    }}
-                    disabled={selectedFriendsForComparison.length >= 2 && !selectedFriendsForComparison.includes(friend.friendshipId)}
-                    className="flex items-center gap-2"
+              {friends.length > 0 ? (
+                <div className="flex flex-wrap gap-4">
+                  {friends.map(friend => (
+                    <Button
+                      key={friend.friendshipId}
+                      variant={selectedFriendsForComparison.includes(friend.friendshipId) ? "default" : "outline"}
+                      onClick={() => {
+                        setSelectedFriendsForComparison(prev => {
+                          if (prev.includes(friend.friendshipId)) {
+                            return prev.filter(id => id !== friend.friendshipId)
+                          }
+                          return [...prev, friend.friendshipId]
+                        })
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={friend.photoURL || undefined} />
+                        <AvatarFallback className="text-xs">
+                          {friend.displayName?.[0] || friend.email[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      {friend.displayName || 'Anonymous'}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <div className="mb-4 text-4xl">👥</div>
+                  <h3 className="text-xl font-medium mb-2">No friends to compare</h3>
+                  <p className="mb-4">Add friends to see how you stack up against each other</p>
+                  <Button 
+                    onClick={() => setIsSearchOpen(true)}
+                    size="lg"
                   >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={friend.photoURL || undefined} />
-                      <AvatarFallback className="text-xs">
-                        {friend.displayName?.[0] || friend.email[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    {friend.displayName || 'Anonymous'}
+                    <span className="mr-2">🔍</span>
+                    Find Friends
                   </Button>
-                ))}
-              </div>
+                </div>
+              )}
 
               {selectedFriendsData.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {selectedFriendsData.map(friend => (
-                    <Card key={friend.friendshipId} className="p-6">
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-4">
-                          <Avatar className="h-16 w-16">
-                            <AvatarImage src={friend.photoURL || undefined} />
-                            <AvatarFallback className="text-xl">
-                              {friend.displayName?.[0] || friend.email[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="text-xl font-bold">{friend.displayName || 'Anonymous'}</h3>
-                            <p className="text-muted-foreground">{friend.email}</p>
+                <>
+                  {/* Comparison Summary */}
+                  {selectedFriendsData.length > 1 && (
+                    <Card className="p-4 bg-muted/30">
+                      <h3 className="text-lg font-medium mb-4">Comparison Summary</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Most Problems</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b
+                              ).problemStats.totalProblems}
+                            </span>
                           </div>
                         </div>
-
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <Card className="p-4">
-                              <h4 className="text-sm font-medium text-muted-foreground">Total Solved</h4>
-                              <p className="text-2xl font-bold">{friend.problemStats.totalProblems}</p>
-                            </Card>
-                            <Card className="p-4">
-                              <h4 className="text-sm font-medium text-muted-foreground">Streak</h4>
-                              <p className="text-2xl font-bold">{friend.user_statistics?.streak || 0}d</p>
-                            </Card>
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Longest Streak</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  (a.user_statistics?.streak || 0) > (b.user_statistics?.streak || 0) ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  (a.user_statistics?.streak || 0) > (b.user_statistics?.streak || 0) ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                (a.user_statistics?.streak || 0) > (b.user_statistics?.streak || 0) ? a : b
+                              ).user_statistics?.streak || 0}d
+                            </span>
                           </div>
-
-                          <Card className="p-4">
-                            <h4 className="text-sm font-medium text-muted-foreground mb-4">Difficulty Distribution</h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span>Easy</span>
-                                <div className="w-2/3 bg-muted rounded-full h-2">
-                                  <div
-                                    className="bg-green-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${(friend.problemStats.easy / friend.problemStats.totalProblems * 100) || 0}%`
-                                    }}
-                                  />
-                                </div>
-                                <span className="w-12 text-right">{friend.problemStats.easy}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span>Medium</span>
-                                <div className="w-2/3 bg-muted rounded-full h-2">
-                                  <div
-                                    className="bg-yellow-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${(friend.problemStats.medium / friend.problemStats.totalProblems * 100) || 0}%`
-                                    }}
-                                  />
-                                </div>
-                                <span className="w-12 text-right">{friend.problemStats.medium}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span>Hard</span>
-                                <div className="w-2/3 bg-muted rounded-full h-2">
-                                  <div
-                                    className="bg-red-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${(friend.problemStats.hard / friend.problemStats.totalProblems * 100) || 0}%`
-                                    }}
-                                  />
-                                </div>
-                                <span className="w-12 text-right">{friend.problemStats.hard}</span>
-                              </div>
-                            </div>
-                          </Card>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
-                  {selectedFriendsData.length === 1 && (
-                    <Card className="p-6 flex items-center justify-center border-dashed">
-                      <div className="text-center text-muted-foreground">
-                        <p>Select another friend to compare</p>
-                        <p className="text-sm">or view single friend stats above</p>
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Most Hard Problems</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.hard > b.problemStats.hard ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.hard > b.problemStats.hard ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                a.problemStats.hard > b.problemStats.hard ? a : b
+                              ).problemStats.hard}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Most Recent Activity</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.recentlySolved > b.problemStats.recentlySolved ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.recentlySolved > b.problemStats.recentlySolved ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                a.problemStats.recentlySolved > b.problemStats.recentlySolved ? a : b
+                              ).problemStats.recentlySolved} this week
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </Card>
                   )}
-                </div>
+
+                  {/* Individual Friend Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {selectedFriendsData.map(friend => (
+                      <Card key={friend.friendshipId} className="p-6">
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16">
+                              <AvatarImage src={friend.photoURL || undefined} />
+                              <AvatarFallback className="text-xl">
+                                {friend.displayName?.[0] || friend.email[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="text-xl font-bold">{friend.displayName || 'Anonymous'}</h3>
+                              <p className="text-muted-foreground">{friend.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <Card className="p-4">
+                                <h4 className="text-sm font-medium text-muted-foreground">Total Solved</h4>
+                                <p className="text-2xl font-bold">{friend.problemStats.totalProblems}</p>
+                              </Card>
+                              <Card className="p-4">
+                                <h4 className="text-sm font-medium text-muted-foreground">Streak</h4>
+                                <p className="text-2xl font-bold">{friend.user_statistics?.streak || 0}d</p>
+                              </Card>
+                            </div>
+
+                            <Card className="p-4">
+                              <h4 className="text-sm font-medium text-muted-foreground mb-4">Difficulty Distribution</h4>
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span>Easy</span>
+                                  <div className="w-2/3 bg-muted rounded-full h-2">
+                                    <div
+                                      className="bg-green-500 h-2 rounded-full"
+                                      style={{
+                                        width: `${(friend.problemStats.easy / Math.max(1, friend.problemStats.totalProblems) * 100) || 0}%`
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right">{friend.problemStats.easy}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span>Medium</span>
+                                  <div className="w-2/3 bg-muted rounded-full h-2">
+                                    <div
+                                      className="bg-yellow-500 h-2 rounded-full"
+                                      style={{
+                                        width: `${(friend.problemStats.medium / Math.max(1, friend.problemStats.totalProblems) * 100) || 0}%`
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right">{friend.problemStats.medium}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span>Hard</span>
+                                  <div className="w-2/3 bg-muted rounded-full h-2">
+                                    <div
+                                      className="bg-red-500 h-2 rounded-full"
+                                      style={{
+                                        width: `${(friend.problemStats.hard / Math.max(1, friend.problemStats.totalProblems) * 100) || 0}%`
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right">{friend.problemStats.hard}</span>
+                                </div>
+                              </div>
+                            </Card>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </CardContent>
@@ -1053,6 +1272,22 @@ export default function FriendsPage() {
             <span className="text-4xl">🎮</span>
             <h3 className="text-2xl font-bold">Challenges</h3>
             <p className="text-muted-foreground">Coming Soon</p>
+            
+            {friends.length > 0 && (
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => {
+                  toast({
+                    title: "Coming Soon!",
+                    description: "Challenge functionality will be available in the next update.",
+                  })
+                }}
+              >
+                <span className="mr-2">⚔️</span>
+                Join the Waitlist
+              </Button>
+            )}
           </div>
         </div>
         <CardHeader>
@@ -1070,6 +1305,11 @@ export default function FriendsPage() {
                 <p className="text-sm text-muted-foreground">
                   Challenge friends to daily coding battles
                 </p>
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground">
+                    Compete head-to-head on the same problem
+                  </p>
+                </div>
               </div>
             </Card>
 
@@ -1080,6 +1320,11 @@ export default function FriendsPage() {
                 <p className="text-sm text-muted-foreground">
                   Race against time and friends
                 </p>
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground">
+                    Solve as many problems as possible in a time limit
+                  </p>
+                </div>
               </div>
             </Card>
 
@@ -1090,8 +1335,60 @@ export default function FriendsPage() {
                 <p className="text-sm text-muted-foreground">
                   Set and achieve goals together
                 </p>
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground">
+                    Create shared goals with accountability
+                  </p>
+                </div>
               </div>
             </Card>
+          </div>
+          
+          {/* Preview of Direct Challenge Feature */}
+          <div className="mt-6 p-4 border rounded-lg">
+            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+              <span className="text-xl">🔥</span>
+              Direct Challenge Preview
+            </h3>
+            
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Challenge a friend to solve a specific problem and compare your solutions!
+                </p>
+                
+                <div className="flex gap-2 mt-4">
+                  <Select disabled>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select a friend" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {friends.map(friend => (
+                        <SelectItem key={friend.id} value={friend.id}>
+                          {friend.displayName || friend.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button variant="outline" disabled>
+                    <span className="mr-2">⚔️</span>
+                    Send Challenge
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex-1 p-4 bg-muted/30 rounded-lg">
+                <h4 className="text-sm font-medium mb-2">How it works:</h4>
+                <ol className="text-xs text-muted-foreground space-y-1 list-decimal pl-4">
+                  <li>Select a friend to challenge</li>
+                  <li>Choose a problem difficulty or specific problem</li>
+                  <li>Set a time limit for the challenge</li>
+                  <li>Both of you solve the problem independently</li>
+                  <li>Compare solutions and runtime performance</li>
+                </ol>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -1125,7 +1422,14 @@ export default function FriendsPage() {
     }
 
     const renderWelcomeSection = () => {
-      const hasNoFriends = friends.length === 0;    
+      const hasNoFriends = friends.length === 0;
+      
+      // Calculate some personalized insights
+      const topFriend = friends.length > 0 
+        ? friends.reduce((a, b) => a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b) 
+        : null;
+      
+      const recentlyActiveFriends = friends.filter(f => f.problemStats.recentlySolved > 0).length;
       
       return (
         <div className="relative h-[300px] w-full rounded-lg border overflow-hidden">
@@ -1144,7 +1448,7 @@ export default function FriendsPage() {
             className="opacity-80"
           >
             {/* Content Container */}
-            <div className="relative z-50 h-full p-6">
+            <div className="relative z-50 h-full p-6 flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold">
@@ -1159,10 +1463,65 @@ export default function FriendsPage() {
                     ) : (
                       <span className="block mt-2">
                         🎯 You have {friends.length} friend{friends.length !== 1 ? 's' : ''} on your coding journey.
+                        {recentlyActiveFriends > 0 && (
+                          <span className="ml-1">
+                            {recentlyActiveFriends} of them {recentlyActiveFriends === 1 ? 'has' : 'have'} been active this week!
+                          </span>
+                        )}
                       </span>
                     )}
                   </p>
                 </div>
+              </div>
+              
+              {/* Quick Actions */}
+              <div className="flex gap-4 mt-4">
+                <Button 
+                  onClick={() => setIsSearchOpen(true)}
+                  variant="default"
+                  className="gap-2"
+                >
+                  <span className="text-lg">👋</span>
+                  {hasNoFriends ? "Add Your First Friend" : "Add More Friends"}
+                </Button>
+                
+                {!hasNoFriends && (
+                  <Button 
+                    onClick={() => {
+                      if (topFriend) {
+                        setSelectedFriendsForComparison([topFriend.friendshipId])
+                        // Scroll to comparison section
+                        document.getElementById('friend-comparison')?.scrollIntoView({ 
+                          behavior: 'smooth',
+                          block: 'start'
+                        })
+                      }
+                    }}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <span className="text-lg">🏆</span>
+                    View Top Friend
+                  </Button>
+                )}
+                
+                {friendRequests.length > 0 && (
+                  <Button 
+                    onClick={() => {
+                      setIsSearchOpen(true)
+                      // Set active tab to requests
+                      const requestsTab = document.querySelector('[data-value="requests"]')
+                      if (requestsTab instanceof HTMLElement) {
+                        requestsTab.click()
+                      }
+                    }}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <span className="text-lg">⏳</span>
+                    View {friendRequests.length} Request{friendRequests.length !== 1 ? 's' : ''}
+                  </Button>
+                )}
               </div>
             </div>
           </BackgroundGradientAnimation>
@@ -1230,20 +1589,6 @@ export default function FriendsPage() {
         <div className="grid grid-cols-1 gap-6">
           {renderLeaderboard()}
           {renderFriendComparison()}
-          
-          {/* Friends List */}
-          {friends.length > 0 && (
-            <div className="mt-6">
-              <h2 className="text-2xl font-bold mb-4 flex items-center">
-                <span className="mr-2">👥</span>
-                Your Friends
-                <span className="ml-2 text-muted-foreground text-sm">
-                  ({friends.length})
-                </span>
-              </h2>
-              {renderFriendsTab()}
-            </div>
-          )}
         </div>
 
         <PhoneVerificationPrompt 

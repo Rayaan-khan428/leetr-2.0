@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Code, FileText } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Code, FileText, Trash2 } from 'lucide-react'
 import {
   Tooltip,
   TooltipContent,
@@ -16,6 +16,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import type { Problem } from '../types'
+import { useAuth } from '@/context/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -72,6 +85,7 @@ interface ProblemsTableProps {
   setCurrentPage: (page: number) => void
   pageSize: number
   searchQuery: string
+  onDeleteComplete: () => void
 }
 
 export function ProblemsTable({
@@ -80,13 +94,47 @@ export function ProblemsTable({
   currentPage,
   setCurrentPage,
   pageSize,
-  searchQuery
+  searchQuery,
+  onDeleteComplete
 }: ProblemsTableProps) {
   const totalPages = Math.ceil(filteredProblems.length / pageSize)
   const paginatedProblems = filteredProblems.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   )
+
+  const { getToken } = useAuth()
+  const { toast } = useToast()
+
+  const handleDelete = async (id: string) => {
+    try {
+      const token = await getToken()
+      const response = await fetch(`/api/problems/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete problem')
+      }
+
+      toast({
+        title: "Problem deleted",
+        description: "The problem has been removed from your history"
+      })
+      
+      // Refresh the problems list
+      onDeleteComplete()
+    } catch (error) {
+      toast({
+        title: "Failed to delete problem",
+        description: "Please try again",
+        variant: "destructive"
+      })
+    }
+  }
 
   if (problems.length === 0) {
     return (
@@ -119,7 +167,8 @@ export function ProblemsTable({
               <TableHead className="font-semibold">Problem</TableHead>
               <TableHead className="font-semibold w-36">Status</TableHead>
               <TableHead className="font-semibold hidden sm:table-cell">Complexity</TableHead>
-              <TableHead className="font-semibold text-right">Actions</TableHead>
+              <TableHead className="font-semibold">Notes</TableHead>
+              <TableHead className="font-semibold text-center w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -214,8 +263,8 @@ export function ProblemsTable({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <TableCell>
+                    <div className="flex items-center gap-2">
                       {problem.solution && (
                         <ExpandableText
                           text={problem.solution}
@@ -231,6 +280,38 @@ export function ProblemsTable({
                         />
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete this problem from your history.
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => handleDelete(problem.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               )

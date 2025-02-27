@@ -10,6 +10,7 @@ import { DifficultyProgressChart } from './components/DifficultyProgressChart'
 import { ProblemsTable } from './components/ProblemsTable'
 import { StatsOverview } from './components/StatsOverview'
 import { ProblemFilters } from './components/ProblemFilters'
+import { ImportProblems } from '@/components/problems/ImportProblems'
 
 export default function ProblemsPage() {
   const { getToken, user } = useAuth()
@@ -136,13 +137,16 @@ export default function ProblemsPage() {
 
   return (
     <div className="container mx-auto px-4 py-4 sm:py-8 space-y-6">
-      <div className="flex flex-col gap-3">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-          LeetCode Progress
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {user?.displayName ? `Welcome back, ${user.displayName}` : 'Track your coding journey'}
-        </p>
+      <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+            LeetCode Progress
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {user?.displayName ? `Welcome back, ${user.displayName}` : 'Track your coding journey'}
+          </p>
+        </div>
+        <ImportProblems onImportComplete={fetchProblems} />
       </div>
 
       <StatsOverview problems={state.problems} streak={state.streak} />
@@ -187,6 +191,7 @@ export default function ProblemsPage() {
             setCurrentPage={(page) => setState(prev => ({ ...prev, currentPage: page }))}
             pageSize={state.pageSize}
             searchQuery={state.searchQuery}
+            onDeleteComplete={fetchProblems}
           />
         </CardContent>
       </Card>

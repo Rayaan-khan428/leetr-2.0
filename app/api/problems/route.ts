@@ -4,189 +4,73 @@ import { NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { calculateNextReview } from '@/lib/utils/spaced-repetition'
 import { notifyFriendsOfCompletion } from '@/lib/utils/notifications'
+import { NextRequest } from 'next/server'
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    console.log('=== Starting POST request handling ===');
-    
-    // Log the incoming request
-    const reqClone = request.clone();
-    const bodyText = await reqClone.text();
-    console.log('Raw request body:', bodyText);
-    
-    let body;
-    try {
-      body = JSON.parse(bodyText);
-      console.log('Parsed request body:', body);
-    } catch (e) {
-      console.error('Failed to parse request body:', e);
-      return NextResponse.json(
-        { error: 'Invalid JSON in request body' },
-        { status: 400 }
-      );
-    }
-
-    const authHeader = request.headers.get('authorization');
-    console.log('Auth header present:', !!authHeader);
-
+    // Get the auth token from the request header
+    const authHeader = req.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      console.log('Auth header missing or invalid');
-      return NextResponse.json(
-        { error: 'No token provided' },
-        { status: 401 }
-      );
+      return new Response('Unauthorized', { status: 401 });
     }
 
     const token = authHeader.split('Bearer ')[1];
-    console.log('Token extracted, verifying...');
-
-    try {
-      const decodedToken = await verifyAuthToken(token);
-      console.log('Token verified, uid:', decodedToken.uid);
-      
-      const user = await prisma.users.findUnique({
-        where: { firebaseUid: decodedToken.uid }
-      });
-      console.log('User lookup result:', !!user);
-
-      if (!user) {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        );
-      }
-
-      const {
-        leetcodeId,
-        problemName,
-        difficulty,
-        solution,
-        notes,
-        timeComplexity,
-        spaceComplexity,
-        url
-      } = body;
-
-      console.log('Extracted data:', {
-        leetcodeId,
-        problemName,
-        difficulty,
-        timeComplexity,
-        spaceComplexity,
-        url
-      });
-
-      if (!leetcodeId || !problemName || !difficulty) {
-        return NextResponse.json(
-          { error: 'Missing required fields' },
-          { status: 400 }
-        );
-      }
-
-      if (!['EASY', 'MEDIUM', 'HARD'].includes(difficulty)) {
-        return NextResponse.json(
-          { error: 'Invalid difficulty level' },
-          { status: 400 }
-        );
-      }
-
-      // Check for existing problem
-      const existingProblem = await prisma.user_problems.findUnique({
-        where: {
-          userId_leetcodeId: {
-            userId: user.id,
-            leetcodeId
-          }
-        }
-      });
-
-      if (existingProblem) {
-        const updatedProblem = await prisma.user_problems.update({
-          where: { id: existingProblem.id },
-          data: {
-            attempts: { increment: 1 },
-            solution,
-            notes,
-            timeComplexity,
-            spaceComplexity,
-            updatedAt: new Date(),
-            solvedAt: new Date(),
-            nextReview: calculateNextReview({
-              attempts: existingProblem.attempts + 1,
-              lastReviewDate: new Date(),
-              difficultyRating: 3 // Using default medium difficulty if not specified
-            })
-          }
-        });
-        console.log('Updated existing problem:', updatedProblem.id);
-        
-        // Add notification for updated problems too
-        try {
-          console.log('Notifying friends about updated problem...');
-          await notifyFriendsOfCompletion(user.id, problemName, difficulty);
-        } catch (notificationError) {
-          console.error('Failed to send notifications:', notificationError);
-        }
-        
-        return NextResponse.json(updatedProblem);
-      }
-
-      // Create new problem
-      const newProblem = await prisma.user_problems.create({
-        data: {
-          id: uuidv4(),
-          userId: user.id,
-          leetcodeId,
-          problemName,
-          difficulty,
-          solution,
-          notes,
-          timeComplexity,
-          spaceComplexity,
-          url,
-          updatedAt: new Date(),
-          solvedAt: new Date(),
-          nextReview: calculateNextReview({
-            attempts: 1,
-            lastReviewDate: new Date(),
-            difficultyRating: 3 // Using default medium difficulty if not specified
-          })
-        }
-      });
-      
-      console.log('Created new problem:', newProblem.id);
-      try {
-        console.log('Notifying friends about new problem...');
-        await notifyFriendsOfCompletion(user.id, problemName, difficulty);
-      } catch (notificationError) {
-        console.error('Failed to send notifications:', notificationError);
-      }
-
-      return NextResponse.json(newProblem, { status: 201 });
-
-    } catch (tokenError) {
-      console.error('Token verification failed:', tokenError);
-      return NextResponse.json(
-        { 
-          error: 'Invalid token', 
-          details: tokenError instanceof Error ? tokenError.message : 'Token verification failed'
-        },
-        { status: 401 }
-      );
-    }
-  } catch (error) {
-    console.error('Detailed error:', {
-      name: error instanceof Error ? error.name : 'Unknown error',
-      message: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : 'No stack trace',
+    
+    // Verify the token and get the user
+    const decodedToken = await verifyAuthToken(token);
+    const user = await prisma.users.findUnique({
+      where: { firebaseUid: decodedToken.uid }
     });
-    return NextResponse.json(
-      { 
-        error: 'Error creating problem',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
+
+    if (!user) {
+      return new Response('User not found', { status: 404 });
+    }
+
+    const data = await req.json();
+    
+    // Validate required fields
+    if (!data.leetcodeId || !data.problemName || !data.difficulty) {
+      return new Response(JSON.stringify({ 
+        error: 'Missing required fields: leetcodeId, problemName, and difficulty are required' 
+      }), { 
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Create the problem with only the fields we need
+    const problem = await prisma.user_problems.create({
+      data: {
+        id: uuidv4(),
+        userId: user.id,
+        leetcodeId: data.leetcodeId,
+        problemName: data.problemName,
+        difficulty: data.difficulty,
+        timeComplexity: data.timeComplexity || null,
+        spaceComplexity: data.spaceComplexity || null,
+        notes: data.notes || null,
+        solvedAt: data.solvedAt ? new Date(data.solvedAt) : new Date(),
+        mainCategory: "ARRAY_STRING",
+      }
+    });
+
+    return new Response(JSON.stringify(problem), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (dbError: any) {
+    // Check if it's a unique constraint violation
+    if (dbError.code === 'P2002') {
+      return new Response(JSON.stringify({ 
+        error: 'You have already added this LeetCode problem' 
+      }), { 
+        status: 409, // Conflict status code
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Re-throw other errors to be caught by the outer catch block
+    throw dbError;
   }
 }
 

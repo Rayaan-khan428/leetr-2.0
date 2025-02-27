@@ -16,6 +16,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import type { Problem } from '../types'
+
+import { MainCategory, SubCategory } from '../types'
+import { Badge } from "@/components/ui/badge"
+
 import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -29,6 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -86,6 +91,40 @@ interface ProblemsTableProps {
   pageSize: number
   searchQuery: string
   onDeleteComplete: () => void
+}
+
+const getCategoryColor = (category: MainCategory) => {
+  const colors: Record<string, { bg: string; text: string }> = {
+    ARRAY_STRING: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+    HASH_BASED: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    LINKED: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-300' },
+    STACK_QUEUE: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-300' },
+    TREE: { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    GRAPH: { bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-800 dark:text-pink-300' },
+  }
+  return colors[category] || { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-800 dark:text-gray-300' }
+}
+
+const formatCategoryName = (category: string) => {
+  return category
+    .split('_')
+    .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+    .join('/')
+}
+
+const getDifficultyScore = (difficulty: string) => {
+  switch (difficulty) {
+    case 'EASY': return 3;
+    case 'MEDIUM': return 6;
+    case 'HARD': return 9;
+    default: return 0;
+  }
+}
+
+const getRatingColor = (score: number) => {
+  if (score >= 8) return 'text-red-500 dark:text-red-400';
+  if (score >= 5) return 'text-yellow-500 dark:text-yellow-400';
+  return 'text-green-500 dark:text-green-400';
 }
 
 export function ProblemsTable({
@@ -163,159 +202,208 @@ export function ProblemsTable({
       <div className="overflow-x-auto -mx-4 sm:mx-0">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead className="font-semibold">Problem</TableHead>
-              <TableHead className="font-semibold w-36">Status</TableHead>
-              <TableHead className="font-semibold hidden sm:table-cell">Complexity</TableHead>
-              <TableHead className="font-semibold">Notes</TableHead>
-              <TableHead className="font-semibold text-center w-20">Actions</TableHead>
+            <TableRow className="border-b border-muted hover:bg-transparent">
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Problem</TableHead>
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Category</TableHead>
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium">LeetCode</TableHead>
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Your Rating</TableHead>
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Attempts</TableHead>
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium hidden sm:table-cell">Complexity</TableHead>
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium hidden sm:table-cell">Next Review</TableHead>
+              <TableHead className="text-xs uppercase tracking-wider text-muted-foreground font-medium text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedProblems.map((problem) => {
-              const confidenceScore = problem.difficultyRating 
-                ? Math.max(0, 10 - problem.difficultyRating - (problem.attempts - 1))
-                : Math.max(0, 10 - (problem.attempts - 1));
+            {paginatedProblems.map((problem) => (
+              <TableRow 
+                key={problem.id}
+                className="border-b border-muted/50 hover:bg-muted/5 transition-colors"
+              >
+                <TableCell className="py-3">
+                  <div className="flex flex-col">
+                    <a 
+                      href={problem.url || `https://leetcode.com/problems/${problem.leetcodeId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-foreground hover:text-primary"
+                    >
+                      {problem.problemName}
+                    </a>
+                    <span className="text-xs text-muted-foreground mt-0.5">
+                      #{problem.leetcodeId} • {formatDate(problem.solvedAt)}
+                    </span>
+                  </div>
+                </TableCell>
 
-              const needsReview = problem.nextReview && new Date(problem.nextReview) <= new Date();
-
-              return (
-                <TableRow 
-                  key={problem.id}
-                  className={cn(
-                    "hover:bg-muted/50 transition-colors",
-                  )}
-                >
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <a 
-                          href={problem.url || `https://leetcode.com/problems/${problem.leetcodeId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary hover:underline font-medium"
-                        >
-                          {problem.problemName}
-                        </a>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                          problem.difficulty === 'EASY' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                          problem.difficulty === 'MEDIUM' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
-                          'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                        }`}>
-                          {problem.difficulty}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>#{problem.leetcodeId}</span>
-                        <span>•</span>
-                        <span>Solved {formatDate(problem.solvedAt)}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
+                <TableCell className="py-3">
+                  <div className="flex flex-col gap-1.5">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger>
-                          <div className="flex flex-col items-start gap-1">
-                            <div className={cn(
-                              "text-sm font-medium",
-                              confidenceScore >= 7 ? 'text-green-500' :
-                              confidenceScore >= 4 ? 'text-yellow-500' :
-                              'text-red-500'
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn(
+                              "text-xs font-medium px-2 py-0.5 rounded-full",
+                              getCategoryColor(problem.mainCategory).bg,
+                              getCategoryColor(problem.mainCategory).text
                             )}>
-                              {confidenceScore >= 7 ? 'High' :
-                               confidenceScore >= 4 ? 'Medium' :
-                               'Low'}
-                            </div>
-                            <div className="flex flex-col text-xs text-muted-foreground">
-                              <span>
-                                {problem.attempts} attempt{problem.attempts !== 1 ? 's' : ''}
+                              {formatCategoryName(problem.mainCategory)}
+                            </span>
+                            {problem.subCategories && problem.subCategories.length > 0 && (
+                              <span className="text-xs text-muted-foreground">
+                                +{problem.subCategories.length}
                               </span>
-                              {problem.difficultyRating && (
-                                <span>
-                                  Rated {problem.difficultyRating}/10
-                                </span>
-                              )}
-                            </div>
+                            )}
                           </div>
                         </TooltipTrigger>
+                        {problem.subCategories && problem.subCategories.length > 0 && (
+                          <TooltipContent>
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium">Sub-categories:</p>
+                              <ul className="text-xs space-y-0.5">
+                                {problem.subCategories.map((subCat) => (
+                                  <li key={subCat}>{formatCategoryName(subCat)}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </TableCell>
+
+                <TableCell className="py-3">
+                  <span className={cn(
+                    "text-sm",
+                    getRatingColor(getDifficultyScore(problem.difficulty))
+                  )}>
+                    {problem.difficulty.charAt(0) + problem.difficulty.slice(1).toLowerCase()}
+                  </span>
+                </TableCell>
+
+                <TableCell className="py-3">
+                  {problem.difficultyRating ? (
+                    <span className={cn(
+                      "text-sm",
+                      getRatingColor(problem.difficultyRating)
+                    )}>
+                      {problem.difficultyRating}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+
+                <TableCell className="py-3">
+                  <span className="text-sm">
+                    {problem.attempts}
+                  </span>
+                </TableCell>
+
+                <TableCell className="hidden sm:table-cell py-3">
+                  <div className="space-y-1">
+                    {problem.timeComplexity && (
+                      <span className="text-xs text-muted-foreground">
+                        O({problem.timeComplexity})
+                      </span>
+                    )}
+                    {problem.spaceComplexity && (
+                      <span className="text-xs text-muted-foreground block">
+                        O({problem.spaceComplexity})
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+
+                <TableCell className="hidden sm:table-cell py-3">
+                  {problem.nextReview ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <span className={cn(
+                            "text-xs",
+                            new Date(problem.nextReview) <= new Date() 
+                              ? "text-red-500 dark:text-red-400"
+                              : "text-muted-foreground"
+                          )}>
+                            {formatDate(problem.nextReview)}
+                          </span>
+                        </TooltipTrigger>
                         <TooltipContent>
-                          <p className="text-xs">Confidence score: {confidenceScore.toFixed(1)}</p>
-                          <p className="text-xs text-muted-foreground">Based on attempts and self-rating</p>
-                          {problem.difficultyRating && (
-                            <p className="text-xs text-muted-foreground mt-1">Your difficulty rating: {problem.difficultyRating}/10</p>
-                          )}
+                          {new Date(problem.nextReview) <= new Date() 
+                            ? "Review is due"
+                            : "Scheduled review date"}
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <div className="flex flex-col gap-1">
-                      {problem.timeComplexity && (
-                        <span className="inline-flex w-fit items-center px-2 py-0.5 rounded-md text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                          Time: {problem.timeComplexity}
-                        </span>
-                      )}
-                      {problem.spaceComplexity && (
-                        <span className="inline-flex w-fit items-center px-2 py-0.5 rounded-md text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
-                          Space: {problem.spaceComplexity}
-                        </span>
-                      )}
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+
+                <TableCell className="text-right py-3">
+                  <div className="flex items-center justify-end gap-3">
+                    {problem.solution && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => {
+                                const expandable = document.querySelector(`[data-solution="${problem.id}"]`) as HTMLButtonElement;
+                                if (expandable) expandable.click();
+                              }}
+                              className="text-muted-foreground hover:text-primary"
+                            >
+                              <Code size={16} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>View Solution</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                    {problem.notes && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => {
+                                const expandable = document.querySelector(`[data-notes="${problem.id}"]`) as HTMLButtonElement;
+                                if (expandable) expandable.click();
+                              }}
+                              className="text-muted-foreground hover:text-primary"
+                            >
+                              <FileText size={16} />
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent>View Notes</TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
+                  </div>
+                  {/* Hidden expandable components */}
+                  {problem.solution && (
+                    <div className="hidden">
+                      <ExpandableText
+                        text={problem.solution}
+                        icon={Code}
+                        label="Solution"
+                        data-solution={problem.id}
+                      />
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {problem.solution && (
-                        <ExpandableText
-                          text={problem.solution}
-                          icon={Code}
-                          label="Solution"
-                        />
-                      )}
-                      {problem.notes && (
-                        <ExpandableText
-                          text={problem.notes}
-                          icon={FileText}
-                          label="Notes"
-                        />
-                      )}
+                  )}
+                  {problem.notes && (
+                    <div className="hidden">
+                      <ExpandableText
+                        text={problem.notes}
+                        icon={FileText}
+                        label="Notes"
+                        data-notes={problem.id}
+                      />
                     </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete this problem from your history.
-                            This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={() => handleDelete(problem.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>

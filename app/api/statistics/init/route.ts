@@ -1,7 +1,8 @@
 import { prisma } from '@/prisma/client'
 import { verifyAuthToken } from '@/middleware/auth'
 import { NextResponse } from 'next/server'
-import { v4 as uuidv4 } from 'uuid'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: Request) {
   try {
@@ -26,35 +27,55 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check if statistics already exist
-    let userStats = await prisma.user_statistics.findUnique({
-      where: { userId: currentUser.id }
+    // Get user's problems
+    const problems = await prisma.user_problems.findMany({
+      where: { userId: currentUser.id },
+      orderBy: { solvedAt: 'desc' }
     })
 
-    if (!userStats) {
-      // Calculate initial statistics
-      const totalSolved = await prisma.user_problems.count({
-        where: { userId: currentUser.id }
-      })
-
-      const lastProblem = await prisma.user_problems.findFirst({
-        where: { userId: currentUser.id },
-        orderBy: { solvedAt: 'desc' }
-      })
-
-      // Create initial statistics
-      userStats = await prisma.user_statistics.create({
-        data: {
-          id: uuidv4(),
-          userId: currentUser.id,
-          totalSolved,
-          lastSolved: lastProblem?.solvedAt || null,
-          streak: 0 // Initial streak
-        }
-      })
+    // Calculate streak
+    let streak = 0
+    let currentDate = new Date()
+    let currentStreak = 0
+    
+    for (let i = 0; i < 7; i++) {
+      const dateStr = currentDate.toISOString().split('T')[0]
+      const hasProblemsOnDate = problems.some(
+        p => p.solvedAt.toISOString().split('T')[0] === dateStr
+      )
+      
+      if (hasProblemsOnDate) {
+        currentStreak++
+      } else {
+        break
+      }
+      
+      currentDate.setDate(currentDate.getDate() - 1)
     }
+    streak = currentStreak
 
-    return NextResponse.json(userStats)
+    // Create or update user statistics
+    const stats = await prisma.user_statistics.upsert({
+      where: { userId: currentUser.id },
+      create: {
+        id: crypto.randomUUID(),
+        userId: currentUser.id,
+        streak,
+        lastStreak: Math.max(streak - 1, 0),
+        maxStreak: streak,
+        totalSolved: problems.length,
+        lastSolved: problems[0]?.solvedAt || null,
+      },
+      update: {
+        streak,
+        lastStreak: Math.max(streak - 1, 0),
+        maxStreak: Math.max(streak, streak),
+        totalSolved: problems.length,
+        lastSolved: problems[0]?.solvedAt || null,
+      }
+    })
+
+    return NextResponse.json(stats)
   } catch (error) {
     console.error('Error initializing statistics:', error)
     return NextResponse.json(

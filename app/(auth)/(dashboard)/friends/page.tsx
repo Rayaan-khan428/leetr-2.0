@@ -50,6 +50,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from '@/hooks/use-toast'
 import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation"
 import { PhoneVerificationPrompt } from "@/components/friends/PhoneVerificationPrompt"
+import { FriendSearch } from '@/components/friends/FriendSearch'
+import { FriendRequests } from '@/components/friends/FriendRequests'
+import { FriendCard } from '@/components/friends/FriendCard'
 
 interface User {
   id: string
@@ -73,6 +76,41 @@ interface Friend {
       medium: number
       hard: number
       recentlySolved: number
+      categories?: {
+        // Main categories
+        ARRAY_STRING?: number
+        HASH_BASED?: number
+        LINKED?: number
+        STACK_QUEUE?: number
+        TREE?: number
+        GRAPH?: number
+        
+        // Subcategories
+        ARRAY?: number
+        STRING?: number
+        TWO_POINTERS?: number
+        SLIDING_WINDOW?: number
+        MATRIX?: number
+        HASH_MAP?: number
+        HASH_SET?: number
+        SINGLY_LINKED?: number
+        DOUBLY_LINKED?: number
+        CIRCULAR_LINKED?: number
+        STACK?: number
+        QUEUE?: number
+        DEQUE?: number
+        PRIORITY_QUEUE?: number
+        BINARY_TREE?: number
+        BINARY_SEARCH_TREE?: number
+        NARY_TREE?: number
+        TRIE?: number
+        SEGMENT_TREE?: number
+        DIRECTED_GRAPH?: number
+        UNDIRECTED_GRAPH?: number
+        DFS?: number
+        BFS?: number
+        TOPOLOGICAL_SORT?: number
+      }
     }
     user_statistics?: {  // Match the database field name
       streak: number
@@ -134,6 +172,7 @@ export default function FriendsPage() {
     const [activeTab, setActiveTab] = useState('friends')
     const [searchQuery, setSearchQuery] = useState('')
     const [searchResults, setSearchResults] = useState<User[]>([])
+    const [leaderboardView, setLeaderboardView] = useState<'list' | 'grid'>('list')
 
     const fetchFriends = useCallback(async () => {
       setIsLoadingFriends(true)
@@ -152,6 +191,11 @@ export default function FriendsPage() {
       } catch (err) {
         console.error('Error fetching friends:', err)
         setError('Error fetching friends')
+        toast({
+          title: "Error",
+          description: "Failed to load friends list. Please try again.",
+          variant: "destructive"
+        })
       } finally {
         setIsLoadingFriends(false)
       }
@@ -217,15 +261,48 @@ export default function FriendsPage() {
           }
 
           const data = await response.json()
-          setLeaderboard(data)
+          
+          // Transform the data to match LeaderboardEntry interface with null checks
+          const transformedData = data.map((entry: any) => ({
+            id: entry.id,
+            displayName: entry.displayName,
+            email: entry.email,
+            photoURL: entry.photoURL,
+            stats: {
+              totalSolved: entry.problemStats?.totalProblems || 0,
+              streak: entry.problemStats?.streak || 0,
+              lastActive: entry.problemStats?.lastSolved || new Date(),
+              lastWeekSolved: entry.problemStats?.recentlySolved || 0,
+              lastMonthSolved: entry.problemStats?.recentlySolved || 0,
+              consistency: calculateConsistency(entry.problemStats || {})
+            }
+          }))
+
+          setLeaderboard(transformedData)
         } catch (err) {
           console.error('Error fetching leaderboard:', err)
           setError('Error fetching leaderboard data')
+          // Set empty leaderboard instead of leaving it undefined
+          setLeaderboard([])
         }
       }
 
       initializeAndFetchLeaderboard()
     }, [getToken])
+
+    // Helper function to calculate consistency
+    const calculateConsistency = (stats: any) => {
+      if (!stats?.lastSolved) return 0
+      try {
+        const lastSolvedDate = new Date(stats.lastSolved)
+        if (isNaN(lastSolvedDate.getTime())) return 0
+        const daysSinceLastSolved = Math.floor((Date.now() - lastSolvedDate.getTime()) / (1000 * 60 * 60 * 24))
+        return daysSinceLastSolved <= 7 ? 100 : Math.max(0, 100 - (daysSinceLastSolved - 7) * 10)
+      } catch (error) {
+        console.error('Error calculating consistency:', error)
+        return 0
+      }
+    }
 
     useEffect(() => {
       if (isSearchOpen) {
@@ -463,210 +540,48 @@ export default function FriendsPage() {
           ))
         ) : friends.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            You haven't added any friends yet
+            <div className="mb-4 text-4xl">👋</div>
+            <h3 className="text-xl font-medium mb-2">You haven't added any friends yet</h3>
+            <p className="mb-4">Search for friends by email or name to get started</p>
+            <Button 
+              onClick={() => setIsSearchOpen(true)}
+              size="lg"
+            >
+              <span className="mr-2">🔍</span>
+              Find Friends
+            </Button>
           </div>
         ) : (
-          friends.map((friend) => (
-            <Card key={friend.friendshipId} className="p-4">
-              <div className="flex flex-col space-y-4">
-                {/* Friend Info Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Avatar>
-                      <AvatarImage src={friend.photoURL || undefined} />
-                      <AvatarFallback>
-                        {friend.displayName?.[0]?.toUpperCase() || friend.email[0].toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="ml-3">
-                      <p className="font-medium">
-                        {friend.displayName || 'Anonymous User'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{friend.email}</p>
-                    </div>
-                  </div>
-                  {getFriendActionButton(friend)}
-                </div>
-
-                {/* Statistics Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  {/* Radar Chart */}
-                  <div className="h-[300px] w-full bg-card rounded-lg p-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RadarChart 
-                        outerRadius={90} 
-                        data={[
-                          {
-                            subject: 'Easy',
-                            value: (friend.problemStats.easy / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Medium',
-                            value: (friend.problemStats.medium / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Hard',
-                            value: (friend.problemStats.hard / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Recent',
-                            value: (friend.problemStats.recentlySolved / friend.problemStats.totalProblems) * 100 || 0,
-                          },
-                          {
-                            subject: 'Total',
-                            value: (friend.problemStats.totalProblems / 2000) * 100 || 0,
-                          },
-                        ]}
-                      >
-                        <PolarGrid 
-                          gridType="polygon"
-                          stroke="hsl(var(--muted-foreground))" 
-                          strokeOpacity={0.2}
-                        />
-                        <PolarAngleAxis 
-                          dataKey="subject" 
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                        />
-                        <PolarRadiusAxis 
-                          angle={30} 
-                          domain={[0, 100]} 
-                          tick={false}
-                          axisLine={false}
-                        />
-                        <Radar
-                          name="Stats"
-                          dataKey="value"
-                          stroke="hsl(var(--primary))"
-                          fill="hsl(var(--primary))"
-                          fillOpacity={0.2}
-                          isAnimationActive={false}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  {/* Bar Chart */}
-                  <div className="h-[300px] w-full bg-card rounded-lg p-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <RechartsBarChart 
-                        data={[
-                          { name: 'Easy', value: friend.problemStats.easy },
-                          { name: 'Medium', value: friend.problemStats.medium },
-                          { name: 'Hard', value: friend.problemStats.hard },
-                        ]}
-                        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                      >
-                        <XAxis 
-                          dataKey="name"
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                          axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.2 }}
-                        />
-                        <YAxis 
-                          tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                          axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.2 }}
-                        />
-                        <CartesianGrid 
-                          stroke="hsl(var(--muted-foreground))" 
-                          strokeOpacity={0.1} 
-                          vertical={false}
-                        />
-                        <Bar 
-                          dataKey="value" 
-                          fill="hsl(var(--primary))"
-                          isAnimationActive={false}
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </RechartsBarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Summary Statistics */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Total Solved</p>
-                    <p className="text-2xl font-bold">{friend.problemStats.totalProblems}</p>
-                  </Card>
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Last 7 Days</p>
-                    <p className="text-2xl font-bold">{friend.problemStats.recentlySolved}</p>
-                  </Card>
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Hard Problems</p>
-                    <p className="text-2xl font-bold">{friend.problemStats.hard}</p>
-                  </Card>
-                  <Card className="p-4">
-                    <p className="text-sm text-muted-foreground">Success Rate</p>
-                    <p className="text-2xl font-bold">
-                      {((friend.problemStats.totalProblems / 2000) * 100).toFixed(1)}%
-                    </p>
-                  </Card>
-                </div>
-              </div>
-            </Card>
-          ))
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.1 }}
+          >
+            {friends.map((friend) => (
+              <motion.div
+                key={friend.friendshipId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <FriendCard 
+                  friend={friend} 
+                  getToken={getToken} 
+                  onFriendRemoved={refreshFriendData} 
+                />
+              </motion.div>
+            ))}
+          </motion.div>
         )}
       </div>
     )
 
     const renderSearchTab = () => (
-      <div>
-        <div className="flex gap-2 mb-4">
-          <Input
-            placeholder="Search users by email or name"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            className="h-11"
-          />
-          <Button 
-            onClick={handleSearch} 
-            disabled={isLoading}
-            size="lg"
-          >
-            <span className="mr-2">🔍</span>
-            Search
-          </Button>
-        </div>
-
-        <div className="space-y-4">
-          {isLoading ? (
-            // Loading skeletons
-            [...Array(3)].map((_, i) => (
-              <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-[200px]" />
-                  <Skeleton className="h-4 w-[150px]" />
-                </div>
-              </div>
-            ))
-          ) : (
-            searchResults.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between p-4 rounded-lg border"
-              >
-                <div className="flex items-center">
-                  <Avatar>
-                    <AvatarImage src={user.photoURL || undefined} />
-                    <AvatarFallback>
-                      {user.displayName?.[0]?.toUpperCase() || user.email[0].toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="ml-3">
-                    <p className="font-medium">
-                      {user.displayName || 'Anonymous User'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                  </div>
-                </div>
-                {getFriendActionButton(user)}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+      <FriendSearch 
+        getToken={getToken} 
+        onFriendStatusChange={refreshFriendData}
+        friends={friends.map(f => ({ id: f.id, friendshipId: f.friendshipId }))}
+      />
     )
 
     const renderSearchCollapsible = () => (
@@ -745,11 +660,15 @@ export default function FriendsPage() {
               ) : (
                 <>
                   <span className="text-lg">👋</span>
-                  Add Friends
-                  {friendRequests.length > 0 && (
-                    <span className="ml-1 rounded-full bg-background w-5 h-5 text-xs flex items-center justify-center text-foreground">
-                      {friendRequests.length}
-                    </span>
+                  {friendRequests.length > 0 ? (
+                    <>
+                      Friend Requests
+                      <span className="ml-1 rounded-full bg-background w-5 h-5 text-xs flex items-center justify-center text-foreground">
+                        {friendRequests.length}
+                      </span>
+                    </>
+                  ) : (
+                    "Add Friends"
                   )}
                 </>
               )}
@@ -776,57 +695,10 @@ export default function FriendsPage() {
               {renderSearchTab()}
             </TabsContent>
             <TabsContent value="requests" className="mt-4">
-              <ScrollArea className="h-[300px]">
-                <div className="space-y-4">
-                  {friendRequests.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No pending friend requests
-                    </div>
-                  ) : (
-                    friendRequests.map((request) => (
-                      <motion.div
-                        key={request.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-between p-4 rounded-lg border"
-                      >
-                        <div className="flex items-center">
-                          <Avatar>
-                            <AvatarImage src={request.sender.photoURL || undefined} />
-                            <AvatarFallback>
-                              {request.sender.displayName?.[0]?.toUpperCase() || request.sender.email[0].toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="ml-3">
-                            <p className="font-medium">
-                              {request.sender.displayName || 'Anonymous User'}
-                            </p>
-                            <p className="text-sm text-muted-foreground">{request.sender.email}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleFriendRequest(request.id, 'ACCEPTED')}
-                          >
-                            <span className="mr-2">✅</span>
-                            Accept
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleFriendRequest(request.id, 'REJECTED')}
-                          >
-                            <span className="mr-2">❌</span>
-                            Reject
-                          </Button>
-                        </div>
-                      </motion.div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
+              <FriendRequests 
+                getToken={getToken} 
+                onRequestHandled={refreshFriendData} 
+              />
             </TabsContent>
           </Tabs>
         </CollapsibleContent>
@@ -857,70 +729,178 @@ export default function FriendsPage() {
             <CardTitle className="flex items-center gap-2">
               <span className="text-xl">🏆</span>
               Leaderboard
+              {leaderboard.length === 0 && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  (No participants yet)
+                </span>
+              )}
             </CardTitle>
-            <Select value={rankingMetric} onValueChange={setRankingMetric}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Ranking Metric" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="totalSolved">Total Solved</SelectItem>
-                <SelectItem value="streak">Current Streak</SelectItem>
-                <SelectItem value="lastWeek">Last 7 Days</SelectItem>
-                <SelectItem value="lastMonth">Last 30 Days</SelectItem>
-                <SelectItem value="consistency">Consistency</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center border rounded-md overflow-hidden">
+                <Button 
+                  variant={leaderboardView === 'list' ? "default" : "ghost"} 
+                  size="sm"
+                  onClick={() => setLeaderboardView('list')}
+                  className="rounded-none h-8 px-3"
+                >
+                  List
+                </Button>
+                <Button 
+                  variant={leaderboardView === 'grid' ? "default" : "ghost"} 
+                  size="sm"
+                  onClick={() => setLeaderboardView('grid')}
+                  className="rounded-none h-8 px-3"
+                >
+                  Grid
+                </Button>
+              </div>
+              <Select 
+                value={rankingMetric} 
+                onValueChange={setRankingMetric}
+                disabled={leaderboard.length === 0}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Ranking Metric" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="totalSolved">Total Solved</SelectItem>
+                  <SelectItem value="streak">Current Streak</SelectItem>
+                  <SelectItem value="lastWeek">Last 7 Days</SelectItem>
+                  <SelectItem value="lastMonth">Last 30 Days</SelectItem>
+                  <SelectItem value="consistency">Consistency</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-            {[...leaderboard]
-              .sort((a, b) => getRankingMetricValue(b) - getRankingMetricValue(a))
-              .map((entry, index) => {
-                const isCurrentUser = entry.id === user?.id;
-                const metricValue = getRankingMetricValue(entry);
-                const metricDisplay = rankingMetric === 'consistency' 
-                  ? `${(metricValue || 0).toFixed(1)}%`
-                  : (metricValue || 0).toString();
+          {leaderboard.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[300px] text-center text-muted-foreground space-y-4">
+              <span className="text-4xl">🎯</span>
+              <p>No leaderboard data yet</p>
+              <p className="text-sm">Start solving problems to appear on the leaderboard!</p>
+            </div>
+          ) : leaderboardView === 'list' ? (
+            <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+              {[...leaderboard]
+                .sort((a, b) => (getRankingMetricValue(b) || 0) - (getRankingMetricValue(a) || 0))
+                .map((entry, index) => {
+                  const isCurrentUser = entry.id === user?.id;
+                  const metricValue = getRankingMetricValue(entry);
+                  const metricDisplay = rankingMetric === 'streak' ? 'days' : 'problems';
 
-                return (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`flex items-center justify-between p-4 rounded-lg border mb-2 ${
-                      isCurrentUser ? 'bg-muted/50' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center justify-center w-8 h-8">
-                        {index === 0 && <span className="text-3xl block mb-2">🏆</span>}
-                        {index === 1 && <span className="text-3xl block mb-2">🥈</span>}
-                        {index === 2 && <span className="text-3xl block mb-2">🥉</span>}
-                        {index > 2 && <span className="text-lg font-bold">{index + 1}</span>}
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`flex items-center justify-between p-4 rounded-lg border mb-2 ${
+                        isCurrentUser ? 'bg-muted/50' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-center w-8 h-8">
+                          {index === 0 && <span className="text-3xl block mb-2">🏆</span>}
+                          {index === 1 && <span className="text-3xl block mb-2">🥈</span>}
+                          {index === 2 && <span className="text-3xl block mb-2">🥉</span>}
+                          {index > 2 && <span className="text-lg font-bold">{index + 1}</span>}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={entry.photoURL || undefined} />
+                            <AvatarFallback>
+                              {entry.displayName?.[0]?.toUpperCase() || entry.email[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">
+                              {isCurrentUser ? 'You' : (entry.displayName || 'Anonymous User')}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {metricValue} {metricDisplay}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={entry.photoURL || undefined} />
-                          <AvatarFallback>
-                            {entry.displayName?.[0]?.toUpperCase() || entry.email[0].toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                      
+                      {/* Progress bar for visual comparison */}
+                      <div className="w-1/3 hidden md:block">
+                        <div className="h-2 bg-muted rounded-full w-full">
+                          <div 
+                            className={`h-2 rounded-full ${
+                              index === 0 ? 'bg-yellow-500' : 
+                              index === 1 ? 'bg-gray-400' : 
+                              index === 2 ? 'bg-amber-700' : 'bg-primary'
+                            }`}
+                            style={{ 
+                              width: `${(metricValue / (getRankingMetricValue(leaderboard[0]) || 1)) * 100}%` 
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+            </ScrollArea>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[...leaderboard]
+                .sort((a, b) => (getRankingMetricValue(b) || 0) - (getRankingMetricValue(a) || 0))
+                .map((entry, index) => {
+                  const isCurrentUser = entry.id === user?.id;
+                  const metricValue = getRankingMetricValue(entry);
+                  const metricDisplay = rankingMetric === 'streak' ? 'days' : 'problems';
+
+                  return (
+                    <motion.div
+                      key={entry.id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`p-4 rounded-lg border ${
+                        isCurrentUser ? 'bg-muted/50 border-primary' : ''
+                      } ${index < 3 ? 'border-2' : ''} ${
+                        index === 0 ? 'border-yellow-500' : 
+                        index === 1 ? 'border-gray-400' : 
+                        index === 2 ? 'border-amber-700' : ''
+                      }`}
+                    >
+                      <div className="flex flex-col items-center text-center gap-2">
+                        <div className="relative">
+                          <Avatar className="h-16 w-16">
+                            <AvatarImage src={entry.photoURL || undefined} />
+                            <AvatarFallback className="text-xl">
+                              {entry.displayName?.[0]?.toUpperCase() || entry.email[0].toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-background border">
+                            {index + 1}
+                          </div>
+                        </div>
+                        
                         <div>
-                          <p className="font-medium">
+                          <p className="font-medium mt-2">
                             {isCurrentUser ? 'You' : (entry.displayName || 'Anonymous User')}
                           </p>
-                          <p className="text-sm text-muted-foreground">
-                            {metricDisplay} {rankingMetric === 'streak' ? 'days' : ''}
+                          <div className="flex items-center justify-center gap-1 mt-1">
+                            {index === 0 && <span className="text-lg">🏆</span>}
+                            {index === 1 && <span className="text-lg">🥈</span>}
+                            {index === 2 && <span className="text-lg">🥉</span>}
+                            <p className="text-lg font-bold">
+                              {metricValue}
+                            </p>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {metricDisplay}
                           </p>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-            })}
-          </ScrollArea>
+                    </motion.div>
+                  );
+                })}
+            </div>
+          )}
         </CardContent>
       </Card>
     )
@@ -931,130 +911,255 @@ export default function FriendsPage() {
       )
 
       return (
-        <Card className="mt-6">
+        <Card className="mt-6" id="friend-comparison">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="text-xl">🤝</span>
-              Friend Comparison
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                <span className="text-xl">🤝</span>
+                Friend Comparison
+              </CardTitle>
+              {friends.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    if (selectedFriendsForComparison.length === friends.length) {
+                      setSelectedFriendsForComparison([])
+                    } else {
+                      setSelectedFriendsForComparison(friends.map(f => f.friendshipId))
+                    }
+                  }}
+                >
+                  {selectedFriendsForComparison.length === friends.length ? "Deselect All" : "Compare All"}
+                </Button>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Select up to two friends to compare their statistics
+              {friends.length === 0 
+                ? "Add friends to compare their statistics" 
+                : "Select friends below to compare their statistics"}
             </p>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-6">
               {/* Friend Selection */}
-              <div className="flex flex-wrap gap-4">
-                {friends.map(friend => (
-                  <Button
-                    key={friend.friendshipId}
-                    variant={selectedFriendsForComparison.includes(friend.friendshipId) ? "default" : "outline"}
-                    onClick={() => {
-                      setSelectedFriendsForComparison(prev => {
-                        if (prev.includes(friend.friendshipId)) {
-                          return prev.filter(id => id !== friend.friendshipId)
-                        }
-                        return [...prev.slice(-1), friend.friendshipId]
-                      })
-                    }}
-                    disabled={selectedFriendsForComparison.length >= 2 && !selectedFriendsForComparison.includes(friend.friendshipId)}
-                    className="flex items-center gap-2"
+              {friends.length > 0 ? (
+                <div className="flex flex-wrap gap-4">
+                  {friends.map(friend => (
+                    <Button
+                      key={friend.friendshipId}
+                      variant={selectedFriendsForComparison.includes(friend.friendshipId) ? "default" : "outline"}
+                      onClick={() => {
+                        setSelectedFriendsForComparison(prev => {
+                          if (prev.includes(friend.friendshipId)) {
+                            return prev.filter(id => id !== friend.friendshipId)
+                          }
+                          return [...prev, friend.friendshipId]
+                        })
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src={friend.photoURL || undefined} />
+                        <AvatarFallback className="text-xs">
+                          {friend.displayName?.[0] || friend.email[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      {friend.displayName || 'Anonymous'}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <div className="mb-4 text-4xl">👥</div>
+                  <h3 className="text-xl font-medium mb-2">No friends to compare</h3>
+                  <p className="mb-4">Add friends to see how you stack up against each other</p>
+                  <Button 
+                    onClick={() => setIsSearchOpen(true)}
+                    size="lg"
                   >
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src={friend.photoURL || undefined} />
-                      <AvatarFallback className="text-xs">
-                        {friend.displayName?.[0] || friend.email[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    {friend.displayName || 'Anonymous'}
+                    <span className="mr-2">🔍</span>
+                    Find Friends
                   </Button>
-                ))}
-              </div>
+                </div>
+              )}
 
               {selectedFriendsData.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {selectedFriendsData.map(friend => (
-                    <Card key={friend.friendshipId} className="p-6">
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-4">
-                          <Avatar className="h-16 w-16">
-                            <AvatarImage src={friend.photoURL || undefined} />
-                            <AvatarFallback className="text-xl">
-                              {friend.displayName?.[0] || friend.email[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="text-xl font-bold">{friend.displayName || 'Anonymous'}</h3>
-                            <p className="text-muted-foreground">{friend.email}</p>
+                <>
+                  {/* Comparison Summary */}
+                  {selectedFriendsData.length > 1 && (
+                    <Card className="p-4 bg-muted/30">
+                      <h3 className="text-lg font-medium mb-4">Comparison Summary</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Most Problems</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b
+                              ).problemStats.totalProblems}
+                            </span>
                           </div>
                         </div>
-
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <Card className="p-4">
-                              <h4 className="text-sm font-medium text-muted-foreground">Total Solved</h4>
-                              <p className="text-2xl font-bold">{friend.problemStats.totalProblems}</p>
-                            </Card>
-                            <Card className="p-4">
-                              <h4 className="text-sm font-medium text-muted-foreground">Streak</h4>
-                              <p className="text-2xl font-bold">{friend.user_statistics?.streak || 0}d</p>
-                            </Card>
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Longest Streak</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  (a.user_statistics?.streak || 0) > (b.user_statistics?.streak || 0) ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  (a.user_statistics?.streak || 0) > (b.user_statistics?.streak || 0) ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                (a.user_statistics?.streak || 0) > (b.user_statistics?.streak || 0) ? a : b
+                              ).user_statistics?.streak || 0}d
+                            </span>
                           </div>
-
-                          <Card className="p-4">
-                            <h4 className="text-sm font-medium text-muted-foreground mb-4">Difficulty Distribution</h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <span>Easy</span>
-                                <div className="w-2/3 bg-muted rounded-full h-2">
-                                  <div
-                                    className="bg-green-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${(friend.problemStats.easy / friend.problemStats.totalProblems * 100) || 0}%`
-                                    }}
-                                  />
-                                </div>
-                                <span className="w-12 text-right">{friend.problemStats.easy}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span>Medium</span>
-                                <div className="w-2/3 bg-muted rounded-full h-2">
-                                  <div
-                                    className="bg-yellow-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${(friend.problemStats.medium / friend.problemStats.totalProblems * 100) || 0}%`
-                                    }}
-                                  />
-                                </div>
-                                <span className="w-12 text-right">{friend.problemStats.medium}</span>
-                              </div>
-                              <div className="flex justify-between items-center">
-                                <span>Hard</span>
-                                <div className="w-2/3 bg-muted rounded-full h-2">
-                                  <div
-                                    className="bg-red-500 h-2 rounded-full"
-                                    style={{
-                                      width: `${(friend.problemStats.hard / friend.problemStats.totalProblems * 100) || 0}%`
-                                    }}
-                                  />
-                                </div>
-                                <span className="w-12 text-right">{friend.problemStats.hard}</span>
-                              </div>
-                            </div>
-                          </Card>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
-                  {selectedFriendsData.length === 1 && (
-                    <Card className="p-6 flex items-center justify-center border-dashed">
-                      <div className="text-center text-muted-foreground">
-                        <p>Select another friend to compare</p>
-                        <p className="text-sm">or view single friend stats above</p>
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Most Hard Problems</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.hard > b.problemStats.hard ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.hard > b.problemStats.hard ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                a.problemStats.hard > b.problemStats.hard ? a : b
+                              ).problemStats.hard}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-muted-foreground">Most Recent Activity</h4>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage 
+                                src={selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.recentlySolved > b.problemStats.recentlySolved ? a : b
+                                ).photoURL || undefined} 
+                              />
+                              <AvatarFallback className="text-xs">
+                                {selectedFriendsData.reduce((a, b) => 
+                                  a.problemStats.recentlySolved > b.problemStats.recentlySolved ? a : b
+                                ).displayName?.[0] || 'A'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">
+                              {selectedFriendsData.reduce((a, b) => 
+                                a.problemStats.recentlySolved > b.problemStats.recentlySolved ? a : b
+                              ).problemStats.recentlySolved} this week
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </Card>
                   )}
-                </div>
+
+                  {/* Individual Friend Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {selectedFriendsData.map(friend => (
+                      <Card key={friend.friendshipId} className="p-6">
+                        <div className="space-y-6">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16">
+                              <AvatarImage src={friend.photoURL || undefined} />
+                              <AvatarFallback className="text-xl">
+                                {friend.displayName?.[0] || friend.email[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="text-xl font-bold">{friend.displayName || 'Anonymous'}</h3>
+                              <p className="text-muted-foreground">{friend.email}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <Card className="p-4">
+                                <h4 className="text-sm font-medium text-muted-foreground">Total Solved</h4>
+                                <p className="text-2xl font-bold">{friend.problemStats.totalProblems}</p>
+                              </Card>
+                              <Card className="p-4">
+                                <h4 className="text-sm font-medium text-muted-foreground">Streak</h4>
+                                <p className="text-2xl font-bold">{friend.user_statistics?.streak || 0}d</p>
+                              </Card>
+                            </div>
+
+                            <Card className="p-4">
+                              <h4 className="text-sm font-medium text-muted-foreground mb-4">Difficulty Distribution</h4>
+                              <div className="space-y-2">
+                                <div className="flex justify-between items-center">
+                                  <span>Easy</span>
+                                  <div className="w-2/3 bg-muted rounded-full h-2">
+                                    <div
+                                      className="bg-green-500 h-2 rounded-full"
+                                      style={{
+                                        width: `${(friend.problemStats.easy / Math.max(1, friend.problemStats.totalProblems) * 100) || 0}%`
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right">{friend.problemStats.easy}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span>Medium</span>
+                                  <div className="w-2/3 bg-muted rounded-full h-2">
+                                    <div
+                                      className="bg-yellow-500 h-2 rounded-full"
+                                      style={{
+                                        width: `${(friend.problemStats.medium / Math.max(1, friend.problemStats.totalProblems) * 100) || 0}%`
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right">{friend.problemStats.medium}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <span>Hard</span>
+                                  <div className="w-2/3 bg-muted rounded-full h-2">
+                                    <div
+                                      className="bg-red-500 h-2 rounded-full"
+                                      style={{
+                                        width: `${(friend.problemStats.hard / Math.max(1, friend.problemStats.totalProblems) * 100) || 0}%`
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right">{friend.problemStats.hard}</span>
+                                </div>
+                              </div>
+                            </Card>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           </CardContent>
@@ -1063,15 +1168,18 @@ export default function FriendsPage() {
     }
 
     const renderGlobalStats = () => {
+      // Add null checks and default values
       const longestStreakUser = leaderboard.reduce((max, entry) => 
-        entry.stats.streak > (max?.stats.streak || 0) ? entry : max, 
+        (entry?.stats?.streak || 0) > (max?.stats?.streak || 0) ? entry : max, 
         null as LeaderboardEntry | null
       );
 
       const mostConsistentUser = leaderboard.reduce((max, entry) => 
-        entry.stats.consistency > (max?.stats.consistency || 0) ? entry : max,
+        (entry?.stats?.consistency || 0) > (max?.stats?.consistency || 0) ? entry : max,
         null as LeaderboardEntry | null
       );
+
+      const topSolver = leaderboard.length > 0 ? leaderboard[0] : null;
 
       return (
         <Card>
@@ -1079,6 +1187,11 @@ export default function FriendsPage() {
             <CardTitle className="flex items-center gap-2">
               <span className="text-xl">✨</span>
               Global Statistics
+              {leaderboard.length === 0 && (
+                <span className="text-sm font-normal text-muted-foreground ml-2">
+                  (No data yet)
+                </span>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1087,11 +1200,15 @@ export default function FriendsPage() {
                 <div className="text-center space-y-2">
                   <span className="text-3xl block">👑</span>
                   <h3 className="text-xl font-bold">
-                    {leaderboard[0]?.stats.totalSolved || 0}
+                    {topSolver?.stats?.totalSolved || 0}
                   </h3>
                   <p className="text-sm text-muted-foreground">Most Problems Solved</p>
                   <p className="text-xs text-muted-foreground">
-                    by {leaderboard[0]?.displayName || 'Anonymous'}
+                    {topSolver ? (
+                      `by ${topSolver.displayName || 'Anonymous'}`
+                    ) : (
+                      'No problems solved yet'
+                    )}
                   </p>
                 </div>
               </Card>
@@ -1100,11 +1217,15 @@ export default function FriendsPage() {
                 <div className="text-center space-y-2">
                   <span className="text-3xl block">🔥</span>
                   <h3 className="text-xl font-bold">
-                    {longestStreakUser?.stats.streak || 0}d
+                    {longestStreakUser?.stats?.streak || 0}d
                   </h3>
                   <p className="text-sm text-muted-foreground">Longest Streak</p>
                   <p className="text-xs text-muted-foreground">
-                    by {longestStreakUser?.displayName || 'Anonymous'}
+                    {longestStreakUser ? (
+                      `by ${longestStreakUser.displayName || 'Anonymous'}`
+                    ) : (
+                      'No streaks yet'
+                    )}
                   </p>
                 </div>
               </Card>
@@ -1113,11 +1234,15 @@ export default function FriendsPage() {
                 <div className="text-center space-y-2">
                   <span className="text-3xl block">🎯</span>
                   <h3 className="text-xl font-bold">
-                    {mostConsistentUser?.stats.consistency.toFixed(0) || 0}%
+                    {(mostConsistentUser?.stats?.consistency || 0).toFixed(0)}%
                   </h3>
                   <p className="text-sm text-muted-foreground">Highest Consistency</p>
                   <p className="text-xs text-muted-foreground">
-                    by {mostConsistentUser?.displayName || 'Anonymous'}
+                    {mostConsistentUser ? (
+                      `by ${mostConsistentUser.displayName || 'Anonymous'}`
+                    ) : (
+                      'No consistency data yet'
+                    )}
                   </p>
                 </div>
               </Card>
@@ -1147,6 +1272,22 @@ export default function FriendsPage() {
             <span className="text-4xl">🎮</span>
             <h3 className="text-2xl font-bold">Challenges</h3>
             <p className="text-muted-foreground">Coming Soon</p>
+            
+            {friends.length > 0 && (
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => {
+                  toast({
+                    title: "Coming Soon!",
+                    description: "Challenge functionality will be available in the next update.",
+                  })
+                }}
+              >
+                <span className="mr-2">⚔️</span>
+                Join the Waitlist
+              </Button>
+            )}
           </div>
         </div>
         <CardHeader>
@@ -1164,6 +1305,11 @@ export default function FriendsPage() {
                 <p className="text-sm text-muted-foreground">
                   Challenge friends to daily coding battles
                 </p>
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground">
+                    Compete head-to-head on the same problem
+                  </p>
+                </div>
               </div>
             </Card>
 
@@ -1174,6 +1320,11 @@ export default function FriendsPage() {
                 <p className="text-sm text-muted-foreground">
                   Race against time and friends
                 </p>
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground">
+                    Solve as many problems as possible in a time limit
+                  </p>
+                </div>
               </div>
             </Card>
 
@@ -1184,8 +1335,60 @@ export default function FriendsPage() {
                 <p className="text-sm text-muted-foreground">
                   Set and achieve goals together
                 </p>
+                <div className="mt-4">
+                  <p className="text-xs text-muted-foreground">
+                    Create shared goals with accountability
+                  </p>
+                </div>
               </div>
             </Card>
+          </div>
+          
+          {/* Preview of Direct Challenge Feature */}
+          <div className="mt-6 p-4 border rounded-lg">
+            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+              <span className="text-xl">🔥</span>
+              Direct Challenge Preview
+            </h3>
+            
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Challenge a friend to solve a specific problem and compare your solutions!
+                </p>
+                
+                <div className="flex gap-2 mt-4">
+                  <Select disabled>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select a friend" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {friends.map(friend => (
+                        <SelectItem key={friend.id} value={friend.id}>
+                          {friend.displayName || friend.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Button variant="outline" disabled>
+                    <span className="mr-2">⚔️</span>
+                    Send Challenge
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex-1 p-4 bg-muted/30 rounded-lg">
+                <h4 className="text-sm font-medium mb-2">How it works:</h4>
+                <ol className="text-xs text-muted-foreground space-y-1 list-decimal pl-4">
+                  <li>Select a friend to challenge</li>
+                  <li>Choose a problem difficulty or specific problem</li>
+                  <li>Set a time limit for the challenge</li>
+                  <li>Both of you solve the problem independently</li>
+                  <li>Compare solutions and runtime performance</li>
+                </ol>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -1219,7 +1422,14 @@ export default function FriendsPage() {
     }
 
     const renderWelcomeSection = () => {
-      const hasNoFriends = friends.length === 0;    
+      const hasNoFriends = friends.length === 0;
+      
+      // Calculate some personalized insights
+      const topFriend = friends.length > 0 
+        ? friends.reduce((a, b) => a.problemStats.totalProblems > b.problemStats.totalProblems ? a : b) 
+        : null;
+      
+      const recentlyActiveFriends = friends.filter(f => f.problemStats.recentlySolved > 0).length;
       
       return (
         <div className="relative h-[300px] w-full rounded-lg border overflow-hidden">
@@ -1238,7 +1448,7 @@ export default function FriendsPage() {
             className="opacity-80"
           >
             {/* Content Container */}
-            <div className="relative z-50 h-full p-6">
+            <div className="relative z-50 h-full p-6 flex flex-col justify-between">
               <div className="flex justify-between items-start">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold">
@@ -1253,10 +1463,65 @@ export default function FriendsPage() {
                     ) : (
                       <span className="block mt-2">
                         🎯 You have {friends.length} friend{friends.length !== 1 ? 's' : ''} on your coding journey.
+                        {recentlyActiveFriends > 0 && (
+                          <span className="ml-1">
+                            {recentlyActiveFriends} of them {recentlyActiveFriends === 1 ? 'has' : 'have'} been active this week!
+                          </span>
+                        )}
                       </span>
                     )}
                   </p>
                 </div>
+              </div>
+              
+              {/* Quick Actions */}
+              <div className="flex gap-4 mt-4">
+                <Button 
+                  onClick={() => setIsSearchOpen(true)}
+                  variant="default"
+                  className="gap-2"
+                >
+                  <span className="text-lg">👋</span>
+                  {hasNoFriends ? "Add Your First Friend" : "Add More Friends"}
+                </Button>
+                
+                {!hasNoFriends && (
+                  <Button 
+                    onClick={() => {
+                      if (topFriend) {
+                        setSelectedFriendsForComparison([topFriend.friendshipId])
+                        // Scroll to comparison section
+                        document.getElementById('friend-comparison')?.scrollIntoView({ 
+                          behavior: 'smooth',
+                          block: 'start'
+                        })
+                      }
+                    }}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <span className="text-lg">🏆</span>
+                    View Top Friend
+                  </Button>
+                )}
+                
+                {friendRequests.length > 0 && (
+                  <Button 
+                    onClick={() => {
+                      setIsSearchOpen(true)
+                      // Set active tab to requests
+                      const requestsTab = document.querySelector('[data-value="requests"]')
+                      if (requestsTab instanceof HTMLElement) {
+                        requestsTab.click()
+                      }
+                    }}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <span className="text-lg">⏳</span>
+                    View {friendRequests.length} Request{friendRequests.length !== 1 ? 's' : ''}
+                  </Button>
+                )}
               </div>
             </div>
           </BackgroundGradientAnimation>
@@ -1266,11 +1531,29 @@ export default function FriendsPage() {
 
     // Add this function to refresh all friend-related data
     const refreshFriendData = async () => {
-      console.log('Refreshing friend data')
-      await Promise.all([
-        fetchFriends(),
-        fetchFriendRequests()
-      ])
+      try {
+        setIsLoadingFriends(true)
+        setIsLoadingRequests(true)
+        
+        await Promise.all([
+          fetchFriends(),
+          fetchFriendRequests()
+        ])
+        
+        // Clear any previous errors
+        setError(null)
+      } catch (err) {
+        console.error('Error refreshing friend data:', err)
+        setError('Failed to refresh friend data')
+        toast({
+          title: "Error",
+          description: "Failed to refresh friend data. Please try again.",
+          variant: "destructive"
+        })
+      } finally {
+        setIsLoadingFriends(false)
+        setIsLoadingRequests(false)
+      }
     }
 
     return (
@@ -1288,6 +1571,14 @@ export default function FriendsPage() {
           )}
         </div>
 
+        {/* Loading indicator */}
+        {(isLoadingFriends || isLoadingRequests) && (
+          <div className="flex justify-center items-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <span className="ml-2 text-muted-foreground">Loading...</span>
+          </div>
+        )}
+
         {/* Global Stats */}
         {renderGlobalStats()}
 
@@ -1298,14 +1589,6 @@ export default function FriendsPage() {
         <div className="grid grid-cols-1 gap-6">
           {renderLeaderboard()}
           {renderFriendComparison()}
-          
-          {/* Friends List */}
-          {friends.length > 0 && (
-            <div className="mt-6">
-              <h2 className="text-2xl font-bold mb-4">Your Friends</h2>
-              {renderFriendsTab()}
-            </div>
-          )}
         </div>
 
         <PhoneVerificationPrompt 

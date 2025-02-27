@@ -118,6 +118,8 @@ export async function GET(request: Request) {
               select: {
                 difficulty: true,
                 solvedAt: true,
+                mainCategory: true,
+                subCategories: true,
               }
             },
             user_statistics: true
@@ -133,6 +135,8 @@ export async function GET(request: Request) {
               select: {
                 difficulty: true,
                 solvedAt: true,
+                mainCategory: true,
+                subCategories: true,
               }
             },
             user_statistics: true
@@ -158,7 +162,47 @@ export async function GET(request: Request) {
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
             return new Date(p.solvedAt) > oneWeekAgo;
-          }).length
+          }).length,
+        categories: {
+          // Count by main category
+          ARRAY_STRING: friend.user_problems.filter(p => p.mainCategory === 'ARRAY_STRING').length,
+          HASH_BASED: friend.user_problems.filter(p => p.mainCategory === 'HASH_BASED').length,
+          LINKED: friend.user_problems.filter(p => p.mainCategory === 'LINKED').length,
+          STACK_QUEUE: friend.user_problems.filter(p => p.mainCategory === 'STACK_QUEUE').length,
+          TREE: friend.user_problems.filter(p => p.mainCategory === 'TREE').length,
+          GRAPH: friend.user_problems.filter(p => p.mainCategory === 'GRAPH').length,
+          
+          // Count by subcategories
+          ARRAY: friend.user_problems.filter(p => p.subCategories.includes('ARRAY')).length,
+          STRING: friend.user_problems.filter(p => p.subCategories.includes('STRING')).length,
+          TWO_POINTERS: friend.user_problems.filter(p => p.subCategories.includes('TWO_POINTERS')).length,
+          SLIDING_WINDOW: friend.user_problems.filter(p => p.subCategories.includes('SLIDING_WINDOW')).length,
+          MATRIX: friend.user_problems.filter(p => p.subCategories.includes('MATRIX')).length,
+          
+          HASH_MAP: friend.user_problems.filter(p => p.subCategories.includes('HASH_MAP')).length,
+          HASH_SET: friend.user_problems.filter(p => p.subCategories.includes('HASH_SET')).length,
+          
+          SINGLY_LINKED: friend.user_problems.filter(p => p.subCategories.includes('SINGLY_LINKED')).length,
+          DOUBLY_LINKED: friend.user_problems.filter(p => p.subCategories.includes('DOUBLY_LINKED')).length,
+          CIRCULAR_LINKED: friend.user_problems.filter(p => p.subCategories.includes('CIRCULAR_LINKED')).length,
+          
+          STACK: friend.user_problems.filter(p => p.subCategories.includes('STACK')).length,
+          QUEUE: friend.user_problems.filter(p => p.subCategories.includes('QUEUE')).length,
+          DEQUE: friend.user_problems.filter(p => p.subCategories.includes('DEQUE')).length,
+          PRIORITY_QUEUE: friend.user_problems.filter(p => p.subCategories.includes('PRIORITY_QUEUE')).length,
+          
+          BINARY_TREE: friend.user_problems.filter(p => p.subCategories.includes('BINARY_TREE')).length,
+          BINARY_SEARCH_TREE: friend.user_problems.filter(p => p.subCategories.includes('BINARY_SEARCH_TREE')).length,
+          NARY_TREE: friend.user_problems.filter(p => p.subCategories.includes('NARY_TREE')).length,
+          TRIE: friend.user_problems.filter(p => p.subCategories.includes('TRIE')).length,
+          SEGMENT_TREE: friend.user_problems.filter(p => p.subCategories.includes('SEGMENT_TREE')).length,
+          
+          DIRECTED_GRAPH: friend.user_problems.filter(p => p.subCategories.includes('DIRECTED_GRAPH')).length,
+          UNDIRECTED_GRAPH: friend.user_problems.filter(p => p.subCategories.includes('UNDIRECTED_GRAPH')).length,
+          DFS: friend.user_problems.filter(p => p.subCategories.includes('DFS')).length,
+          BFS: friend.user_problems.filter(p => p.subCategories.includes('BFS')).length,
+          TOPOLOGICAL_SORT: friend.user_problems.filter(p => p.subCategories.includes('TOPOLOGICAL_SORT')).length,
+        }
       }
 
       return {
